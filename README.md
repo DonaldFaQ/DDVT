@@ -7,7 +7,7 @@ DESCRIPTION:
 ------------
 A little toolbox that works with quietvoids dolby_vision and HDR10plus tool. 
 For every function exists an own script. Script list:
-================================================================================
+===========================================================================
 
 - SCRIPT <DDVT_OPTIONS.cmd>
 
@@ -21,7 +21,7 @@ USAGE:
 ------
 DDVT_OPTIONS
 
-================================================================================
+===========================================================================
 
 - SCRIPT <DDVT_MEDIAINFO.cmd>
 
@@ -36,7 +36,7 @@ USAGE:
 DDVT_MEDIAINFO <SOURCEFILE>.hevc/mkv/mp4/ts/m2ts/bin/avi
 DDVT_MEDIAINFO <SOURCEFILE>.hevc/mkv/mp4/ts/m2ts/bin/avi -MSGBOX
 
-================================================================================
+===========================================================================
 
 - SCRIPT <DDVT_DEMUXER.cmd>
 
@@ -49,7 +49,7 @@ USAGE:
 ------
 DDVT_DEMUXER <SOURCEFILE>.hevc/mkv/mp4/bin/m2ts
 
-================================================================================
+===========================================================================
 
 - SCRIPT <DDVT_INJECTOR.cmd>
 
@@ -77,7 +77,7 @@ USAGE:
 ------
 DDVT_INJECTOR <SOURCEFILE>.hevc/mkv/mp4/bin
 
-================================================================================
+===========================================================================
 
 - SCRIPT <DDVT_REMOVER.cmd>
 
@@ -89,7 +89,7 @@ USAGE:
 ------
 DDVT_REMOVER <SOURCEFILE>.hevc/mkv/mp4
 
-================================================================================
+===========================================================================
 
 - SCRIPT <DDVT_FILEINFO.cmd>
 
@@ -108,7 +108,7 @@ USAGE:
 DDVT_FILEINFO <SOURCEFILE>.hevc/mkv/mp4/bin
 DDVT_FILEINFO <SOURCEFILE>.hevc/mkv/mp4/bin -CHECK
 
-================================================================================
+===========================================================================
 
 - SCRIPT <DDVT_MKVTOMP4.cmd>
 
@@ -124,7 +124,7 @@ USAGE:
 DDVT_MKVTOMP4 <SOURCEFILE>.mkv
 DDVT_MKVTOMP4 <SOURCEDIR>
 
-================================================================================
+===========================================================================
 
 - SCRIPT <DDVT_HYBRID.cmd>
 
@@ -140,13 +140,13 @@ USAGE:
 ------
 DDVT_HYBRID
 
-================================================================================
+==========================================================================
 
 Help and discussions on DOOM9 Forum. Thanks to the community for help and support.
 If you paid for this tool, fuck off the guy who sold it. I don't need money, if
 you will support this project, support the guys from the credits!
 
-================================================================================
+===========================================================================
 
 USEFUL LINKS:
 -------------
