@@ -1,0 +1,333 @@
+-v0.65.2
+-FIXED Errors with FFMPEG and bitstream demuxing/pipelining (clipping and wrong colors on some movies)
+*Minor Bugfixes.
+
+-v0.65.1
+-ADDED INJECTOR Custom JSON Support (if activated) for RPU (*.bin) files.
+
+-v0.65
+ADDED Logfile for HYBRID script.
+ADDED Set Frame 0 Scenecut Fix in RPU (Turn ON/OFF via Options).
+FIXED Errors in HYBRID script.
+FIXED Errors in DEMUXER script.
+FIXED Display Bug with RPU files in FILEINFO script.
+NEW ICON SET - Reinstall the Shell Extensions!
+*Minor Bugfixes.
+
+-v0.64.5
+ADDED -Injector- Support for Custom JSON files without injecting DV / HDR10+. Not supported for DV Profile 7. Skip DV and HDR10+ Input for processing JSON files directly.
+FIXED -Options- Errors with Shell Extensions and W11.
+FIXED -Options- Wrong TAB entry in DDVT_Options.ini [Line JSON_PROCESS] (if you have the TAB bug, please delete the complete line in ini file and save options again).
+FIXED -MediaInfo- Removed HDR Metadata Tab for non HDR files.
+*UPDATED mkvtoolnix to v 89.0.0.0.
+*Minor Bugfixes.
+
+-v0.64.4
+*XML Support (Injector / Demuxer)
+*REWORKED MANY Scripts
+*ADDED Function to plot HDR Metadata in -FileInfo- script (fork from reset_9999)
+*ADDED Mass Converting with -MKVtoMP4- (Folder Support)
+*UPDATED Python to v3.13
+*Minor Bugfixes.
+
+-v0.64.3d
+*ADDED Function in -MKVtoMP4- script for creating "fake" Profile 5 files.
+
+-v0.64.3c
+*FIXED Errors in demuxing combinations in DEMUXER script.
+*FIXED Some errors in MediaInfo with DL files.
+*FIXED L6 Error (L6 SWITCH) in Injector script.
+*FIXED If changing FPS with Injector and EL is input, FPS from EL changed, too.
+*ADDED Option in Injector script for writing RPU L6 Data as HDR bitstream data.
+*Minor Bugfixes.
+
+-v0.64.3b
+*REWORKED -P8 Hybrid Script-. Works now faster.
+*Minor Bugfixes.
+
+-v0.64.3a
+*FIXED Problems with files that contains "()" in filename.
+
+-v0.64.3
+*ADDED m2ts Dual Layer Suppert for Demuxer Script.
+*FIXED -Demuxer- Frames display bug.
+*Minor Bugfixes.
+
+-v0.64.2
+*Major Bugfixes.
+*FIXED -MediaInfo- bugs with AV1/VP1
+
+-v0.64.1
+*Minor Bugfixes.
+*ADDED Custom JSON file directly Support (Injector) (also bin files).
+*ADDED RPU Extracting via -Demuxer- Script. (bin files)
+*FIXED Wrong L9 detection with MediaInfo.
+
+-v0.64
+*Minor Bugfixes.
+*ADDED -MEDIAINFO- script (also quick video check for DV levels, included MEL/FEL analyse).
+*ADDED -SYNCCHECK- (check frames and cropping borders between video and rpu).
+*UPDATED dovi_tool to v2.1.3.
+*UPDATED hdr10plus_tool to v1.6.1.
+*UPDATED mkvtoolnix to v 88.0.0.0.
+*UPDATED FFMPEG to 7.1
+
+-v0.63.2
+*ADDED Shot List Support in Generator. (Generator script not official)
+*UPDATED Dolby Vision Pro Tools.
+*UPDATED dovi_tool to v2.1.1.
+*UPDATED mkvtoolnix to v 83.0.0.0.
+
+-v0.63.1
+*FIXED Border check fails if temp folder includes spaces (THX @ sirbod).
+*FIXED Better HDR detection.
+
+-v0.63
+*UPDATED Complete overhaul of the -DEMUXER- script.
+*UPDATED Complete overhaul of the -REMOVER- script.
+*UPDATED No more Target subfolders.
+*FIXED minor bugfixes.
+
+-v0.62
+*UPDATED Complete overhaul of the INJECTOR script.
+*ADDED Feature for settings custom mkvtoolnix path in Options.
+*UPDATED mkvtoolnix to v 82.0.0.0.
+*FIXED minor bugfixes.
+
+-v0.61.5
+*FIXED missing HDR Info String in mkvtomp4 script with DV P5 files.
+*UPDATED mkvtoolnix to v 81.0.0.0.
+
+-v0.61.4
+*FIXED wrong error message during RPU.bin creating in DEMUXER Script.
+*FIXED Sourcecode REMOVER Script.
+
+-v0.61.3
+*UPDATED dovi_tool to v2.1.0.
+*Minor Bugfixes.
+*REMOVED Crop Check function in DEMUXER script.
+*ADDED Crop Check function in FILEINFO script.
+*ADDED SCENECUTS option in FILEINFO script without extracting ALL frames.
+
+-v0.61.2
+*Minor Bugfixes
+*FIXED FFPROBE Bug with UAC On.
+
+-v0.61.1
+*Minor Bugfixes
+*ADDED Video Bitrate Plotter in FILEINFO Script.
+*ADDED MediaInfo File Writer in FILEINFO Script.
+
+-v0.61
+*Minor Bugfixes.
+*Some changes in scripts layout.
+*RENAMED Script Frameinfo.cmd to Fileinfo.cmd.
+ Support for plotting DV / HDR10+ metadata graphs to png picture file.
+ If u use shell extensions start Options.cmd and reset Shell Extensions!
+*UPDATED mkvtoolnix to v 79.0.0.0.
+
+-v0.60
+*Minor Bugfixes.
+*UPDATED mkvtoolnix to v 78.0.0.0.
+
+-v0.59
+*Hybrid Scripts supports now HDR10+ files without DV for secondary input.
+ If the secondary stream contains DV and HDR10+ metadata, you can choose
+ which metadata will be used for RPU.
+*Live ticker for Output file HDR infos.
+
+-v0.58
+*Removes mkclean from all scripts because damage on some tracks inside mkv container.
+
+-v0.57 
+*DEMUXER creates a directory in source file dir if a custom dir is set - Fixed.
+*HYBRID Any bugfixes and overhauled layout. Live ticker if HDR and OUTPUT Borders matches.
+
+-v0.56
+*NEW - Hybrid Script - If DV file contents DV and HDR10+ and the HDR file is only HDR
+                       you can choice to mux HDR10+ metadata into target file. DV RPU
+                       will always mux in HDR stream, HDR10+ is optional.
+*Small Bugfixes.
+
+-v0.55
+*NEW Checking and repairing MKV Container during muxing.
+*UPDATED mkvtoolnix to v 77.0.0.0.
+*Major Bugfixes.
+*Reworked Shell Extensions (Hybrid P8 Script now in Shell Background).
+
+-v0.54
+*NEW New Script included (DDVT_Hybrid) for fast creating DV Profile 8.1 Hybrid Releases.
+*INJECTOR-Function to change correctly the video framerate. Also included in HYBRID Script.
+*UPDATED mkvtoolnix to v 76.0.0.0.
+
+-v0.53
+*UPDATED FFMPEG to N-110509-g722ff74055-20230506
+*UPDATED MP4Box to 2.2-rev0-gab012bbfb
+*UPDATED mkvtoolnix to v 75.0.0.0.
+
+-v0.52
+*UPDATED dovi_tool to v2.0.3.
+*UPDATED hdr10plus_tool to v1.6.
+
+-v0.51
+*UPDATED dovi_tool to v2.0.1.
+*UPDATED hdr10plus_tool to v1.5.2.
+*UPDATED mkvtoolnix to v 73.0.0.0.
+*Bugfix in Injector script for HDR10+ injecting (thx "von Suppé" for finding and "GodzilaAvenger" for fixing).
+
+-v0.50
+*Works now correct with all symbols in filenames.
+*UPDATED mkvtoolnix to v 71.1.1.0.
+
+-v0.49
+*INJECTOR-Support for HDR10+ JSON Data delaying.
+*UPDATED hdr10plus_tool to v1.4.0.
+*UPDATED dovi_tool to v1.5.7.
+
+-v0.48c
+*INJECTOR-Support for DV Profile 5 Video Streams.
+*UPDATED hdr10plus_tool to v1.3.2.
+*UPDATED dovi_tool to v1.5.6.
+
+-v0.48b
+*UPDATED mkvtoolnix to v 70.0.0.0.
+*Fixed bugs with spaced names.
+*Fixed FRAMEINFO function.
+
+-v0.48a
+*UPDATED FRAMEINFO Function. If you set Frames to ALL, all frames of
+ a RPU will be exported. Also a file with all scenecuts will be created.
+ Automatically formated in readable format.
+*Minor Bugfixes.
+
+-v0.48
+*UPDATED mkvtoolnix to v 69.0.0.0.
+*Add function to set TEMP and OUTPUT folder.
+*Multi instances support (only for different releases!)
+
+-v0.47a
+*UPDATED hdr10plus_tool to v1.3.1.
+*DEMUXER Added feature to disable validation of HDR10+ extraction.
+
+-v0.47
+*INJECTOR supports custom.json files (copy edited custom.json to video source dir).
+ custom json scripts processed first!
+*INJECTOR New function "Match L6 Metadata".
+ L6 Metadata will be edited for matching HDR stream Metadata.
+*INJECTOR creates now a small Logfile by muxing.
+*FRAMEINFO shows more informations about the RPU.
+*UPDATED dovi_tool to v1.5.5.
+
+-v0.46
+*Shows RPU/EL Layer Information in INJECTOR (Profile, CM Version, Frames)
+*UPDATED dovi_tool to v1.5.4.
+
+-v0.45
+*Added DoVi Profile 8.4 HLG Conversion in DEMUXER.
+*Fixed bad Frame choice in FRAMEINFO.
+*UPDATED mkvtoolnix to v 68.0.0.0.
+
+-v0.44
+*Fixed wrong Min Luminance Bug in DEMUXER by HDR10+ to DV Conversion.
+*UPDATED dovi_tool to v1.5.3.
+
+-v0.43
+*INJECTOR supports EL.hevc file for creating DV Profile 7 Single Layer Files.
+ Copy EL.hevc to source video file directory.
+ If exist EL.hevc and RPU.bin the tool automatically uses EL.hevc.
+*Fixed wrong FPS Bug in REMOVER.
+*Minor Bugfixes.
+
+-v0.42
+*UPDATED dovi_tool to v1.5.1.
+*UPDATED hdr10plus_tool to v1.2.2.
+*Fixed bad Bottom entry after analysing in RPU Output in INJECTOR.
+
+-v0.41b
+*Complete reworked Injector. If input file is in mp4/mkv container crop borders will automatically set.
+*Fixed wrong FPS Bug with Injector / Check Release.
+*Fixed Minor Bugs.
+
+-v0.41a
+*Cropping values from RPU.bin will shown in INJECTOR.
+*New Function in DEMUXER called CHECK RPU CROPPING VALUES.
+ You can fix wrong cropped RPUs directcly.
+ Works only with Profile 8 MKVs/MP4s and RAW Streams.
+
+-v0.41
+*Add MKVtoMP4 Script.
+*UPDATED mkvtoolnix to v 67.0.0.0.
+** Scripts renamed, use DDVT_Options Script for creating new Shell Extensions.
+
+-v0.40e
+*Fixed container FPS error in INJECTOR.
+
+-v0.40d
+*UPDATED MediaInfo to v22.02.
+*UPDATED mkvtoolnix to v 66.0.0.0.
+*UPDATED dovi_tool to v1.4.7.
+*Fixed Minor Bugs.
+
+-v0.40c
+*RAW Stream Support for all Scripts.
+*Turn off Autodetect Borders Feature for RAW Streams.
+*DV and HDR10+ Metadata can now replaced in Stream.
+
+-v0.40b
+*Fixed major Bug by demuxing Profile7 files.
+
+-v0.40a
+*Fixed number bug in Demuxer.
+*Fixed Frameinfo RPU bug.
+
+-v0.40
+*Support for HEVC RAW streams in DDVT Demuxer.
+*Support for HEVC RAW streams in DDVT Remover.
+*Fixed DV remove Bug in DDVT Remover.
+*New Context Menus (create them with DDVT Options).
+
+-v0.39
+*Fixed HDR10+ converting without HDR metadata strings.
+
+-v0.38
+*UPDATED MP4Box.exe.
+*Added MP4 Mux Support in Injector (only if Input file is MP4 und only for Profile8).
+*Added DDVT REMOVER.cmd (Remove HDR10+ and/or DoVi Metadata from MP4/MKV Container).
+*Minor Bugfixes.
+
+-v0.37c
+*Fixed wrong ID by video track if muxing with INJECTOR.
+*UPDATED FFMPEG to v5.0.
+
+-v0.37b
+*Minor Bugfixes.
+*UPDATED mkvtoolnix to v 65.0.0.0.
+
+-v0.37a - FIXED
+*Fixed troubleshooting with profile switch in Profile 7 options.
+
+-v0.37a
+*Added AutoDetect Borders in AA Editor (works only with containers).
+*Added Profile 8 to Profile 7 Conversion.
+
+-v0.37
+*UPDATED dovi_tool to v1.4.6.
+*Added DDVT_FRAMEINFO.cmd.
+
+-v0.36
+*HDR10+ Demuxing / Injecting Support.
+
+-v0.35a
+*Minor Bugfixes.
+*Changed colors of any strings.
+
+-v0.35
+*Added Active Area Editor in Injector.
+*UPDATED hdr10plus_tool to v1.2.2.
+
+-v0.33a
+*Fixed bad strings if opened without file.
+
+-v0.33
+*Multiple Instances Support.
+*Injector RAW File Support.
