@@ -1,5 +1,9 @@
 -Donalds Dolby Vision Tool (DDVT)-
 ==================================
+
+NEEDED 3RD PARTY TOOLS CAN BE FOUND HERE:
+https://mega.nz/folder/x9FHlbbK#YQz_XsqcAXfZP2ciLeyyDg
+
 --------------------------------------------
 CREDITS to quietvoid, yuseope, Atak_Snajpera
 --------------------------------------------
@@ -34,6 +38,7 @@ a small MS MSG box shows the main values (Quickcheck).
 USAGE:
 ------
 DDVT_MEDIAINFO <SOURCEFILE>.hevc/mkv/mp4/ts/m2ts/bin/avi
+
 DDVT_MEDIAINFO <SOURCEFILE>.hevc/mkv/mp4/ts/m2ts/bin/avi -MSGBOX
 
 ===========================================================================
@@ -106,6 +111,7 @@ switch "-CHECK" for jumping directly to the SyncCheck area.
 USAGE:
 ------
 DDVT_FILEINFO <SOURCEFILE>.hevc/mkv/mp4/bin
+
 DDVT_FILEINFO <SOURCEFILE>.hevc/mkv/mp4/bin -CHECK
 
 ===========================================================================
