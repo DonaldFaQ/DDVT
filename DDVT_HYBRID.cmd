@@ -103,9 +103,9 @@ if exist "%~dp0DDVT_OPTIONS.ini" (
 		set "FIX_SCENECUTS=!FIX_SCENECUTS:~14!"
 	)
 )
+
 if "!MKVTOOLNIX_FOLDER!"=="INCLUDED" set "MKVTOOLNIX_FOLDER=%~dp0tools"
 set "MKVMERGEpath=!MKVTOOLNIX_FOLDER!\mkvmerge.exe"
-set "logfile=%TMP_FOLDER%\!INPUTFILENAME!.log"
 
 if not exist "%sfkpath%" set "MISSINGFILE=%sfkpath%" & goto :CORRUPTFILE
 if not exist "%FFMPEGpath%" set "MISSINGFILE=%FFMPEGpath%" & goto :CORRUPTFILE
@@ -214,6 +214,7 @@ if "!TARGET_FOLDER!"=="SAME AS SOURCE" (
 ) else (
 	set "TARGET_FOLDER=!TARGET_FOLDER!"
 )
+set "logfile=!TMP_FOLDER!\!HDR_Filename!.log"
 
 :PREPARE_DV
 cls
