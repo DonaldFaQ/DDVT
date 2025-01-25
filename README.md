@@ -1,4 +1,4 @@
--Donalds Dolby Vision Tool (DDVT)-
+Donalds Dolby Vision Tool (DDVT)
 ==================================
 
 NEEDED 3RD PARTY TOOLS CAN BE FOUND HERE:
