@@ -904,7 +904,7 @@ if exist "!DV_HDR10PFILE!" set "HDR10PFILE=!DV_HDR10PFILE!"
 if "!CHGFPS!" NEQ "NO" call :FPS_CHANGE
 if "!CHGHDR_HDR10P!"=="YES" call :CONVERT_HDR10P
 if "!INJ_HDR10P!"=="YES" (
-	call :HDR10P_DELAY
+	if "!DELAY!" NEQ "0" call :HDR10P_DELAY
 	call :HDR10PINJECT
 )
 if "!DELAY!" NEQ "0" call :DV_DELAY
@@ -1020,6 +1020,7 @@ if "!DV_HDR10P!"=="TRUE" (
 goto :eof
 
 :HDR10P_DELAY
+if "!DELAY!"=="0" goto :eof
 %CYAN%
 echo "!DELAY!" | find "-">nul 2>&1
 if "%ERRORLEVEL%"=="0" (
@@ -1053,8 +1054,8 @@ goto :eof
 :HDR10PINJECT
 %CYAN%
 if "!INJ_HDR10P!"=="NO" goto :eof
-echo Please wait. Injecting the HDR10+ Metadata into stream...
-echo [Injecting the HDR10+ Metadata into stream]>>"!logfile!"
+echo Please wait. Injecting the HDR10+ SEI into stream...
+echo [Injecting the HDR10+ SEI into stream]>>"!logfile!"
 %WHITE%
 "!HDR10P_TOOLpath!" inject -i "!HDR_VIDEOSTREAM!" -j "!HDR10PFILE!" -o "!TMP_FOLDER!\HDR10P_INJ.hevc">>"!logfile!"
 if exist "!TMP_FOLDER!\HDR10P_INJ.hevc" (
@@ -1170,6 +1171,7 @@ if exist "!TMP_FOLDER!\RPU-CROPPED.bin" (
 goto :eof
 
 :DV_DELAY
+if "!DELAY!"=="0" goto :eof
 %CYAN%
 echo "!DELAY!" | find "-">nul 2>&1
 if "%ERRORLEVEL%"=="0" (
