@@ -1,5 +1,7 @@
 ::written by DonaldFaQ, THX to Jamal for the great idea!
 @echo off & setlocal
+FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
+TITLE DDVT MediaInfo [QfG] v%VERSION%
 set "TOOLTYPE=TEXT"
 if /i "%~2"=="-MSGBOX" set "TOOLTYPE=MSGBOX"
 if "%TOOLTYPE%"=="TEXT" (
@@ -7,19 +9,11 @@ if "%TOOLTYPE%"=="TEXT" (
 ) else (
 	mode con cols=122 lines=15
 )
-FOR /F "delims=" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
-set "VERSION=%VERSION:~13,-1%"
-
-TITLE DDVT MediaInfo [QfG] v%VERSION%
-
-set "TOOLTYPE=TEXT"
-if /i "%~2"=="-MSGBOX" set "TOOLTYPE=MSGBOX"
 
 set PasswordChars=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 set PasswordLength=5
 call :CreatePassword Password
 
-for /F "tokens=2,*" %%i IN ('REG QUERY "HKCU\Software\DDVT DETECTOR" /v "LOGFILE"') do set "LOGFILE=%%j">nul 2>&1
 cls
 
 set "sfkpath=%~dp0tools\sfk.exe" rem Path to sfk.exe
@@ -745,9 +739,10 @@ exit
 
 :CORRUPTFILE
 if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
+START /B https://mega.nz/folder/x9FHlbbK#YQz_XsqcAXfZP2ciLeyyDg
 set "NewLine=[System.Environment]::NewLine"
 set "Line1=""%MISSINGFILE%""""
-set "Line2=Copy the file to the directory or reinstall DDVT v%VERSION%."
+set "Line2=Copy the file to the directory or download and extract DDVT_tools.rar"
 setlocal DisableDelayedExpansion
 START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('NEEDED FILE NOT FOUND!' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT MediaInfo [QfG] v%VERSION%', 'Ok','Error')"
 exit

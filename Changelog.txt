@@ -1,3 +1,9 @@
+-v0.65.3
+-FIXED Errors with P8 Hybrid script if no temp folder set in options.
+-FIXED If you right click on a video file and navigate to DDVT/P8 Hybrid script, file will be automated set as HDR Input file.
+-FIXED Some little bugs in options script. It's recommended to reinstall shell extensions if needed.
+*Minor Bugfixes.
+
 -v0.65.2
 -FIXED Errors with FFMPEG and bitstream demuxing/pipelining (clipping and wrong colors on some movies)
 *Minor Bugfixes.

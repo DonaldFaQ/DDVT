@@ -1,7 +1,6 @@
 @echo off & setlocal
 mode con cols=125 lines=35
-FOR /F "delims=" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
-set "VERSION=%VERSION:~13,-1%"
+FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
 TITLE DDVT Remover [QfG] v%VERSION%
 
 set PasswordChars=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
@@ -580,9 +579,10 @@ exit
 
 :CORRUPTFILE
 if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
+START /B https://mega.nz/folder/x9FHlbbK#YQz_XsqcAXfZP2ciLeyyDg
 set "NewLine=[System.Environment]::NewLine"
 set "Line1=""%MISSINGFILE%""""
-set "Line2=Copy the file to the directory or reinstall DDVT v%VERSION%."
+set "Line2=Copy the file to the directory or download and extract DDVT_tools.rar"
 setlocal DisableDelayedExpansion
 START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('NEEDED FILE NOT FOUND!' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT Remover [QfG] v%VERSION%', 'Ok','Error')"
 exit

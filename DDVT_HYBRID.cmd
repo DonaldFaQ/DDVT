@@ -1,7 +1,6 @@
 @echo off & setlocal
 mode con cols=125 lines=35
-FOR /F "delims=" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
-set "VERSION=%VERSION:~13,-1%"
+FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
 TITLE DDVT P8 Hybrid Script [QfG] v%VERSION%
 
 set PasswordChars=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
@@ -140,11 +139,14 @@ echo.
 %YELLOW%
 call :colortxt 0E "Drag 'n' Drop" & call :colortxt 0A " HDR / HDR10+ " & call :colortxt 0E "file here and press ENTER:" /n
 %WHITE%
-set /p "HDR_File=%~1"
+if "%~1" NEQ "" set "HDR_File="%~dpnx1""
+set /p "HDR_File=%~dpnx1"
+
 for %%f in (!HDR_File!) do set "HDR_Filefolder=%%~dpf"
 for %%f in (!HDR_File!) do set "HDR_Filename=%%~nf"
 for %%f in (!HDR_File!) do set "HDR_Fileext=%%~xf"
 for %%f in (!HDR_File!) do set "HDR_File=%%~dpnxf"
+
 rem if "%HDR_Fileext%"==".hevc" set "RAW_FILE_HDR=TRUE" & set "HDR_File_support=TRUE"
 rem if "%HDR_Fileext%"==".h265" set "RAW_FILE_HDR=TRUE" & set "HDR_File_support=TRUE"
 if "%HDR_Fileext%"==".mkv" set "MKVExtract_HDR=TRUE" & set "HDR_File_support=TRUE"
@@ -239,7 +241,7 @@ echo.
 %YELLOW%
 call :colortxt 0E "Drag 'n' Drop" & call :colortxt 0A " DV / HDR10+ " & call :colortxt 0E "file here and press ENTER:" /n
 %WHITE%
-set /p "DV_File=%~1"
+set /p "DV_File="
 for %%f in (!DV_File!) do set "DV_Filename=%%~nf"
 for %%f in (!DV_File!) do set "DV_Fileext=%%~xf"
 for %%f in (!DV_File!) do set "DV_File=%%~dpnxf"
@@ -683,15 +685,6 @@ if "!HDR_HDR10P!"=="TRUE" set "OUTPUT_Info=HDR10, HDR10+, Dolby Vision Profile 8
 if "!HDR_HDR!!REMHDR_HDR10P!"=="TRUEYES" set "OUTPUT_Info=HDR10, Dolby Vision Profile 8"
 if "!HDR_HDR!!REMHDR_HDR10P!!INJ_HDR10P!"=="TRUENOYES" set "OUTPUT_Info=HDR10, HDR10+, Dolby Vision Profile 8"
 if "!HDR_File_support!!DV_File_support!"=="FALSEFALSE" goto :EXIT
-if "!HDR_HDR!!HDR_HDR10P!!DV_DV!!DV_HDR10P!!"=="TRUEFALSEFALSEFALSE" (
-	%YELLOW%
-	echo HDR Stream found, but no HDR10+ Metadata included or a valid DV / HDR10+ File.
-	set "HDR_File_support=FALSE"
-	%GREEN%
-	echo Analysing complete.
-	echo.
-	goto :EXIT
-)
 if "!HDR_HDR10P!"=="TRUE" set "INJ_HDR10P=NO"
 if "!HDR_DV!!DV_DV!"=="FALSEFALSE" set "CHGHDR_HDR10P=YES" & set "INJRPU=NO"
 if "!DV_File_support!!HDR_DV!!HDR_HDR10P!"=="FALSEFALSETRUE" set "CHGHDR_HDR10P=YES" & set "INJRPU=NO"
@@ -758,6 +751,17 @@ echo                                          Dolby Vision Tool P8 Hybrid Script
 %WHITE%
 echo                                         ====================================
 echo.
+if "!HDR_HDR!!HDR_HDR10P!!DV_DV!!DV_HDR10P!!"=="TRUEFALSEFALSEFALSE" (
+	%WHITE%
+	echo.
+	echo  == HDR / HDR10+ INPUT ==================================================================================================
+	echo.
+	%YELLOW%
+	echo HDR Stream found, but no HDR10+ SEI included or missing a valid DV / HDR10+ File.
+	set "HDR_File_support=FALSE"
+	echo.
+	goto :EXIT
+)
 if "!HDR_File_support!"=="TRUE" (
 	%WHITE%
 	echo.
@@ -1615,9 +1619,10 @@ exit
 
 :CORRUPTFILE
 if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
+START /B https://mega.nz/folder/x9FHlbbK#YQz_XsqcAXfZP2ciLeyyDg
 set "NewLine=[System.Environment]::NewLine"
 set "Line1=""%MISSINGFILE%""""
-set "Line2=Copy the file to the directory or reinstall DDVT v%VERSION%."
+set "Line2=Copy the file to the directory or download and extract DDVT_tools.rar"
 setlocal DisableDelayedExpansion
 START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('NEEDED FILE NOT FOUND!' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT P8 Hybrid Script [QfG] v%VERSION%', 'Ok','Error')"
 exit

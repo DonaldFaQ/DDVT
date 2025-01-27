@@ -1,7 +1,7 @@
 @echo off & setlocal
 mode con cols=125 lines=57
-set "VERSION=0.65.2 beta"
-TITLE DDVT OPTIONS [QfG] %VERSION%
+set VERSION=0.65.3 beta
+TITLE DDVT OPTIONS [QfG] v%VERSION%
 
 rem --- Hardcoded settings. Can be changed manually ---
 set "sfkpath=%~dp0tools\sfk.exe" rem Path to sfk.exe
@@ -177,19 +177,21 @@ CHOICE /C 12345MCPF67SE /N /M "Select a Letter 1,2,3,4,5,M,C,P,F,6,7,[S]ave,[E]x
 
 if "%ERRORLEVEL%"=="13" goto EXIT
 if "%ERRORLEVEL%"=="12" (
-	echo :: INI File for DDVT. Do not modify, using DDVT_OPTIONS.cmd.>"!TOOLFOLDER!DDVT_OPTIONS.ini"
-	echo.>>"!TOOLFOLDER!DDVT_OPTIONS.ini"
-	echo -------------------------->>"!TOOLFOLDER!DDVT_OPTIONS.ini"
-	echo TEMP Folder=!TMP_FOLDER!>>"!TOOLFOLDER!DDVT_OPTIONS.ini"
-	echo TARGET Folder=!TARGET_FOLDER!>>"!TOOLFOLDER!DDVT_OPTIONS.ini"
-	echo MKVTOOLNIX Folder=!MKVTOOLNIX_FOLDER!>>"!TOOLFOLDER!DDVT_OPTIONS.ini"
-	echo AVISYNTH+ Folder=!AVISYNTH_FOLDER!>>"!TOOLFOLDER!DDVT_OPTIONS.ini"
-	echo LAVFILTERS Folder=!LAVFILTERS_FOLDER!>>"!TOOLFOLDER!DDVT_OPTIONS.ini"
-	echo MEDIAINFO_LOGFILE=!MEDIAINFO_LOGFILE!>>"!TOOLFOLDER!DDVT_OPTIONS.ini"
-	echo JSON_SUPPORT=!JSON_SUPPORT!>>"!TOOLFOLDER!DDVT_OPTIONS.ini"
-	echo JSON_PROCESS=!JSON_PROCESS!>>"!TOOLFOLDER!DDVT_OPTIONS.ini"
-	echo FIX_SCENECUTS=!FIX_SCENECUTS!>>"!TOOLFOLDER!DDVT_OPTIONS.ini"
-	echo -------------------------->>"!TOOLFOLDER!DDVT_OPTIONS.ini"
+	(
+	echo :: INI File for DDVT. Do not modify, using DDVT_OPTIONS.cmd.
+	echo.
+	echo --------------------------
+	echo TEMP Folder=!TMP_FOLDER!
+	echo TARGET Folder=!TARGET_FOLDER!
+	echo MKVTOOLNIX Folder=!MKVTOOLNIX_FOLDER!
+	echo AVISYNTH+ Folder=!AVISYNTH_FOLDER!
+	echo LAVFILTERS Folder=!LAVFILTERS_FOLDER!
+	echo MEDIAINFO_LOGFILE=!MEDIAINFO_LOGFILE!
+	echo JSON_SUPPORT=!JSON_SUPPORT!
+	echo JSON_PROCESS=!JSON_PROCESS!
+	echo FIX_SCENECUTS=!FIX_SCENECUTS!
+	echo --------------------------
+	)>"!TOOLFOLDER!DDVT_OPTIONS.ini"
 	echo.
 	%GREEN%
 	echo Settings Saved.
@@ -252,7 +254,7 @@ if "%ERRORLEVEL%"=="10" (
 	reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\02INJECTOR\command" /ve /d "\"!TOOLFOLDER!DDVT_INJECTOR.cmd\" ""%%1""" /f>nul 2>&1
 	reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\03HYBRID" /ve /d "Profile 8 Hybrid" /f>nul 2>&1
 	reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\03HYBRID" /v "Icon" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\HYBRID.ico\",0" /f>nul 2>&1
-	reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\03HYBRID\command" /ve /d "\"!TOOLFOLDER!DDVT_HYBRID.cmd\" " /f>nul 2>&1
+	reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\03HYBRID\command" /ve /d "\"!TOOLFOLDER!DDVT_HYBRID.cmd\" ""%%1""" /f>nul 2>&1
 	reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\04REMOVER" /ve /d "Remover" /f>nul 2>&1
 	reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\04REMOVER" /v "Icon" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\REMOVER.ico\",0" /f>nul 2>&1
 	reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\04REMOVER\command" /ve /d "\"!TOOLFOLDER!DDVT_REMOVER.cmd\" ""%%1""" /f>nul 2>&1
