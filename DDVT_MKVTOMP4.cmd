@@ -482,7 +482,7 @@ if "%FRAMERATE%"=="24.000" set "duration=--fps 0:24"
 if "%FRAMERATE%"=="25.000" set "duration=--fps 0:25"
 if "%FRAMERATE%"=="30.000" set "duration=--fps 0:30"
 if "%FRAMERATE%"=="48.000" set "duration=--fps 0:48"
-if "%FRAMERATE%"=="50.000" set "duration=--fps 0:35"
+if "%FRAMERATE%"=="50.000" set "duration=--fps 0:50"
 if "%FRAMERATE%"=="60.000" set "duration=--fps 0:60"
 
 IF "%AUDIOCODEC%"=="Untouched" set "AUDIOCODECC=-c:a copy" & set "DRC="
