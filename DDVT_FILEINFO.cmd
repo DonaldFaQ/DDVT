@@ -23,8 +23,8 @@ set "HDR10P_TOOLpath=%~dp0tools\hdr10plus_tool.exe" rem Path to hdr10plus_tool.e
 set "HDR10PFILE=%~dp1HDR10Plus.json"
 
 rem --- Hardcoded settings. Can be changed manually ---
-set "DVPLOT=YES"
-:: YES / NO - Plot L1 Metadata from RPU to PNG file.
+set "DVPLOT=L1 ONLY"
+:: L1 ONLY / ALL / NO - Plot Metadata from RPU to PNG file. "ALL" works only with dovi_tool v2.3.0 and higher!
 set "HDR10PLOT=NO"
 :: YES / NO - Plot HDR Metadata via madVR.
 set "HDR10PPLOT=YES"
@@ -64,6 +64,13 @@ set "CODEC_NAME=n.A."
 set "FRAMERATE=n.A."
 set "FRAMES=n.A."
 set "BORDERCHECK=FALSE"
+set "L2_TRIMS=!L2_TRIMS:~1!"
+set "L2100=FALSE"
+set "L2300=FALSE"
+set "L2600=FALSE"
+set "L21000=FALSE"
+set "L22000=FALSE"
+set "L24000=FALSE"
 set /a "ERRORCOUNT=0"
 
 setlocal EnableDelayedExpansion
@@ -141,7 +148,6 @@ echo                                         ===================================
 echo.
 %WHITE%
 echo.
-echo.
 echo  == CHECK INPUT FILE ====================================================================================================
 if "%~1"=="" (
 	%yellow%
@@ -199,6 +205,51 @@ if "%RPU_FILE%"=="FALSE" (
 		"!FFMPEGpath!" -loglevel panic -i "!INFOSTREAM!" -map 0:0 -c:v copy -to 1 "!TMP_FOLDER!\BL.mkv">nul 2>&1
 	)
 	if "!DVinput!"=="YES" "!FFMPEGpath!" -loglevel panic -i "!INFOSTREAM!" !DT! -c:v copy -to 1 -bsf:v hevc_metadata -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" - >nul 2>&1
+	FOR /F "usebackq" %%A IN ('!TMP_FOLDER!\RPU.bin') DO set "RPUSIZE=%%~zA">nul 2>&1
+	if "!RPUSIZE!" NEQ "0" (
+		if "!DVinput!"=="YES" "!DO_VI_TOOLpath!" info -s "!TMP_FOLDER!\RPU.bin">"!TMP_FOLDER!\RPUINFO.txt"
+			if exist "!TMP_FOLDER!\RPUINFO.txt" (
+			set "HDR_DV=TRUE"
+			FOR /F "delims=" %%A IN ('findstr /C:"Profile:" "!TMP_FOLDER!\RPUINFO.txt"') DO set "RPU_PROFILE=%%A"
+			if defined RPU_PROFILE (
+				for /F "tokens=2 delims=:/ " %%A in ("!RPU_PROFILE!") do set "RPU_DVP=%%A"
+				if "!RPU_DVP!"=="7" for /F "tokens=3 delims=:/ " %%A in ("!RPU_PROFILE!") do set "RPU_DVSP= %%A"
+			) else (
+				set "RPU_DVP=N/A"
+			)
+			FOR /F "delims=" %%A IN ('findstr /C:"DM version" "!TMP_FOLDER!\RPUINFO.txt"') DO set "RPU_CMV=%%A"
+			if defined RPU_CMV (
+				for /F "tokens=3 delims=:/()" %%A in ("!RPU_CMV!") do set "RPU_CMV=%%A"
+			) else (
+				set "RPU_CMV=N/A"
+			)
+			FOR /F "delims=" %%A IN ('findstr /C:"Frames" "!TMP_FOLDER!\RPUINFO.txt"') DO set "RPU_FRAMES=%%A"
+			if defined RPU_FRAMES (
+				for /F "tokens=2 delims=:/() " %%A in ("!RPU_FRAMES!") do set "RPU_FRAMES=%%A"
+			) else (
+				set "RPU_FRAMES=N/A"
+			)
+			FOR /F "tokens=2 delims=:" %%A IN ('findstr /C:"L2 trims" "!TMP_FOLDER!\RPUINFO.txt"') DO set "L2_TRIMS=%%A"
+			if defined L2_TRIMS (
+				set "L2_TRIMS=!L2_TRIMS:~1!"
+				echo "!L2_TRIMS!" | find "100 nits">nul 2>&1
+				if "!ERRORLEVEL!"=="0" set "L2100=TRUE"
+				echo "!L2_TRIMS!" | find "300 nits">nul 2>&1
+				if "!ERRORLEVEL!"=="0" set "L2300=TRUE"
+				echo "!L2_TRIMS!" | find "600 nits">nul 2>&1
+				if "!ERRORLEVEL!"=="0" set "L2600=TRUE"
+				echo "!L2_TRIMS!" | find "1000 nits">nul 2>&1
+				if "!ERRORLEVEL!"=="0" set "L21000=TRUE"
+				echo "!L2_TRIMS!" | find "2000 nits">nul 2>&1
+				if "!ERRORLEVEL!"=="0" set "L22000=TRUE"
+				echo "!L2_TRIMS!" | find "4000 nits">nul 2>&1
+				if "!ERRORLEVEL!"=="0" set "L24000=TRUE"
+			) else (
+				set "L2_TRIMS=No L2 entries in RPU."
+			)
+		)
+	)
+	
 	if exist "!TMP_FOLDER!\BL.mkv" set "INFOSTREAM=!TMP_FOLDER!\BL.mkv"
 
 	::BEGIN MEDIAINFO
@@ -258,18 +309,12 @@ if "%RPU_FILE%"=="FALSE" (
 		set "HDR_DV=TRUE"
 		set "HDR_DV_Profile=7"
 		if "!RESOLUTION!"=="1920x1080" set "ELFILE=TRUE"
-		if exist "!TMP_FOLDER!\RPU.bin" (
-			FOR /F "usebackq" %%A IN ('!TMP_FOLDER!\RPU.bin') DO set "RPUSIZE=%%~zA">nul 2>&1
-			if "!RPUSIZE!" NEQ "0" (
-				"!DO_VI_TOOLpath!" info -s "!TMP_FOLDER!\RPU.bin">"!TMP_FOLDER!\RPUINFO.txt"
-				if exist "!TMP_FOLDER!\RPUINFO.txt" (
-					FOR /F "delims=" %%A IN ('findstr /C:"Profile:" "!TMP_FOLDER!\RPUINFO.txt"') DO set "subprofile=%%A"
-					if defined subprofile (
-						for /F "tokens=3 delims=:/ " %%A in ("!subprofile!") do set "subprofile= %%A"
-					) else (
-						set "subprofile="
-					)
-				)
+		if exist "!TMP_FOLDER!\RPUINFO.txt" (
+			FOR /F "delims=" %%A IN ('findstr /C:"Profile:" "!TMP_FOLDER!\RPUINFO.txt"') DO set "subprofile=%%A"
+			if defined subprofile (
+				for /F "tokens=3 delims=:/ " %%A in ("!subprofile!") do set "subprofile= %%A"
+			) else (
+				set "subprofile="
 			)
 		)
 		%GREEN%
@@ -332,6 +377,24 @@ if "%RPU_FILE%"=="FALSE" (
 			for /F "tokens=2 delims=:/() " %%A in ("!RPU_FRAMES!") do set "RPU_FRAMES=%%A"
 		) else (
 			set "RPU_FRAMES=N/A"
+		)
+		FOR /F "tokens=2 delims=:" %%A IN ('findstr /C:"L2 trims" "!TMP_FOLDER!\RPUINFO.txt"') DO set "L2_TRIMS=%%A"
+		if defined L2_TRIMS (
+			set "L2_TRIMS=!L2_TRIMS:~1!"
+			echo "!L2_TRIMS!" | find "100 nits">nul 2>&1
+			if "!ERRORLEVEL!"=="0" set "L2100=TRUE"
+			echo "!L2_TRIMS!" | find "300 nits">nul 2>&1
+			if "!ERRORLEVEL!"=="0" set "L2300=TRUE"
+			echo "!L2_TRIMS!" | find "600 nits">nul 2>&1
+			if "!ERRORLEVEL!"=="0" set "L2600=TRUE"
+			echo "!L2_TRIMS!" | find "1000 nits">nul 2>&1
+			if "!ERRORLEVEL!"=="0" set "L21000=TRUE"
+			echo "!L2_TRIMS!" | find "2000 nits">nul 2>&1
+			if "!ERRORLEVEL!"=="0" set "L22000=TRUE"
+			echo "!L2_TRIMS!" | find "4000 nits">nul 2>&1
+			if "!ERRORLEVEL!"=="0" set "L24000=TRUE"
+		) else (
+			set "L2_TRIMS=No L2 entries in RPU."
 		)
 		echo Done.
 	) else (
@@ -448,8 +511,10 @@ if "%ERRORLEVEL%"=="4" (
 if "%ERRORLEVEL%"=="3" call :DV_FRAMEINFO
 
 if "%ERRORLEVEL%"=="2" (
-	if "%DVPLOT%"=="NO" set "DVPLOT=YES"
-	if "%DVPLOT%"=="YES" set "DVPLOT=NO"
+	if "%DVPLOT%"=="NO" set "DVPLOT=L1 ONLY"
+	if "%DVPLOT%"=="L1 ONLY" set "DVPLOT=ALL"	
+	if "%DVPLOT%"=="ALL" set "DVPLOT=NO"
+
 )
 if "%ERRORLEVEL%"=="1" (
 	if "%VBITRATEPLOT%"=="NO" set "VBITRATEPLOT=YES"
@@ -478,7 +543,7 @@ if "!RPU_FILE!!RAW_FILE!"=="FALSEFALSE" call :DEMUX
 if "!VBITRATEPLOT!"=="YES" call :BITRATE_PLOTTING
 if "!HDR10PLOT!"=="YES" call :HDR10_PLOTPNG
 if "!RPU_FILE!!HDR_DV!"=="FALSETRUE" call :RPU_EXTRACT
-if "!DVPLOT!"=="YES" call :DV_PLOTPNG
+if "!DVPLOT!" NEQ "NO" call :DV_PLOTPNG
 if "!FRAME!" NEQ "NONE" call :WRITE_DV_FRAMEINFO
 if "!HDR_HDR10P!!HDR10PPLOT!"=="TRUEYES" call :HDR10P_EXTRACT
 if "!HDR10PPLOT!"=="YES" call :HDR10Plus_PLOTPNG
@@ -677,17 +742,40 @@ goto :eof
 
 :DV_PLOTPNG
 %WHITE%
-echo  == PLOTTING RPU L1 METADATA ============================================================================================
+set "PFilename="
+if "!PLOTTYPE!"=="ORIGINAL" set "PFilename=!INPUTFILENAME!!INPUTFILEEXT!"
+If "!DVPlot!"=="L1 ONLY" echo  == PLOTTING RPU L1 METADATA ============================================================================================
+If "!DVPlot!!RPU_CMV!"=="ALLCM v2.9" echo  == PLOTTING RPU L1, L2 METADATA ========================================================================================
+if "!DVPlot!!RPU_CMV!"=="ALLCM v4.0" echo  == PLOTTING RPU L1, L2, L8 METADATA ====================================================================================
 echo.
 %CYAN%
 echo Processing. Please wait...
 %WHITE%
-"!DO_VI_TOOLpath!" plot "!RPUFILE!" -t "" -o "!TMP_FOLDER!\!INPUTFILENAME!.png">nul
+"!DO_VI_TOOLpath!" plot "!RPUFILE!" -t "!PFilename!" -o "!TMP_FOLDER!\!INPUTFILENAME!L1.png">nul
+
+If "!DVPlot!"=="ALL" (
+	if "!L2100!"=="TRUE" "!DO_VI_TOOLpath!" plot "!RPUFILE!" -p l2 --target-nits 100 -t "!PFilename!" -o "!TMP_FOLDER!\!INPUTFILENAME!L2100.png">nul
+	if "!L2300!"=="TRUE" "!DO_VI_TOOLpath!" plot "!RPUFILE!" -p l2 --target-nits 300 -t "!PFilename!" -o "!TMP_FOLDER!\!INPUTFILENAME!L2300.png">nul
+	if "!L2600!"=="TRUE" "!DO_VI_TOOLpath!" plot "!RPUFILE!" -p l2 --target-nits 600 -t "!PFilename!" -o "!TMP_FOLDER!\!INPUTFILENAME!L2600.png">nul
+	if "!L21000!"=="TRUE" "!DO_VI_TOOLpath!" plot "!RPUFILE!" -p l2 --target-nits 1000 -t "!PFilename!" -o "!TMP_FOLDER!\!INPUTFILENAME!L21000.png">nul
+	if "!L22000!"=="TRUE" "!DO_VI_TOOLpath!" plot "!RPUFILE!" -p l2 --target-nits 2000 -t "!PFilename!" -o "!TMP_FOLDER!\!INPUTFILENAME!L22000.png">nul
+	if "!L24000!"=="TRUE" "!DO_VI_TOOLpath!" plot "!RPUFILE!" -p l2 --target-nits 4000 -t "!PFilename!" -o "!TMP_FOLDER!\!INPUTFILENAME!L24000.png">nul
+)
+
+if "!DVPlot!!RPU_CMV!"=="ALLCM v4.0" (
+	if "!L2100!"=="TRUE" "!DO_VI_TOOLpath!" plot "!RPUFILE!" -p l8 --target-nits 100 -t "!PFilename!" -o "!TMP_FOLDER!\!INPUTFILENAME!L8100.png">nul
+	if "!L2300!"=="TRUE" "!DO_VI_TOOLpath!" plot "!RPUFILE!" -p l8 --target-nits 300 -t "!PFilename!" -o "!TMP_FOLDER!\!INPUTFILENAME!L8300.png">nul
+	if "!L2600!"=="TRUE" "!DO_VI_TOOLpath!" plot "!RPUFILE!" -p l8 --target-nits 600 -t "!PFilename!" -o "!TMP_FOLDER!\!INPUTFILENAME!L8600.png">nul
+	if "!L21000!"=="TRUE" "!DO_VI_TOOLpath!" plot "!RPUFILE!" -p l8 --target-nits 1000 -t "!PFilename!" -o "!TMP_FOLDER!\!INPUTFILENAME!L81000.png">nul
+	if "!L22000!"=="TRUE" "!DO_VI_TOOLpath!" plot "!RPUFILE!" -p l8 --target-nits 2000 -t "!PFilename!" -o "!TMP_FOLDER!\!INPUTFILENAME!L82000.png">nul
+	if "!L24000!"=="TRUE" "!DO_VI_TOOLpath!" plot "!RPUFILE!" -p l8 --target-nits 4000 -t "!PFilename!" -o "!TMP_FOLDER!\!INPUTFILENAME!L84000.png">nul
+)
+
 if "!PLOTTYPE!" NEQ "ORIGINAL" (
 	"!DO_VI_TOOLpath!" info --input "!RPUFILE!" -f 1 > "!TMP_FOLDER!\temp.rpu.json"
 	"!DO_VI_TOOLpath!" export -i "!RPUFILE!" -o "!TMP_FOLDER!\plot.json">nul
 	"!DO_VI_TOOLpath!" info -s "!RPUFILE!" > "!TMP_FOLDER!\RPUINFO.txt"
-	if exist "!TMP_FOLDER!\!INPUTFILENAME!.png" (
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L1.png" (
 		FOR /F "tokens=2 delims=: " %%A IN ('findstr /C:"Frames" "!TMP_FOLDER!\RPUINFO.txt"') DO set "RPU_FRAMES=%%A"
 		FOR /F "tokens=3 delims=: " %%A IN ('findstr /C:"shot count" "!TMP_FOLDER!\RPUINFO.txt"') DO set "RPU_SHOTCOUNT=%%A"
 		FOR /F "tokens=3-5 delims=: " %%A IN ('findstr /C:"DM version" "!TMP_FOLDER!\RPUINFO.txt"') DO set "DM=%%A %%B %%C"
@@ -704,12 +792,6 @@ if "!PLOTTYPE!" NEQ "ORIGINAL" (
 			set "L6M=No L6 entries in RPU."
 		) else (
 			set "L6M=L6!L6M!"
-		)	
-		FOR /F "tokens=2 delims=:" %%A IN ('findstr /C:"L2 trims" "!TMP_FOLDER!\RPUINFO.txt"') DO set "L2_TRIMS=%%A"
-		if defined L2_TRIMS (
-			set "L2_TRIMS=!L2_TRIMS:~1!"
-		) else (
-			set "L2_TRIMS=No L2 entries in RPU."
 		)
 		FOR /F "delims=" %%A IN ('findstr /C:"Level5" "!TMP_FOLDER!\temp.rpu.json"') DO set "L5_FOUND=%%A"
 		if defined L5_FOUND (
@@ -722,7 +804,6 @@ if "!PLOTTYPE!" NEQ "ORIGINAL" (
 			set "L5_STRING_TXT=No border entries in RPU."
 		)
 	)
-
 	set "RPUINFO=-annotate +120+5 "RPU: Dolby Vision Profile^: !HDR_DV_Profile!, DM Version^: !DM!""
 	set "FRAMEINFO=-annotate +120+30 "Frames: !RPU_FRAMES!, Scenecuts: !RPU_SHOTCOUNT!""
 	if defined RPUMD set L1=-annotate +120+55 "L1 !RPUMD!"
@@ -736,9 +817,33 @@ if "!PLOTTYPE!" NEQ "ORIGINAL" (
 	) else (
 		set "titlepos=-0"
 	)
-	if exist "!TMP_FOLDER!\!INPUTFILENAME!.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,150" -fill black -pointsize 25 -gravity Center -font Arial-Bold -annotate !titlepos!-552 "!INPUTFILENAME!!INPUTFILEEXT!" -pointsize 25 -font Arial -annotate !titlepos!-518 "(Dolby Vision L1 Plot)" -gravity NorthWest -pointsize 20 -font Arial-Bold !RPUINFO! -font Arial !FRAMEINFO! !L1! !L2! !L5! !L6! !A1! !A2! !A3! !A4! !A5! !P1! !P2! !P3! !P4! !P5! -font Arial-Bold !AM! !AA! "!INPUTFILEPATH!!INPUTFILENAME!_[DV L1 Plot].png"
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L1.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!L1.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,150" -fill black -pointsize 25 -gravity Center -font Arial-Bold -annotate !titlepos!-552 "!INPUTFILENAME!!INPUTFILEEXT!" -pointsize 25 -font Arial -annotate !titlepos!-518 "(Dolby Vision L1 Plot)" -gravity NorthWest -pointsize 20 -font Arial-Bold !RPUINFO! -font Arial !FRAMEINFO! !L1! !L2! !L5! !L6! !A1! !A2! !A3! !A4! !A5! !P1! !P2! !P3! !P4! !P5! -font Arial-Bold !AM! !AA! "!INPUTFILEPATH!!INPUTFILENAME!_[DV L1 Plot].png"
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L2100.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!L2100.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,150" -fill black -pointsize 25 -gravity Center -font Arial-Bold -annotate !titlepos!-552 "!INPUTFILENAME!!INPUTFILEEXT!" -pointsize 25 -font Arial -annotate !titlepos!-518 "(Dolby Vision L2 Plot 100 nits)" -gravity NorthWest -pointsize 20 -font Arial-Bold !RPUINFO! -font Arial !FRAMEINFO! !L1! !L2! !L5! !L6! !A1! !A2! !A3! !A4! !A5! !P1! !P2! !P3! !P4! !P5! -font Arial-Bold !AM! !AA! "!INPUTFILEPATH!!INPUTFILENAME!_[DV L2 100nits Plot].png"
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L8100.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!L8100.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,150" -fill black -pointsize 25 -gravity Center -font Arial-Bold -annotate !titlepos!-552 "!INPUTFILENAME!!INPUTFILEEXT!" -pointsize 25 -font Arial -annotate !titlepos!-518 "(Dolby Vision L8 Plot 100 nits)" -gravity NorthWest -pointsize 20 -font Arial-Bold !RPUINFO! -font Arial !FRAMEINFO! !L1! !L2! !L5! !L6! !A1! !A2! !A3! !A4! !A5! !P1! !P2! !P3! !P4! !P5! -font Arial-Bold !AM! !AA! "!INPUTFILEPATH!!INPUTFILENAME!_[DV L8 100nits Plot].png"
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L2300.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!L2300.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,150" -fill black -pointsize 25 -gravity Center -font Arial-Bold -annotate !titlepos!-552 "!INPUTFILENAME!!INPUTFILEEXT!" -pointsize 25 -font Arial -annotate !titlepos!-518 "(Dolby Vision L2 Plot 300 nits)" -gravity NorthWest -pointsize 20 -font Arial-Bold !RPUINFO! -font Arial !FRAMEINFO! !L1! !L2! !L5! !L6! !A1! !A2! !A3! !A4! !A5! !P1! !P2! !P3! !P4! !P5! -font Arial-Bold !AM! !AA! "!INPUTFILEPATH!!INPUTFILENAME!_[DV L2 300nits Plot].png"
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L8300.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!L8300.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,150" -fill black -pointsize 25 -gravity Center -font Arial-Bold -annotate !titlepos!-552 "!INPUTFILENAME!!INPUTFILEEXT!" -pointsize 25 -font Arial -annotate !titlepos!-518 "(Dolby Vision L8 Plot 300 nits)" -gravity NorthWest -pointsize 20 -font Arial-Bold !RPUINFO! -font Arial !FRAMEINFO! !L1! !L2! !L5! !L6! !A1! !A2! !A3! !A4! !A5! !P1! !P2! !P3! !P4! !P5! -font Arial-Bold !AM! !AA! "!INPUTFILEPATH!!INPUTFILENAME!_[DV L8 300nits Plot].png"
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L2600.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!L2600.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,150" -fill black -pointsize 25 -gravity Center -font Arial-Bold -annotate !titlepos!-552 "!INPUTFILENAME!!INPUTFILEEXT!" -pointsize 25 -font Arial -annotate !titlepos!-518 "(Dolby Vision L2 Plot 600 nits)" -gravity NorthWest -pointsize 20 -font Arial-Bold !RPUINFO! -font Arial !FRAMEINFO! !L1! !L2! !L5! !L6! !A1! !A2! !A3! !A4! !A5! !P1! !P2! !P3! !P4! !P5! -font Arial-Bold !AM! !AA! "!INPUTFILEPATH!!INPUTFILENAME!_[DV L2 600nits Plot].png"
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L8600.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!L8600.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,150" -fill black -pointsize 25 -gravity Center -font Arial-Bold -annotate !titlepos!-552 "!INPUTFILENAME!!INPUTFILEEXT!" -pointsize 25 -font Arial -annotate !titlepos!-518 "(Dolby Vision L8 Plot 600 nits)" -gravity NorthWest -pointsize 20 -font Arial-Bold !RPUINFO! -font Arial !FRAMEINFO! !L1! !L2! !L5! !L6! !A1! !A2! !A3! !A4! !A5! !P1! !P2! !P3! !P4! !P5! -font Arial-Bold !AM! !AA! "!INPUTFILEPATH!!INPUTFILENAME!_[DV L8 600nits Plot].png"
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L21000.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!L21000.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,150" -fill black -pointsize 25 -gravity Center -font Arial-Bold -annotate !titlepos!-552 "!INPUTFILENAME!!INPUTFILEEXT!" -pointsize 25 -font Arial -annotate !titlepos!-518 "(Dolby Vision L2 Plot 1000 nits)" -gravity NorthWest -pointsize 20 -font Arial-Bold !RPUINFO! -font Arial !FRAMEINFO! !L1! !L2! !L5! !L6! !A1! !A2! !A3! !A4! !A5! !P1! !P2! !P3! !P4! !P5! -font Arial-Bold !AM! !AA! "!INPUTFILEPATH!!INPUTFILENAME!_[DV L2 1000nits Plot].png"
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L81000.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!L81000.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,150" -fill black -pointsize 25 -gravity Center -font Arial-Bold -annotate !titlepos!-552 "!INPUTFILENAME!!INPUTFILEEXT!" -pointsize 25 -font Arial -annotate !titlepos!-518 "(Dolby Vision L8 Plot 1000 nits)" -gravity NorthWest -pointsize 20 -font Arial-Bold !RPUINFO! -font Arial !FRAMEINFO! !L1! !L2! !L5! !L6! !A1! !A2! !A3! !A4! !A5! !P1! !P2! !P3! !P4! !P5! -font Arial-Bold !AM! !AA! "!INPUTFILEPATH!!INPUTFILENAME!_[DV L8 1000nits Plot].png"
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L22000.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!L22000.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,150" -fill black -pointsize 25 -gravity Center -font Arial-Bold -annotate !titlepos!-552 "!INPUTFILENAME!!INPUTFILEEXT!" -pointsize 25 -font Arial -annotate !titlepos!-518 "(Dolby Vision L2 Plot 2000 nits)" -gravity NorthWest -pointsize 20 -font Arial-Bold !RPUINFO! -font Arial !FRAMEINFO! !L1! !L2! !L5! !L6! !A1! !A2! !A3! !A4! !A5! !P1! !P2! !P3! !P4! !P5! -font Arial-Bold !AM! !AA! "!INPUTFILEPATH!!INPUTFILENAME!_[DV L2 2000nits Plot].png"
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L82000.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!L82000.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,150" -fill black -pointsize 25 -gravity Center -font Arial-Bold -annotate !titlepos!-552 "!INPUTFILENAME!!INPUTFILEEXT!" -pointsize 25 -font Arial -annotate !titlepos!-518 "(Dolby Vision L8 Plot 2000 nits)" -gravity NorthWest -pointsize 20 -font Arial-Bold !RPUINFO! -font Arial !FRAMEINFO! !L1! !L2! !L5! !L6! !A1! !A2! !A3! !A4! !A5! !P1! !P2! !P3! !P4! !P5! -font Arial-Bold !AM! !AA! "!INPUTFILEPATH!!INPUTFILENAME!_[DV L8 2000nits Plot].png"
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L24000.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!L24000.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,150" -fill black -pointsize 25 -gravity Center -font Arial-Bold -annotate !titlepos!-552 "!INPUTFILENAME!!INPUTFILEEXT!" -pointsize 25 -font Arial -annotate !titlepos!-518 "(Dolby Vision L2 Plot 4000 nits)" -gravity NorthWest -pointsize 20 -font Arial-Bold !RPUINFO! -font Arial !FRAMEINFO! !L1! !L2! !L5! !L6! !A1! !A2! !A3! !A4! !A5! !P1! !P2! !P3! !P4! !P5! -font Arial-Bold !AM! !AA! "!INPUTFILEPATH!!INPUTFILENAME!_[DV L2 4000nits Plot].png"
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L84000.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!L84000.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,150" -fill black -pointsize 25 -gravity Center -font Arial-Bold -annotate !titlepos!-552 "!INPUTFILENAME!!INPUTFILEEXT!" -pointsize 25 -font Arial -annotate !titlepos!-518 "(Dolby Vision L8 Plot 4000 nits)" -gravity NorthWest -pointsize 20 -font Arial-Bold !RPUINFO! -font Arial !FRAMEINFO! !L1! !L2! !L5! !L6! !A1! !A2! !A3! !A4! !A5! !P1! !P2! !P3! !P4! !P5! -font Arial-Bold !AM! !AA! "!INPUTFILEPATH!!INPUTFILENAME!_[DV L8 4000nits Plot].png"
 ) else (
-	if exist "!TMP_FOLDER!\!INPUTFILENAME!.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!.png" -quality 100 -fill black -pointsize 25 -gravity Center -font Arial-Bold -annotate -0-552 "!INPUTFILENAME!!INPUTFILEEXT!" -pointsize 25 -font Arial -annotate -0-518 "(Dolby Vision L1 Plot)" "!INPUTFILEPATH!!INPUTFILENAME!_[DV L1 Plot].png"
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L1.png" copy "!TMP_FOLDER!\!INPUTFILENAME!L1.png" "!INPUTFILEPATH!!INPUTFILENAME!_[DV L1 Plot].png">nul
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L2100.png" copy "!TMP_FOLDER!\!INPUTFILENAME!L2100.png" "!INPUTFILEPATH!!INPUTFILENAME!_[DV L2 100nits Plot].png">nul
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L8100.png" copy "!TMP_FOLDER!\!INPUTFILENAME!L8100.png" "!INPUTFILEPATH!!INPUTFILENAME!_[DV L8 100nits Plot].png">nul
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L2300.png" copy "!TMP_FOLDER!\!INPUTFILENAME!L2300.png" "!INPUTFILEPATH!!INPUTFILENAME!_[DV L2 300nits Plot].png">nul
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L8300.png" copy "!TMP_FOLDER!\!INPUTFILENAME!L8300.png"  "!INPUTFILEPATH!!INPUTFILENAME!_[DV L8 300nits Plot].png">nul
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L2600.png" copy "!TMP_FOLDER!\!INPUTFILENAME!L2600.png"  "!INPUTFILEPATH!!INPUTFILENAME!_[DV L2 600nits Plot].png">nul
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L8600.png" copy "!TMP_FOLDER!\!INPUTFILENAME!L8600.png"  "!INPUTFILEPATH!!INPUTFILENAME!_[DV L8 600nits Plot].png">nul
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L21000.png" copy "!TMP_FOLDER!\!INPUTFILENAME!L21000.png"  "!INPUTFILEPATH!!INPUTFILENAME!_[DV L2 1000nits Plot].png">nul
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L81000.png" copy "!TMP_FOLDER!\!INPUTFILENAME!L81000.png"  "!INPUTFILEPATH!!INPUTFILENAME!_[DV L8 1000nits Plot].png">nul
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L22000.png" copy "!TMP_FOLDER!\!INPUTFILENAME!L22000.png"  "!INPUTFILEPATH!!INPUTFILENAME!_[DV L2 2000nits Plot].png">nul
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L82000.png" copy "!TMP_FOLDER!\!INPUTFILENAME!L82000.png"  "!INPUTFILEPATH!!INPUTFILENAME!_[DV L8 2000nits Plot].png">nul
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L24000.png" copy "!TMP_FOLDER!\!INPUTFILENAME!L24000.png"  "!INPUTFILEPATH!!INPUTFILENAME!_[DV L2 4000nits Plot].png">nul
+	if exist "!TMP_FOLDER!\!INPUTFILENAME!L84000.png" copy "!TMP_FOLDER!\!INPUTFILENAME!L84000.png"  "!INPUTFILEPATH!!INPUTFILENAME!_[DV L8 4000nits Plot].png">nul
 )
 if exist "!INPUTFILEPATH!!INPUTFILENAME!_[DV L1 Plot].png" (
 	%GREEN%
