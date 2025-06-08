@@ -1,30 +1,39 @@
+-v0.65.4
+*ADDED L2, L8 Plotting with FileInfo script.
+*ADDED Mass Converting with -Remover- (Folder Support).
+*UPDATED dovi_tool to v2.3.0.
+*UPDATED mkvtoolnix to v 92.0.0.0.
+*Minor Bugfixes.
+(Do not forget to Download the new 3rd Party Apps).
+(If you using Shell Extensions, please reinstall via Options script).
+
 -v0.65.3
--FIXED Errors with P8 Hybrid script if no temp folder set in options.
--FIXED If you right click on a video file and navigate to DDVT/P8 Hybrid script, file will be automated set as HDR Input file.
--FIXED Some little bugs in options script. It's recommended to reinstall shell extensions if needed.
+*FIXED Errors with P8 Hybrid script if no temp folder set in options.
+*FIXED If you right click on a video file and navigate to DDVT/P8 Hybrid script, file will be automated set as HDR Input file.
+*FIXED Some little bugs in options script. It's recommended to reinstall shell extensions if needed.
 *Minor Bugfixes.
 
 -v0.65.2
--FIXED Errors with FFMPEG and bitstream demuxing/pipelining (clipping and wrong colors on some movies)
+*FIXED Errors with FFMPEG and bitstream demuxing/pipelining (clipping and wrong colors on some movies)
 *Minor Bugfixes.
 
 -v0.65.1
--ADDED INJECTOR Custom JSON Support (if activated) for RPU (*.bin) files.
+*ADDED INJECTOR Custom JSON Support (if activated) for RPU (*.bin) files.
 
 -v0.65
-ADDED Logfile for HYBRID script.
-ADDED Set Frame 0 Scenecut Fix in RPU (Turn ON/OFF via Options).
-FIXED Errors in HYBRID script.
-FIXED Errors in DEMUXER script.
-FIXED Display Bug with RPU files in FILEINFO script.
-NEW ICON SET - Reinstall the Shell Extensions!
+*ADDED Logfile for HYBRID script.
+*ADDED Set Frame 0 Scenecut Fix in RPU (Turn ON/OFF via Options).
+*FIXED Errors in HYBRID script.
+*FIXED Errors in DEMUXER script.
+*FIXED Display Bug with RPU files in FILEINFO script.
+*NEW ICON SET - Reinstall the Shell Extensions!
 *Minor Bugfixes.
 
 -v0.64.5
-ADDED -Injector- Support for Custom JSON files without injecting DV / HDR10+. Not supported for DV Profile 7. Skip DV and HDR10+ Input for processing JSON files directly.
-FIXED -Options- Errors with Shell Extensions and W11.
-FIXED -Options- Wrong TAB entry in DDVT_Options.ini [Line JSON_PROCESS] (if you have the TAB bug, please delete the complete line in ini file and save options again).
-FIXED -MediaInfo- Removed HDR Metadata Tab for non HDR files.
+*ADDED -Injector- Support for Custom JSON files without injecting DV / HDR10+. Not supported for DV Profile 7. Skip DV and HDR10+ Input for processing JSON files directly.
+*FIXED -Options- Errors with Shell Extensions and W11.
+*FIXED -Options- Wrong TAB entry in DDVT_Options.ini [Line JSON_PROCESS] (if you have the TAB bug, please delete the complete line in ini file and save options again).
+*FIXED -MediaInfo- Removed HDR Metadata Tab for non HDR files.
 *UPDATED mkvtoolnix to v 89.0.0.0.
 *Minor Bugfixes.
 

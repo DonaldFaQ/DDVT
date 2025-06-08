@@ -19,25 +19,25 @@ set "HDR10P_TOOLpath=%~dp0tools\hdr10plus_tool.exe" rem Path to hdr10plus_tool.e
 
 rem --- Hardcoded settings. Can be changed manually ---
 set "CONVERT=PROFILE 8.1 HDR10"
-:: PROFILE 8.1 HDR10 / PROFILE 7 MEL / PROFILE 8.4 HLG / NO - Predefined convert profiles for RPU extraction.
+:: PROFILE 8.1 HDR10 / PROFILE 7 MEL / PROFILE 8.4 HLG / NO --> Predefined convert profiles for RPU extraction.
 set "CHGHDR10P=YES"
-:: YES / NO - Convert HDR10+ Metadata to DV RPU.
+:: YES / NO --> Convert HDR10+ Metadata to DV RPU.
 set "REMHDR10P=NO"
-:: YES / NO - Remove HDR10+ Metadata from BL.
-set "SAVHDR10P=NO"
-:: YES / NO - Save HDR10+ Metadata as JSON.
+:: YES / NO --> Remove HDR10+ Metadata from BL.
+set "SAVHDR10P=YES"
+:: YES / NO --> Save HDR10+ Metadata as JSON.
 set "SKIPHDR10P=NO"
-:: YES / NO - Skip validation test for HDR10+ Metadata.
+:: YES / NO --> Skip validation test for HDR10+ Metadata.
 set "CM_VERSION=V40"
-:: V40 / V29 - Set CMv for converting HDR10+ Metadata to RPU.
+:: V40 / V29 --> Set CMv for converting HDR10+ Metadata to RPU.
 set "CROP=NO"
-:: YES / NO - If yes the Active Area from the RPU will set to 0,0,0,0. Helpful for cropped videos.
+:: YES / NO --> If yes the Active Area from the RPU will set to 0,0,0,0. Helpful for cropped videos.
 set "BL=NO"
-:: YES / NO - Save BL in target folder.
+:: YES / NO --> Save BL in target folder.
 set "EL=NO"
-:: YES / NO - Save EL in target folder.
+:: YES / NO --> Save EL in target folder.
 set "RPU=YES"
-:: YES / NO - Save RPU in target folder.
+:: YES / NO --> Save RPU in target folder.
 
 rem --- Hardcoded settings. Cannot be changed ---
 set "INPUTFILE=%~dpnx1"

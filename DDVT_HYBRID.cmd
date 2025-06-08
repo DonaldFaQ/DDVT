@@ -327,8 +327,11 @@ echo                                          Dolby Vision Tool P8 Hybrid Script
 echo                                         ====================================
 echo.
 echo.
+%WHITE%
+echo  == CHECK HDR / HDR10+ INPUT FILE =======================================================================================
+echo.
 %CYAN%
-echo Analysing HDR / HDR10+ File. Please wait...
+echo Analysing File. Please wait...
 echo.
 set "INPUTSTREAM=!HDR_File!"
 set "INFOSTREAM=!HDR_File!"
@@ -524,8 +527,11 @@ echo                                          Dolby Vision Tool P8 Hybrid Script
 echo                                         ====================================
 echo.
 echo.
+%WHITE%
+echo  == CHECK DV / HDR10+ INPUT FILE ========================================================================================
+echo.
 %CYAN%
-echo Analysing DV / HDR10+ File. Please wait...
+echo Analysing File. Please wait...
 echo.
 set "INPUTSTREAM=!DV_File!"
 set "INFOSTREAM=!DV_File!"

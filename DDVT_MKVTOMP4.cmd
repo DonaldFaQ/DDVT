@@ -102,7 +102,6 @@ echo                                         ===================================
 echo                                              Dolby Vision Tool MKVtoMP4
 %WHITE%
 echo                                         ====================================
-echo.
 %WHITE%
 echo.
 echo.
@@ -258,6 +257,7 @@ if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
 set "LOG_FILENAME=DDVT MKVtoMP4 (%~nx1)"
 if "!DV_Profile!"=="8" set "FAKEP5ALLOWED=TRUE"
 if "!DIRFOUND!"=="TRUE" set "FAKEP5ALLOWED=TRUE"
+set "MSTATUS=call :colortxt 08 "WAITING"
 cls
 %GREEN%
 echo  powered by quietvoids tools                                                                  Copyright ^(c^) 2021-2025 QfG
@@ -280,7 +280,9 @@ if "!DIRFOUND!"=="FALSE" (
 ) else (
 	echo  == MASS CONVERTER SETTINGS =============================================================================================
 	echo.
-	call :colortxt 0B "Info       = [MKV FILES PROCESS/SUM: " & call :colortxt !PFILECOUNTC! "!PFILECOUNT!" & call :colortxt 0B "/!SOURCEFILES!" & call :colortxt 0B "] [DONE: " & call :colortxt !DONECOUNTC! "!DONECOUNT!" & call :colortxt 0B "] [ERROR(S): " & call :colortxt !FERRORCOUNTC! "!FERRORCOUNT!" & call :colortxt 0B "] [SKIPPED: " & call :colortxt !SKIPCOUNTC! "!SKIPCOUNT!" & call :colortxt 0B "]" /n
+	call :colortxt 0B "Status     = [" & !MSTATUS! & call :colortxt 0B "]" /n
+	call :colortxt 0B "Folder     = [" & call :colortxt 0A "!SOURCE_FOLDER!" & call :colortxt 0B "]" /n
+	call :colortxt 0B "Info       = [FILES PROCESS/SUM: " & call :colortxt !PFILECOUNTC! "!PFILECOUNT!" & call :colortxt 0B "/!SOURCEFILES!" & call :colortxt 0B "] [DONE: " & call :colortxt !DONECOUNTC! "!DONECOUNT!" & call :colortxt 0B "] [ERROR(S): " & call :colortxt !FERRORCOUNTC! "!FERRORCOUNT!" & call :colortxt 0B "] [SKIPPED: " & call :colortxt !SKIPCOUNTC! "!SKIPCOUNT!" & call :colortxt 0B "]" /n
 )
 echo.
 %YELLOW%
@@ -332,6 +334,7 @@ if "%FAKEP5ALLOWED%"=="TRUE" (
 goto START
 
 :MBEGIN
+set "MSTATUS=call :colortxt 0F "WORKING"
 set "FAKEP5O=%FAKEP5%"
 if "!TARGET_FOLDER_TYPE!"=="SOURCE" set "TARGET_FOLDER=!TARGET_FOLDER!\%~n1"
 if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
@@ -385,9 +388,10 @@ for %%A in ("!SOURCE_FOLDER!\*.mkv") do (
 	echo                                         ====================================
 	echo.	
 	echo.
-	echo  == MASS CONVERTER OPERATION ============================================================================================
+	echo  == MASS CONVERTER ======================================================================================================
 	echo.
 	%CYAN%
+	call :colortxt 0B "Status     = [" & !MSTATUS! & call :colortxt 0B "]" /n
 	call :colortxt 0B "Info       = [MKV FILES PROCESS/SUM: " & call :colortxt !PFILECOUNTC! "!PFILECOUNT!" & call :colortxt 0B "/!SOURCEFILES!" & call :colortxt 0B "] [DONE: " & call :colortxt !DONECOUNTC! "!DONECOUNT!" & call :colortxt 0B "] [ERROR(S): " & call :colortxt !FERRORCOUNTC! "!FERRORCOUNT!" & call :colortxt 0B "] [SKIPPED: " & call :colortxt !SKIPCOUNTC! "!SKIPCOUNT!" & call :colortxt 0B "]" /n
 	echo Filename   = [!INPUTFILENAME!!INPUTFILEEXT!]
 	echo Video Info = [Resolution = !RESOLUTION!] [Codec = !CODEC_NAME!] [Frames = !FRAMES!] [FPS = !FRAMERATE!]
@@ -397,6 +401,7 @@ for %%A in ("!SOURCE_FOLDER!\*.mkv") do (
 	call :BEGIN
 )
 cls
+set "MSTATUS=call :colortxt 0A "DONE"
 %GREEN%
 echo  powered by quietvoids tools                                                                  Copyright ^(c^) 2021-2025 QfG
 echo.
@@ -408,13 +413,12 @@ echo                                              Dolby Vision Tool MKVtoMP4
 echo                                         ====================================
 echo.	
 echo.
-echo  == MASS CONVERTER OPERATION ============================================================================================
+echo  == MASS CONVERTER ======================================================================================================
 echo.
 %CYAN%
-call :colortxt 0B "Info       = [MKV FILES PROCESS/SUM: " & call :colortxt !PFILECOUNTC! "!PFILECOUNT!" & call :colortxt 0B "/!SOURCEFILES!" & call :colortxt 0B "] [DONE: " & call :colortxt !DONECOUNTC! "!DONECOUNT!" & call :colortxt 0B "] [ERROR(S): " & call :colortxt !FERRORCOUNTC! "!FERRORCOUNT!" & call :colortxt 0B "] [SKIPPED: " & call :colortxt !SKIPCOUNTC! "!SKIPCOUNT!" & call :colortxt 0B "]" /n
-echo Filename   = [!INPUTFILENAME!!INPUTFILEEXT!]
-echo Video Info = [Resolution = !RESOLUTION!] [Codec = !CODEC_NAME!] [Frames = !FRAMES!] [FPS = !FRAMERATE!]
-echo HDR Info   = [!HDR_Info!]
+call :colortxt 0B "Status     = [" & !MSTATUS! & call :colortxt 0B "]" /n
+call :colortxt 0B "Folder     = [" & call :colortxt 0A "!SOURCE_FOLDER!" & call :colortxt 0B "]" /n
+call :colortxt 0B "Info       = [FILES PROCESS/SUM: " & call :colortxt !PFILECOUNTC! "!PFILECOUNT!" & call :colortxt 0B "/!SOURCEFILES!" & call :colortxt 0B "] [DONE: " & call :colortxt !DONECOUNTC! "!DONECOUNT!" & call :colortxt 0B "] [ERROR(S): " & call :colortxt !FERRORCOUNTC! "!FERRORCOUNT!" & call :colortxt 0B "] [SKIPPED: " & call :colortxt !SKIPCOUNTC! "!SKIPCOUNT!" & call :colortxt 0B "]" /n
 echo.
 %WHITE%
 echo  ========================================================================================================================
@@ -428,11 +432,16 @@ echo.
 echo.>>"!logfile!"
 echo  == INFO ================================================================================================================>>"!logfile!"
 echo.>>"!logfile!"
+echo Settings^:>>"!logfile!"
+echo.>>"!logfile!"
+echo ^[AUDIO  = !AUDIOCODEC!^]>>"!logfile!"
+echo ^[FAKEP5 = !FAKEP5!^]>>"!logfile!"
+echo.>>"!logfile!"
 echo [PROCESSED FILES^: !PFILECOUNT!] [DONE^: !DONECOUNT!/!PFILECOUNT!] [SKIPPED^: !SKIPCOUNT!/!PFILECOUNT!] [ERROR^(S^)^: !FERRORCOUNT!/!PFILECOUNT!]>>"!logfile!"
 echo.>>"!logfile!"
-echo  == LOGFILE END =========================================================================================================>>"!logfile!"
-echo.>>"!logfile!"
 echo %date%  %time%>>"!logfile!"
+echo.>>"!logfile!"
+echo  == LOGFILE END =========================================================================================================>>"!logfile!"
 goto :EXIT
 
 :BEGIN
@@ -525,21 +534,28 @@ if exist "!TARGET_FOLDER!\!INPUTFILENAME!.mp4" (
 	%GREEN%
 	"!MP4FPSMODpath!" -i !duration! "!TARGET_FOLDER!\!INPUTFILENAME!.mp4"
 	set /A DONECOUNT=!DONECOUNT!+1
-	echo ^[!INPUTFILENAME!!INPUTFILEEXT!^] ^[AUDIO=!AUDIOCODEC!^] ^[FAKEP5=!FAKEP5!^] ^[CONVERT=DONE^] -^> ^[!INPUTFILENAME!.mp4^] >>"!logfile!"
+	echo ^[DONE^] ^[!INPUTFILENAME!!INPUTFILEEXT!^] -^> ^[!INPUTFILENAME!.mp4^]>>"!logfile!"
 	echo.
 ) else (
 	%RED%
 	echo Error.
-	echo ^[!INPUTFILENAME!!INPUTFILEEXT!^] ^[AUDIO=!AUDIOCODEC!^] ^[FAKEP5=!FAKEP5!^] ^[CONVERT=ERROR^^!^] >>"!logfile!"
+	echo ^[ERROR^^!^] ^[!INPUTFILENAME!!INPUTFILEEXT!^]>>"!logfile!"
 	echo.
 	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	set /A "FERRORCOUNT=!FERRORCOUNT!+1"
 )
 if "!DIRFOUND!"=="TRUE" goto :eof
 echo.>>"!logfile!"
-echo  == LOGFILE END =========================================================================================================>>"!logfile!"
+echo  == INFO ================================================================================================================>>"!logfile!"
+echo.>>"!logfile!"
+echo Settings^:>>"!logfile!"
+echo.>>"!logfile!"
+echo ^[AUDIO  = !AUDIOCODEC!^]>>"!logfile!"
+echo ^[FAKEP5 = !FAKEP5!^]>>"!logfile!"
 echo.>>"!logfile!"
 echo %date%  %time%>>"!logfile!"
+echo.>>"!logfile!"
+echo  == LOGFILE END =========================================================================================================>>"!logfile!"
 goto :EXIT
 
 :EXIT
