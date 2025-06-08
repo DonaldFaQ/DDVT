@@ -39,7 +39,6 @@ a small MS MSG box shows the main values (Quickcheck).
 USAGE:
 ------
 DDVT_MEDIAINFO <SOURCEFILE>.hevc/mkv/mp4/ts/m2ts/bin/avi
-
 DDVT_MEDIAINFO <SOURCEFILE>.hevc/mkv/mp4/ts/m2ts/bin/avi -MSGBOX
 
 ===========================================================================
@@ -94,6 +93,7 @@ Simply does what it means. Removes DV and/or HDR10+ metadata from streams.
 USAGE:
 ------
 DDVT_REMOVER <SOURCEFILE>.hevc/mkv/mp4
+DDVT_MKVTOMP4 <SOURCEDIR>
 
 ===========================================================================
 
@@ -112,7 +112,6 @@ switch "-CHECK" for jumping directly to the SyncCheck area.
 USAGE:
 ------
 DDVT_FILEINFO <SOURCEFILE>.hevc/mkv/mp4/bin
-
 DDVT_FILEINFO <SOURCEFILE>.hevc/mkv/mp4/bin -CHECK
 
 ===========================================================================
