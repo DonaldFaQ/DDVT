@@ -95,7 +95,7 @@ USAGE:
 ------
 DDVT_REMOVER <SOURCEFILE>.hevc/mkv/mp4
 
-DDVT_MKVTOMP4 <SOURCEDIR>
+DDVT_REMOVER <SOURCEDIR>
 
 ===========================================================================
 
