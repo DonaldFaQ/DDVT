@@ -45,15 +45,15 @@ SCRIPT `DDVT_REMOVER.cmd`
 * DDVT_REMOVER `<SOURCEFILE>`.`hevc`/`mkv`/`mp4`
 * DDVT_REMOVER <SOURCEDIR>
 ----------------------------------------------------------------------------------------
-- SCRIPT `DDVT_FILEINFO.cmd`
+SCRIPT `DDVT_FILEINFO.cmd`
 * DDVT_FILEINFO `<SOURCEFILE>`.`hevc`/`mkv`/`mp4`/`bin`
 * DDVT_FILEINFO `<SOURCEFILE>`.`hevc`/`mkv`/`mp4`/`bin` `-CHECK`
 ----------------------------------------------------------------------------------------
-- SCRIPT `DDVT_MKVTOMP4.cmd`
+SCRIPT `DDVT_MKVTOMP4.cmd`
 * DDVT_MKVTOMP4 `<SOURCEFILE>`.`mkv`
 * DDVT_MKVTOMP4 `<SOURCEDIR>`
 ----------------------------------------------------------------------------------------
-- SCRIPT `DDVT_HYBRID.cmd`
+SCRIPT `DDVT_HYBRID.cmd`
 * `DDVT_HYBRID`
 ----------------------------------------------------------------------------------------
 
