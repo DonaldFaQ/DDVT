@@ -31,8 +31,8 @@ SCRIPT `DDVT_INJECTOR.cmd`
 * DDVT_INJECTOR `<SOURCEFILE>`.`hevc`/`mkv`/`mp4`/`bin`
 
 - FEATURES:
-* Start Script with sourcefile. Now you have following features:
-Drag 'n' Drop "`EL.hevc`" into script will start P7 build options.
+* _Start Script with sourcefile. Now you have following features:_
+* Drag 'n' Drop "`EL.hevc`" into script will start P7 build options.
 * Drag 'n' Drop "`RPU.bin`" into script will start P8 build options.
 * Drag 'n' Drop "`HDR10Plus.json`" into script will start HDR10+ build options.
 * Drag 'n' Drop "`EDIT.json`" into script allows custom EDIT options.
