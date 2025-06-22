@@ -19,15 +19,14 @@ For every function exists an own script.
 
 ### Examples:
 ----------------------------------------------------------------------------------------
-SCRIPT `DDVT_MEDIAINFO.cmd`
-
+### `DDVT_MEDIAINFO.cmd`
 * DDVT_MEDIAINFO `<SOURCEFILE>`.`hevc`/`mkv`/`mp4`/`ts`/`m2ts`/`bin`/`avi`
 * DDVT_MEDIAINFO `<SOURCEFILE>`.`hevc`/`mkv`/`mp4`/`ts`/`m2ts`/`bin`/`avi` `-MSGBOX`
 ----------------------------------------------------------------------------------------
-SCRIPT `DDVT_DEMUXER.cmd`
+### `DDVT_DEMUXER.cmd`
 * DDVT_DEMUXER `<SOURCEFILE>`.`hevc`/`mkv`/`mp4`/`bin`/`m2ts`
 ----------------------------------------------------------------------------------------
-SCRIPT `DDVT_INJECTOR.cmd`
+### `DDVT_INJECTOR.cmd`
 * DDVT_INJECTOR `<SOURCEFILE>`.`hevc`/`mkv`/`mp4`/`bin`
 
 - FEATURES:
@@ -42,19 +41,19 @@ SCRIPT `DDVT_INJECTOR.cmd`
 Examples how to edit a JSON file can be found here:
 * https://github.com/quietvoid/dovi_tool/tree/main/assets/editor_examples
 ----------------------------------------------------------------------------------------
-SCRIPT `DDVT_REMOVER.cmd`
+### `DDVT_REMOVER.cmd`
 * DDVT_REMOVER `<SOURCEFILE>`.`hevc`/`mkv`/`mp4`
 * DDVT_REMOVER <SOURCEDIR>
 ----------------------------------------------------------------------------------------
-SCRIPT `DDVT_FILEINFO.cmd`
+### SCRIPT `DDVT_FILEINFO.cmd`
 * DDVT_FILEINFO `<SOURCEFILE>`.`hevc`/`mkv`/`mp4`/`bin`
 * DDVT_FILEINFO `<SOURCEFILE>`.`hevc`/`mkv`/`mp4`/`bin` `-CHECK`
 ----------------------------------------------------------------------------------------
-SCRIPT `DDVT_MKVTOMP4.cmd`
+### `DDVT_MKVTOMP4.cmd`
 * DDVT_MKVTOMP4 `<SOURCEFILE>`.`mkv`
 * DDVT_MKVTOMP4 `<SOURCEDIR>`
 ----------------------------------------------------------------------------------------
-SCRIPT `DDVT_HYBRID.cmd`
+### `DDVT_HYBRID.cmd`
 * `DDVT_HYBRID`
 ----------------------------------------------------------------------------------------
 
