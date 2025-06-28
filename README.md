@@ -43,7 +43,7 @@ Examples how to edit a JSON file can be found here:
 ----------------------------------------------------------------------------------------
 ### `DDVT_REMOVER.cmd`
 * DDVT_REMOVER `<SOURCEFILE>`.`hevc`/`mkv`/`mp4`
-* DDVT_REMOVER <SOURCEDIR>
+* DDVT_REMOVER `<SOURCEDIR>`
 ----------------------------------------------------------------------------------------
 ### SCRIPT `DDVT_FILEINFO.cmd`
 * DDVT_FILEINFO `<SOURCEFILE>`.`hevc`/`mkv`/`mp4`/`bin`
