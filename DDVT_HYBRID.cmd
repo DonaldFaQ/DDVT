@@ -1,6 +1,9 @@
 @echo off & setlocal
 mode con cols=125 lines=35
+set "VERSION=--N.A.-- INCORRECTLY INSTALLED"
+set "HEADER1=File "%~dp0DDVT_OPTIONS.cmd" missing! Script works not correctly!"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
+FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"HEADER1=" "%~dp0DDVT_OPTIONS.cmd"') DO set "HEADER1=%%A"
 TITLE DDVT P8 Hybrid Script [QfG] v%VERSION%
 
 set PasswordChars=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
@@ -119,7 +122,7 @@ if not exist "%HDR10PDELAYSCRIPTpath%" set "MISSINGFILE=%HDR10PDELAYSCRIPTpath%"
 :PREPARE_HDR
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -221,7 +224,7 @@ set "logfile=!TMP_FOLDER!\!HDR_Filename!.log"
 :PREPARE_DV
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -317,7 +320,7 @@ if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -517,7 +520,7 @@ goto :eof
 :DV_CHECK
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -686,6 +689,11 @@ goto :eof
 
 :START
 mode con cols=125 lines=50
+if "!CHGFPS!"=="NO" (
+	set "FPS_string=ORIGINAL"
+) else (
+	set "FPS_string=!CHGFPS!"
+)
 if "!HDR_HDR!"=="TRUE" set "OUTPUT_Info=HDR10, Dolby Vision Profile 8"
 if "!HDR_HDR10P!"=="TRUE" set "OUTPUT_Info=HDR10, HDR10+, Dolby Vision Profile 8"
 if "!HDR_HDR!!REMHDR_HDR10P!"=="TRUEYES" set "OUTPUT_Info=HDR10, Dolby Vision Profile 8"
@@ -748,7 +756,7 @@ if "!RPU_AA_String!"=="[LEAVE UNTOUCHED]" (
 )
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -805,7 +813,7 @@ if "!MUXINMKV!"=="YES" (
 ) else (
 	echo Filename   = [!HDR_Filename!_[!NAMESTRING!].hevc]
 )
-echo Video Info = [Resolution = !RESOLUTION_HDR!] [Codec = !CODEC_NAME_HDR!] [Frames = !FRAMES_HDR!] [FPS = !FRAMERATE_HDR!]
+echo Video Info = [Resolution = !RESOLUTION_HDR!] [Codec = !CODEC_NAME_HDR!] [Frames = !FRAMES_HDR!] [FPS = !FPS_string!]
 echo HDR Info   = [!OUTPUT_Info!]
 %HEADER_RPU_OUTPUT_String%
 echo.
@@ -881,7 +889,7 @@ goto START
 :OPERATION
 if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 rem -------- LOGFILE ------------
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG>"!logfile!"
+echo  %HEADER1%>"!logfile!"
 echo.>>"!logfile!"
 echo                                         ====================================>>"!logfile!"
 echo                                          Dolby Vision Tool P8 Hybrid Script>>"!logfile!"
@@ -895,7 +903,7 @@ echo.>>"!logfile!"
 mode con cols=125 lines=65
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -1468,7 +1476,7 @@ set "HEADER_RPU_AA_String_RPU=call :colortxt 0B "Borders    = [LEFT=%RPU_INPUT_A
 set "HEADER_RPU_OUTPUT_String_RPU=call :colortxt 0E "Borders    = [LEFT=!RPU_AA_LC! px], [TOP=!RPU_AA_TC! px], [RIGHT=!RPU_AA_RC! px], [BOTTOM=!RPU_AA_BC! px]" /n"
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================

@@ -1,6 +1,9 @@
 ::written by DonaldFaQ, THX to Jamal for the great idea!
 @echo off & setlocal
+set "VERSION=--N.A.-- INCORRECTLY INSTALLED"
+set "HEADER1=File "%~dp0DDVT_OPTIONS.cmd" missing! Script works not correctly!"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
+FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"HEADER1=" "%~dp0DDVT_OPTIONS.cmd"') DO set "HEADER1=%%A"
 TITLE DDVT MediaInfo [QfG] v%VERSION%
 set "TOOLTYPE=TEXT"
 if /i "%~2"=="-MSGBOX" set "TOOLTYPE=MSGBOX"
@@ -100,7 +103,7 @@ call :FALSEINPUT
 :PREPARE
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -442,7 +445,7 @@ if defined L5_FOUND (
 )
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -580,7 +583,7 @@ if defined L5_FOUND (
 		set "L5_STRING=N/A"
 	)
 )
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG>"!TMP_FOLDER!\logfile.txt"
+echo  %HEADER1%>"!TMP_FOLDER!\logfile.txt"
 echo.>>"!TMP_FOLDER!\logfile.txt"
 echo                                         ====================================>>"!TMP_FOLDER!\logfile.txt"
 echo                                              Dolby Vision Tool MEDIAINFO>>"!TMP_FOLDER!\logfile.txt"
@@ -710,7 +713,7 @@ exit
 :NOINPUT
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================

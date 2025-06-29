@@ -1,6 +1,7 @@
 @echo off & setlocal
 mode con cols=125 lines=57
-set VERSION=0.65.4 beta
+set VERSION=0.65.5 beta
+set HEADER1=powered by quietvoids tools                                                                  GNU License (GPL) 2021-2025
 TITLE DDVT OPTIONS [QfG] v%VERSION%
 
 rem --- Hardcoded settings. Can be changed manually ---
@@ -126,7 +127,7 @@ if exist "!LAVFILTERS_FOLDER!\x64\LAVSplitter.ax" (
 )
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -312,7 +313,7 @@ if "%ERRORLEVEL%"=="5" (
 	echo If you must install LAV Filters leave blank and hit [ENTER]^ for installing^^!
 	echo Don't forget to [S]AVE your settings after editing^^!
 	%WHITE%
-	set /p "LAVFILTERS_FOLDER=:>" || "!TOOLFOLDER!tools\Install\LAVFilters-0.79.2-Installer.exe"
+	set /p "LAVFILTERS_FOLDER=:>" || "!TOOLFOLDER!tools\Install\LAVFilters-0.80-Installer.exe"
 	goto MAINMENU
 )
 if "%ERRORLEVEL%"=="4" (
@@ -321,7 +322,7 @@ if "%ERRORLEVEL%"=="4" (
 	echo If you must install AVISYNTH+ leave blank and hit [ENTER]^ for installing^^!
 	echo Don't forget to [S]AVE your settings after editing^^!
 	%WHITE%
-	set /p "AVISYNTH_FOLDER=:>" || "!TOOLFOLDER!tools\Install\AviSynthPlus_3.7.3_20230715.exe"
+	set /p "AVISYNTH_FOLDER=:>" || "!TOOLFOLDER!tools\Install\AviSynthPlus_3.7.5_20250420"
 	goto MAINMENU
 )
 if "%ERRORLEVEL%"=="3" (

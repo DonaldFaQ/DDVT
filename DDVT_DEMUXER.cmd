@@ -1,6 +1,9 @@
 @echo off & setlocal
 mode con cols=125 lines=57
+set "VERSION=--N.A.-- INCORRECTLY INSTALLED"
+set "HEADER1=File "%~dp0DDVT_OPTIONS.cmd" missing! Script works not correctly!"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
+FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"HEADER1=" "%~dp0DDVT_OPTIONS.cmd"') DO set "HEADER1=%%A"
 TITLE DDVT Demuxer [QfG] v%VERSION%
 
 set PasswordChars=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
@@ -129,7 +132,7 @@ if not "!INPUTFILE!"=="" goto :FALSEINPUT
 :CHECK
 CLS
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -407,7 +410,7 @@ if "!RPU!"=="NO" set "CONVERT=NO"
 if "!RPU_FILE!"=="TRUE" goto :STARTRPU
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -438,7 +441,7 @@ goto :EXIT
 :STARTRPU
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -532,7 +535,7 @@ if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -550,7 +553,7 @@ echo SAVE HDR10+ Metadata           : [%SAVHDR10P%]
 echo Skip HDR10+ Validation         : [%SKIPHDR10P%]
 echo Remove HDR10+ Metadata from BL : [%REMHDR10P%]
 echo Convert HDR10+ Metadata to DV  : [%CHGHDR10P%]
-echo Content Mapping Version        : [%CM_VERSION_text%]
+if "%CHGHDR10P%"=="YES" echo Content Mapping Version        : [%CM_VERSION_text%]
 echo.
 
 call :SWITCHES
@@ -668,7 +671,7 @@ if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -847,7 +850,7 @@ if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -921,7 +924,7 @@ if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================

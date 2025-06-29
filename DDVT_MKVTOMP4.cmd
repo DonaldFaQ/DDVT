@@ -1,6 +1,9 @@
 @echo off & setlocal
 mode con cols=125 lines=57
+set "VERSION=--N.A.-- INCORRECTLY INSTALLED"
+set "HEADER1=File "%~dp0DDVT_OPTIONS.cmd" missing! Script works not correctly!"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
+FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"HEADER1=" "%~dp0DDVT_OPTIONS.cmd"') DO set "HEADER1=%%A"
 TITLE DDVT MKVtoMP4 [QfG] v%VERSION%
 
 set PasswordChars=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
@@ -94,7 +97,7 @@ if not exist "%HDR10P_TOOLpath%" set "MISSINGFILE=%HDR10P_TOOLpath%" & goto :COR
 
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright ^(c^) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -260,7 +263,7 @@ if "!DIRFOUND!"=="TRUE" set "FAKEP5ALLOWED=TRUE"
 set "MSTATUS=call :colortxt 08 "WAITING"
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright ^(c^) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -341,7 +344,7 @@ if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 set "LOG_FILENAME=DDVT MKVtoMP4 (Folder=%~n1)"
 rem -------- LOGFILE ------------
-echo  powered by quietvoids tools                                                                  Copyright ^(c^) 2021-2025 QfG>"!logfile!"
+echo  %HEADER1%>"!logfile!"
 echo.>>"!logfile!"
 echo                                         ====================================>>"!logfile!"
 echo                                              Dolby Vision Tool MKVtoMP4>>"!logfile!"
@@ -378,7 +381,7 @@ for %%A in ("!SOURCE_FOLDER!\*.mkv") do (
 	call :CHECK
 	cls
 	%GREEN%
-	echo  powered by quietvoids tools                                                                  Copyright ^(c^) 2021-2025 QfG
+	echo  %HEADER1%
 	echo.
 	%WHITE%
 	echo                                         ====================================
@@ -403,7 +406,7 @@ for %%A in ("!SOURCE_FOLDER!\*.mkv") do (
 cls
 set "MSTATUS=call :colortxt 0A "DONE"
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright ^(c^) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -450,7 +453,7 @@ if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 set "WORKFILE=!INPUTFILE!"
 if "!DIRFOUND!"=="FALSE" (
 	rem -------- LOGFILE ------------
-	echo  powered by quietvoids tools                                                                  Copyright ^(c^) 2021-2025 QfG>"!logfile!"
+	echo  %HEADER1%>"!logfile!"
 	echo.>>"!logfile!"
 	echo                                         ====================================>>"!logfile!"
 	echo                                              Dolby Vision Tool MKVtoMP4>>"!logfile!"
@@ -464,7 +467,7 @@ if "!DIRFOUND!"=="FALSE" (
 	echo.>>"!logfile!"
 	cls
 	%GREEN%
-	echo  powered by quietvoids tools                                                                  Copyright ^(c^) 2021-2025 QfG
+	echo  %HEADER1%
 	echo.
 	%WHITE%
 	echo                                         ====================================

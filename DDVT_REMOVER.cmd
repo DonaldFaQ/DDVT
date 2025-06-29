@@ -1,6 +1,9 @@
 @echo off & setlocal
 mode con cols=125 lines=35
+set "VERSION=--N.A.-- INCORRECTLY INSTALLED"
+set "HEADER1=File "%~dp0DDVT_OPTIONS.cmd" missing! Script works not correctly!"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
+FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"HEADER1=" "%~dp0DDVT_OPTIONS.cmd"') DO set "HEADER1=%%A"
 TITLE DDVT Remover [QfG] v%VERSION%
 
 set PasswordChars=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
@@ -92,12 +95,9 @@ if not exist "%MEDIAINFOpath%" set "MISSINGFILE=%MEDIAINFOpath%" & goto :CORRUPT
 if not exist "%HDR10Plus_TOOLpath%" set "MISSINGFILE=%HDR10Plus_TOOLpath%" & goto :CORRUPTFILE
 if not exist "%DO_VI_TOOLpath%" set "MISSINGFILE=%DO_VI_TOOLpath%" & goto :CORRUPTFILE
 
-dir /b/ad "%~1" >nul 2>nul && set DIRFOUND=TRUE
-if "!DIRFOUND!"=="TRUE" goto :MPREPARE
-
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright ^(c^) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -112,10 +112,13 @@ echo  == CHECK INPUT FILE ======================================================
 if "%~1"=="" (
 	%YELLOW%
 	echo.
-	echo No Input File. Use DDVT_MKVTOMP4.cmd "YourFilename.mkv"
+	echo No Input File. Use %~nx0 "YourFilename.mkv"
 	echo.
 	goto EXIT
 )
+
+dir /b/ad "%~1" >nul 2>nul && set DIRFOUND=TRUE
+if "!DIRFOUND!"=="TRUE" goto :MPREPARE
 
 if /i "%~x1"==".hevc" set "RAW_FILE=TRUE" & goto CHECK
 if /i "%~x1"==".h265" set "RAW_FILE=TRUE" & goto CHECK
@@ -268,6 +271,7 @@ TIMEOUT 3 /NOBREAK>nul
 goto :START
 
 :START
+if "!DV!!HDR10P!"=="FALSEFALSE" goto :NOTHINGTODO
 set "LOG_FILENAME=DDVT Remover ^(!INPUTFILENAME!!INPUTFILEEXT!^)"
 set "NAMESTRING="
 if "!HDRFormat!"=="HDR10+" set "HDRFormat=HDR10"
@@ -283,7 +287,7 @@ if "!DV!!REM_DV!"=="TRUEYES" set "NAMESTRING=_[No DV]"
 if "!HDR10P!!REM_HDR10P!!DV!!REM_DV!"=="TRUEYESTRUEYES" set "NAMESTRING=_[No HDR10+ No DV]"
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -336,7 +340,7 @@ goto :START
 :MSTART
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -386,7 +390,7 @@ if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 set "LOG_FILENAME=DDVT Remover (Folder=%~n1)"
 set "MSTATUS=call :colortxt 0F "WORKING"
 rem -------- LOGFILE ------------
-echo  powered by quietvoids tools                                                                  Copyright ^(c^) 2021-2025 QfG>"!logfile!"
+echo  %HEADER1%>"!logfile!"
 echo.>>"!logfile!"
 echo                                         ====================================>>"!logfile!"
 echo                                              Dolby Vision Tool REMOVER>>"!logfile!"
@@ -439,7 +443,7 @@ for %%A in ("!SOURCE_FOLDER!\*.*") do (
 	if "!HDR10P!!REM_HDR10P!!DV!!REM_DV!"=="TRUEYESTRUEYES" set "NAMESTRING=_[No HDR10+ No DV]"
 	cls
 	%GREEN%
-	echo  powered by quietvoids tools                                                                  Copyright ^(c^) 2021-2025 QfG
+	echo  %HEADER1%
 	echo.
 	%WHITE%
 	echo                                         ====================================
@@ -469,7 +473,7 @@ mode con cols=125 lines=35
 cls
 set "MSTATUS=call :colortxt 0A "DONE"
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright ^(c^) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -554,7 +558,7 @@ echo %date%  %time%>>"!logfile!"
 echo.>>"!logfile!"
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -826,6 +830,15 @@ set "Line1=""%MISSINGFILE%""""
 set "Line2=Copy the file to the directory or download and extract DDVT_tools.rar"
 setlocal DisableDelayedExpansion
 START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('NEEDED FILE NOT FOUND!' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT Remover [QfG] v%VERSION%', 'Ok','Error')"
+exit
+
+:NOTHINGTODO
+if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
+set "NewLine=[System.Environment]::NewLine"
+set "Line1=No HDR10+ SEI or DV Metadata in file."
+set "Line2=The file has no Metadata for removing included."
+setlocal DisableDelayedExpansion
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT Remover [QfG] v%VERSION%', 'Ok','Info')"
 exit
 
 :PROFILE5NS

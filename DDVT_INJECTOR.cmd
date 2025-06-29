@@ -1,6 +1,9 @@
 @echo off & setlocal
 mode con cols=125 lines=57
+set "VERSION=--N.A.-- INCORRECTLY INSTALLED"
+set "HEADER1=File "%~dp0DDVT_OPTIONS.cmd" missing! Script works not correctly!"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
+FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"HEADER1=" "%~dp0DDVT_OPTIONS.cmd"') DO set "HEADER1=%%A"
 TITLE DDVT Injector [QfG] v%VERSION%
 
 set PasswordChars=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
@@ -142,7 +145,7 @@ if not exist "%HDR10PDELAYSCRIPTpath%" set "MISSINGFILE=%HDR10PDELAYSCRIPTpath%"
 
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -186,7 +189,7 @@ if "!VIDEO_COUNT!" NEQ "1" (
 )
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -232,7 +235,7 @@ if "!DV_OK!"=="FALSE" (
 :PREPARE_HDR10P
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -276,7 +279,7 @@ if "!HDR10P_OK!"=="FALSE" (
 if "!JSON_SUPPORT!"=="NO" goto :CHECK
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -339,7 +342,7 @@ if "!RPU_FILE!"=="TRUE" (
 :CHECK
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -603,7 +606,7 @@ if "!RPU_FILE!"=="FALSE" (
 	if exist "!TMP_FOLDER!\Info.txt" del "!TMP_FOLDER!\Info.txt">nul
 	if exist "!TMP_FOLDER!\Info.mkv" del "!TMP_FOLDER!\Info.mkv">nul
 
-	if "!RAW_FILE!"=="FALSE" (
+	if "!DV_INJ!!RAW_FILE!"=="TRUEFALSE" (
 		%CYAN%
 		echo Analysing Video Borders. Please wait...
 		"%~dp0tools\DetectBorders.exe" --ffmpeg-path="!FFMPEGpath!" --input-file="!INPUTFILE!" --log-file="!TMP_FOLDER!\Crop.txt"
@@ -774,7 +777,7 @@ if "%MUXINMP4%%MP4Extract%"=="YESTRUE" set "%MUXINMKV%"=="NO" & set "HEADER_EXT=
 set "RPU_AA_String=[LEAVE UNTOUCHED]"
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -862,7 +865,7 @@ if "!RPU_AA_String!"=="[LEAVE UNTOUCHED]" set "HEADER_RPU_OUTPUT_String=call :co
 
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -925,6 +928,11 @@ if "%ERRORLEVEL%"=="1" (
 goto :RPU_MENU
 
 :HDR10P_MENU
+if "!CHGFPS!"=="NO" (
+	set "FPS_string=ORIGINAL"
+) else (
+	set "FPS_string=!CHGFPS!"
+)
 if "!RAW_FILE!"=="TRUE" set "MUXINMKV=NO" & set "MUXINMP4=NO"
 set "HEADER_FILENAME=!INPUTFILENAME!_[HDR10+]"
 set "HEADER_EXT=.hevc"
@@ -932,7 +940,7 @@ if "%MUXINMKV%%MKVExtract%"=="YESTRUE" set "%MUXINMP4%"=="NO" & set "HEADER_EXT=
 if "%MUXINMP4%%MP4Extract%"=="YESTRUE" set "%MUXINMKV%"=="NO" & set "HEADER_EXT=.mp4"
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -963,6 +971,8 @@ echo  == VIDEO OUTPUT ==========================================================
 echo.
 %YELLOW%
 echo Filename   = [!HEADER_FILENAME!!HEADER_EXT!]
+echo Delay      = [!DELAY! FRAMES]
+echo FPS        = [!FPS_string!]
 %WHITE%
 echo.
 echo  == MENU ================================================================================================================
@@ -1030,6 +1040,11 @@ if "!RAW_FILE!"=="FALSE" (
 goto :HDR10P_MENU
 
 :DV_MENU
+if "!CHGFPS!"=="NO" (
+	set "FPS_string=ORIGINAL"
+) else (
+	set "FPS_string=!CHGFPS!"
+)
 if "!RAW_FILE!"=="TRUE" set "MUXINMKV=NO" & set "MUXINMP4=NO"
 if "!HDR10P_File!" NEQ "NONE" set "REMHDR10P=NO"
 if "%RPU_exist%"=="YES" (
@@ -1103,7 +1118,7 @@ if "!RPU_AA_String!"=="[LEAVE UNTOUCHED]" (
 )
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -1172,31 +1187,34 @@ if "!XML_exist!!EL_exist!"=="YESNO" (
 	echo.
 	%YELLOW%
 	echo Filename   = [!HEADER_FILENAME!!HEADER_EXT!]
+	echo Video Info = [Resolution = !RESOLUTION!] [Codec = !CODEC_NAME!] [Frames = !FRAMES!] [FPS = !FPS_string!]
 	echo RPU Info   = [Dolby Vision Profile !RPU_DVP!!RPU_DVSP!] [DM = !RPU_CMV!] [Frames = !FRAMES!]	
 	%HEADER_RPU_OUTPUT_String%
-	echo Delay      = [!DELAY! FRAMES]
 	echo.
 )
 if "!RPU_exist!!EL_exist!"=="YESNO" (
-	echo.
 	%WHITE%
 	echo  == FILE OUTPUT =========================================================================================================
 	echo.
 	%YELLOW%
 	echo Filename   = [!HEADER_FILENAME!!HEADER_EXT!]
+	echo Video Info = [Resolution = !RESOLUTION!] [Codec = !CODEC_NAME!] [Frames = !FRAMES!] [FPS = !FPS_string!]
 	echo RPU Info   = [Dolby Vision Profile !RPU_DVP!!RPU_DVSP!] [DM = !RPU_CMV!] [Frames = !FRAMES!]	
 	%HEADER_RPU_OUTPUT_String%
-	echo Delay      = [!DELAY! FRAMES]
 	echo.
 )
 if "!XML_exist!!RPU_exist!!EL_exist!"=="NONOYES" (
-	echo.
 	%WHITE%
 	echo  == FILE OUTPUT =========================================================================================================
 	echo.
 	%YELLOW%
 	echo Filename   = [!HEADER_FILENAME!!HEADER_EXT!]
-	echo EL Info    = [Dolby Vision Profile !RPU_DVP!!RPU_DVSP!] [DM = !RPU_CMV!] [Frames = !FRAMES!] [FPS = !FRAMERATE!]
+	echo Video Info = [Resolution = !RESOLUTION!] [Codec = !CODEC_NAME!] [Frames = !FRAMES!] [FPS = !FPS_string!]
+	echo EL Info    = [Dolby Vision Profile !RPU_DVP!!RPU_DVSP!] [DM = !RPU_CMV!] [Frames = !RPU_FRAMES!] [FPS = !FPS_string!]
+	if "!FRAMES!" NEQ "!RPU_FRAMES!" (
+		%RED%
+		echo              Warning^^! BL and EL framecount not identical. This will not be corrected during processing.
+	)
 	%HEADER_RPU_OUTPUT_String%
 	echo.
 )
@@ -1626,7 +1644,7 @@ if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 set "HDR10P_File=NONE"
 rem -------- LOGFILE ------------
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG>"!logfile!"
+echo  %HEADER1%>"!logfile!"
 echo.>>"!logfile!"
 echo                                         ====================================>>"!logfile!"
 echo                                              Dolby Vision Tool INJECTOR>>"!logfile!"
@@ -1639,7 +1657,7 @@ echo %date%  %time%>>"!logfile!"
 echo.>>"!logfile!"
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -1660,7 +1678,7 @@ goto :EXIT
 if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 rem -------- LOGFILE ------------
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG>"!logfile!"
+echo  %HEADER1%>"!logfile!"
 echo.>>"!logfile!"
 echo                                         ====================================>>"!logfile!"
 echo                                              Dolby Vision Tool INJECTOR>>"!logfile!"
@@ -1673,7 +1691,7 @@ echo %date%  %time%>>"!logfile!"
 echo.>>"!logfile!"
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -1756,7 +1774,7 @@ if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -1779,7 +1797,7 @@ echo.
 %CYAN%
 
 rem -------- LOGFILE ------------
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG>"!logfile!"
+echo  %HEADER1%>"!logfile!"
 echo.>>"!logfile!"
 echo                                         ====================================>>"!logfile!"
 echo                                              Dolby Vision Tool INJECTOR>>"!logfile!"
@@ -2483,7 +2501,7 @@ set "HEADER_RPU_AA_String_RPU=call :colortxt 0B "Borders    = [LEFT=%RPU_INPUT_A
 set "HEADER_RPU_OUTPUT_String_RPU=call :colortxt 0E "Borders    = [LEFT=!RPU_AA_LC! px], [TOP=!RPU_AA_TC! px], [RIGHT=!RPU_AA_RC! px], [BOTTOM=!RPU_AA_BC! px]" /n"
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================

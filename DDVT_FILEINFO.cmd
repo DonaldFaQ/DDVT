@@ -1,6 +1,9 @@
 @echo off & setlocal
 mode con cols=125 lines=40
+set "VERSION=--N.A.-- INCORRECTLY INSTALLED"
+set "HEADER1=File "%~dp0DDVT_OPTIONS.cmd" missing! Script works not correctly!"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
+FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"HEADER1=" "%~dp0DDVT_OPTIONS.cmd"') DO set "HEADER1=%%A"
 TITLE DDVT FileInfo [QfG] v%VERSION%
 
 set PasswordChars=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
@@ -21,6 +24,9 @@ set "DO_VI_TOOLpath=%~dp0tools\dovi_tool.exe" rem Path to dovi_tool.exe
 set "DO_VI_TOOLNFpath=%~dp0tools\dovi_tool_no_floor.exe" rem Path to dovi_tool_no_floor.exe
 set "HDR10P_TOOLpath=%~dp0tools\hdr10plus_tool.exe" rem Path to hdr10plus_tool.exe
 set "HDR10PFILE=%~dp1HDR10Plus.json"
+
+set "AVISYNTH_FOLDER=%ProgramFiles(x86)%\AviSynth+"
+set "LAVFILTERS_FOLDER=%ProgramFiles(x86)%\LAV Filters"
 
 rem --- Hardcoded settings. Can be changed manually ---
 set "DVPLOT=L1 ONLY"
@@ -56,6 +62,7 @@ set "HDR_HDR10P=FALSE"
 set "HDR_DV=FALSE"
 set "RAW_FILE=FALSE"
 set "RPU_FILE=FALSE"
+set "HDR10P_FILE=FALSE"
 set "ELFILE=FALSE"
 set "HDR_Info=No HDR Infos found"
 set "RESOLUTION=n.A."
@@ -130,13 +137,14 @@ if /i "%~x1"==".mp4" set "MP4Extract=TRUE" & goto :CHECK
 if /i "%~x1"==".h265" set "RAW_FILE=TRUE" & goto :CHECK
 if /i "%~x1"==".hevc" set "RAW_FILE=TRUE" & goto :CHECK
 if /i "%~x1"==".bin" set "RPU_FILE=TRUE" & set "RPUFILE=%~1" & goto :CHECK
+if /i "%~x1"==".json" set "HDR10P_FILE=TRUE" & set "HDR10PFILE=%~1" & goto :CHECK
 
 if not "!INPUTFILE!"=="" goto :FALSEINPUT
 
 :CHECK
 CLS
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -157,7 +165,7 @@ if "%~1"=="" (
 	goto :EXIT
 )
 FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=General;%%VideoCount%% "!INPUTFILE!""') do set "VIDEO_COUNT=%%A"
-if "!RPU_FILE!"=="FALSE" (
+if "!RPU_FILE!!HDR10P_FILE!"=="FALSEFALSE" (
 	if "!VIDEO_COUNT!" NEQ "1" (
 		%YELLOW%
 		echo.
@@ -170,7 +178,7 @@ if "!RPU_FILE!"=="FALSE" (
 if not exist "!TMP_FOLDER!" md "!TMP_FOLDER!"
 echo.
 %CYAN%
-if "%RPU_FILE%"=="FALSE" (
+if "!RPU_FILE!!HDR10P_FILE!"=="FALSEFALSE" (
 	echo Analysing File. Please wait...
 	echo.
 	set "INPUTSTREAM=!INPUTFILE!"
@@ -351,54 +359,65 @@ if "%RPU_FILE%"=="FALSE" (
 	if exist "!TMP_FOLDER!\Info.txt" del "!TMP_FOLDER!\Info.txt">nul
 	if exist "!TMP_FOLDER!\Info.mkv" del "!TMP_FOLDER!\Info.mkv">nul
 ) else (
-	%CYAN%
-	echo Analysing DV RPU. Please wait...
-	echo.
-	"!DO_VI_TOOLpath!" info -i "!RPUFILE!" -s>"!TMP_FOLDER!\RPUINFO.txt"
-	if exist "!TMP_FOLDER!\RPUINFO.txt" (
+	if "!RPU_FILE!"=="TRUE" (
+		%CYAN%
+		echo Analysing DV RPU. Please wait...
+		echo.
+		"!DO_VI_TOOLpath!" info -i "!RPUFILE!" -s>"!TMP_FOLDER!\RPUINFO.txt"
+		if exist "!TMP_FOLDER!\RPUINFO.txt" (
+			%GREEN%
+			set "HDR_DV=TRUE"
+			FOR /F "delims=" %%A IN ('findstr /C:"Profile:" "!TMP_FOLDER!\RPUINFO.txt"') DO set "RPU_PROFILE=%%A"
+			if defined RPU_PROFILE (
+				for /F "tokens=2 delims=:/ " %%A in ("!RPU_PROFILE!") do set "RPU_DVP=%%A"
+				if "!RPU_DVP!"=="7" for /F "tokens=3 delims=:/ " %%A in ("!RPU_PROFILE!") do set "RPU_DVSP= %%A"
+			) else (
+				set "RPU_DVP=N/A"
+			)
+			FOR /F "delims=" %%A IN ('findstr /C:"DM version" "!TMP_FOLDER!\RPUINFO.txt"') DO set "RPU_CMV=%%A"
+			if defined RPU_CMV (
+				for /F "tokens=3 delims=:/()" %%A in ("!RPU_CMV!") do set "RPU_CMV=%%A"
+			) else (
+				set "RPU_CMV=N/A"
+			)
+			FOR /F "delims=" %%A IN ('findstr /C:"Frames" "!TMP_FOLDER!\RPUINFO.txt"') DO set "RPU_FRAMES=%%A"
+			if defined RPU_FRAMES (
+				for /F "tokens=2 delims=:/() " %%A in ("!RPU_FRAMES!") do set "RPU_FRAMES=%%A"
+			) else (
+				set "RPU_FRAMES=N/A"
+			)
+			FOR /F "tokens=2 delims=:" %%A IN ('findstr /C:"L2 trims" "!TMP_FOLDER!\RPUINFO.txt"') DO set "L2_TRIMS=%%A"
+			if defined L2_TRIMS (
+				set "L2_TRIMS=!L2_TRIMS:~1!"
+				echo "!L2_TRIMS!" | find "100 nits">nul 2>&1
+				if "!ERRORLEVEL!"=="0" set "L2100=TRUE"
+				echo "!L2_TRIMS!" | find "300 nits">nul 2>&1
+				if "!ERRORLEVEL!"=="0" set "L2300=TRUE"
+				echo "!L2_TRIMS!" | find "600 nits">nul 2>&1
+				if "!ERRORLEVEL!"=="0" set "L2600=TRUE"
+				echo "!L2_TRIMS!" | find "1000 nits">nul 2>&1
+				if "!ERRORLEVEL!"=="0" set "L21000=TRUE"
+				echo "!L2_TRIMS!" | find "2000 nits">nul 2>&1
+				if "!ERRORLEVEL!"=="0" set "L22000=TRUE"
+				echo "!L2_TRIMS!" | find "4000 nits">nul 2>&1
+				if "!ERRORLEVEL!"=="0" set "L24000=TRUE"
+			) else (
+				set "L2_TRIMS=No L2 entries in RPU."
+			)
+			echo Done.
+		) else (
+			%YELLOW%
+			echo Error.
+			goto :EXIT
+		)
+	)
+	if "!HDR10P_FILE!"=="TRUE" (
+		%CYAN%
+		echo Analysing HDR10+ SEI. Please wait...
 		%GREEN%
-		set "HDR_DV=TRUE"
-		FOR /F "delims=" %%A IN ('findstr /C:"Profile:" "!TMP_FOLDER!\RPUINFO.txt"') DO set "RPU_PROFILE=%%A"
-		if defined RPU_PROFILE (
-			for /F "tokens=2 delims=:/ " %%A in ("!RPU_PROFILE!") do set "RPU_DVP=%%A"
-			if "!RPU_DVP!"=="7" for /F "tokens=3 delims=:/ " %%A in ("!RPU_PROFILE!") do set "RPU_DVSP= %%A"
-		) else (
-			set "RPU_DVP=N/A"
-		)
-		FOR /F "delims=" %%A IN ('findstr /C:"DM version" "!TMP_FOLDER!\RPUINFO.txt"') DO set "RPU_CMV=%%A"
-		if defined RPU_CMV (
-			for /F "tokens=3 delims=:/()" %%A in ("!RPU_CMV!") do set "RPU_CMV=%%A"
-		) else (
-			set "RPU_CMV=N/A"
-		)
-		FOR /F "delims=" %%A IN ('findstr /C:"Frames" "!TMP_FOLDER!\RPUINFO.txt"') DO set "RPU_FRAMES=%%A"
-		if defined RPU_FRAMES (
-			for /F "tokens=2 delims=:/() " %%A in ("!RPU_FRAMES!") do set "RPU_FRAMES=%%A"
-		) else (
-			set "RPU_FRAMES=N/A"
-		)
-		FOR /F "tokens=2 delims=:" %%A IN ('findstr /C:"L2 trims" "!TMP_FOLDER!\RPUINFO.txt"') DO set "L2_TRIMS=%%A"
-		if defined L2_TRIMS (
-			set "L2_TRIMS=!L2_TRIMS:~1!"
-			echo "!L2_TRIMS!" | find "100 nits">nul 2>&1
-			if "!ERRORLEVEL!"=="0" set "L2100=TRUE"
-			echo "!L2_TRIMS!" | find "300 nits">nul 2>&1
-			if "!ERRORLEVEL!"=="0" set "L2300=TRUE"
-			echo "!L2_TRIMS!" | find "600 nits">nul 2>&1
-			if "!ERRORLEVEL!"=="0" set "L2600=TRUE"
-			echo "!L2_TRIMS!" | find "1000 nits">nul 2>&1
-			if "!ERRORLEVEL!"=="0" set "L21000=TRUE"
-			echo "!L2_TRIMS!" | find "2000 nits">nul 2>&1
-			if "!ERRORLEVEL!"=="0" set "L22000=TRUE"
-			echo "!L2_TRIMS!" | find "4000 nits">nul 2>&1
-			if "!ERRORLEVEL!"=="0" set "L24000=TRUE"
-		) else (
-			set "L2_TRIMS=No L2 entries in RPU."
-		)
 		echo Done.
-	) else (
-		%YELLOW%
-		echo Error.
+		echo.
+		call :HDR10Plus_PLOTPNG
 		goto :EXIT
 	)
 )
@@ -438,7 +457,7 @@ if "!BORDERCHECK!"=="TRUE" set "BC_INFO=& call :colortxt 0A "CHECKED""
 if exist "!INPUTFILENAME!_[RPU BORDERS FIXED]!INPUTFILEEXT!" set "BC_INFO=& call :colortxt 0A "FIXED FILE FOUND IN DIR""
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -527,7 +546,7 @@ if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 mode con cols=125 lines=60
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -902,7 +921,7 @@ set "FRAME_NONE=FALSE"
 set "FRAME_NMB=TRUE"
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -1188,7 +1207,7 @@ IF "!V0_FRAMES!"=="!RPU_FRAMES!" (
 )
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -1295,7 +1314,7 @@ if not exist "!TMP_FOLDER!" md "!TMP_FOLDER!"
 if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 cls
 %GREEN%
-echo  powered by quietvoids tools                                                                  Copyright (c) 2021-2025 QfG
+echo  %HEADER1%
 echo.
 %WHITE%
 echo                                         ====================================
@@ -1682,7 +1701,7 @@ exit
 if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
 set "NewLine=[System.Environment]::NewLine"
 set "Line1=Unsupported Input File. Supported Files are:"
-set "Line2=*.mkv | *.mp4 | *.h265 | *.hevc"
+set "Line2=*.mkv | *.mp4 | *.h265 | *.hevc | *.bin | *.json"
 setlocal DisableDelayedExpansion
 START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT SyncCheck [QfG] v%VERSION%', 'Ok','Info')"
 exit

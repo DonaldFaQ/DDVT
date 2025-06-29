@@ -1,3 +1,12 @@
+-v0.65.5
+*ADDED INJECTOR - No more Bordercheck if input file is only HDR10+ SEI.
+*ADDED FILEINFO Script works now with HDR10+ json files.
+*FIXED REMOVER Checkloop if file contains no HDR10+/DV.
+*FIXED REMOVER No more DIR MENU if you start without input.
+*UPDATED AviSynth Plus Installer to 3.7.5 (requires new 3rd Party Tool folder).
+*UPDATED LAVFilters Installer to 0.80 (requires new 3rd Party Tool folder).
+*Minor Bugfixes.
+
 -v0.65.4
 *ADDED L2, L8 Plotting with FileInfo script.
 *ADDED Mass Converting with -Remover- (Folder Support).
