@@ -36,13 +36,12 @@ For every function exists an own script.
 * _Start Script with sourcefile. Now you have following features:_
 * Drag 'n' Drop "`EL.hevc`" into script will start `P7 build options`.
 * Drag 'n' Drop "`RPU.bin`" into script will start `P8 build options`.
+* Drag 'n' Drop "`RPU.xml`" into script will start `P8 build options`.
 * Drag 'n' Drop "`HDR10Plus.json`" into script will start `HDR10+ build options`.
 * Drag 'n' Drop "`EDIT.json`" into script allows `custom EDIT options`.
 * You can add `DV`, `HDR10+` Metadata and `Custom` files to `inject all in one step`.
 * _Custom JSON Support can be disabled via options._
-#
-* _Start Script with RPU in `XML` format will start `P8 build options`._
-#
+
 Examples how to edit a JSON file can be found here:
 * https://github.com/quietvoid/dovi_tool/tree/main/assets/editor_examples
 ----------------------------------------------------------------------------------------
