@@ -402,6 +402,7 @@ if exist "!TMP_FOLDER!\RPUINFO.txt" (
 if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
 
 if "!HDRFormat!"=="HLG" set "CONVERT=PROFILE 8.1 HDR10"
+if "!DV_Profile!"=="8" set "CONVERT=NO"
 
 TIMEOUT 3 /NOBREAK>nul
 
