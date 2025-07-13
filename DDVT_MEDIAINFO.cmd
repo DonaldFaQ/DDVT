@@ -5,6 +5,7 @@ set "HEADER1=File "%~dp0DDVT_OPTIONS.cmd" missing! Script works not correctly!"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"HEADER1=" "%~dp0DDVT_OPTIONS.cmd"') DO set "HEADER1=%%A"
 TITLE DDVT MediaInfo [QfG] v%VERSION%
+set DESIGN=STANDARD
 set "TOOLTYPE=TEXT"
 if /i "%~2"=="-MSGBOX" set "TOOLTYPE=MSGBOX"
 if "%TOOLTYPE%"=="TEXT" (
@@ -17,8 +18,7 @@ set PasswordChars=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 set PasswordLength=5
 call :CreatePassword Password
 
-cls
-
+set "Cecho=%~dp0tools\cecho_x64.exe" rem Path to cecho_x64.exe
 set "sfkpath=%~dp0tools\sfk.exe" rem Path to sfk.exe
 set "FFMPEGpath=%~dp0tools\ffmpeg.exe" rem Path to ffmpeg.exe
 set "FFPROBEpath=%~dp0tools\ffprobe.exe" rem Path to ffprobe.exe
@@ -42,14 +42,6 @@ set "DVP7=NO"
 set "RPU="
 
 setlocal EnableDelayedExpansion
-set "WAIT="!sfkpath!" sleep"
-set "GREEN="!sfkpath!" color green"
-set "RED="!sfkpath!" color red"
-set "YELLOW="!sfkpath!" color yellow"
-set "WHITE="!sfkpath!" color white"
-set "CYAN="!sfkpath!" color cyan"
-set "MAGENTA="!sfkpath!" color magenta"
-set "GREY="!sfkpath!" color grey"
 
 ::Check for INI and Load Settings
 if exist "%~dp0DDVT_OPTIONS.ini" (
@@ -65,7 +57,38 @@ if exist "%~dp0DDVT_OPTIONS.ini" (
 		set "LOGFILE=%%A"
 		set "LOGFILE=!LOGFILE:~18!"
 	)
+	FOR /F "delims=" %%A IN ('findstr /C:"DESIGN=" "%~dp0DDVT_OPTIONS.ini"') DO (
+		set "DESIGN=%%A"
+		set "DESIGN=!DESIGN:~7!"
+	)
 )
+
+set "HCWHITE="!sfkpath!" color white"
+set "HCRED="!sfkpath!" color red"
+set "HCGREEN="!sfkpath!" color green"
+set "HCYELLOW="!sfkpath!" color yellow"
+set "HC_WHITE=0F"
+set "HC_RED=0C"
+set "HC_GREEN=0A"
+set "HC_YELLOW=0E"
+set "GREY="!sfkpath!" color grey"
+set "RED="!sfkpath!" color red"
+set "GREEN="!sfkpath!" color green"
+set "YELLOW="!sfkpath!" color yellow"
+set "BLUE="!sfkpath!" color blue"
+set "MAGENTA="!sfkpath!" color magenta"
+set "CYAN="!sfkpath!" color cyan"
+set "WHITE="!sfkpath!" color white"
+set "_GREY=08"
+set "_RED=0C"
+set "_GREEN=0A"
+set "_YELLOW=0E"
+set "_BLUE=09"
+set "_MAGENTA=0D"
+set "_CYAN=0B"
+set "_WHITE=0F"
+
+if "!DESIGN!" NEQ "STANDARD" call "!DESIGN!"
 
 if "%TMP_FOLDER%"=="SAME AS SOURCE" (
 	set "TMP_FOLDER=%tmp%\DDVT_%Password%_TMP"
@@ -432,15 +455,15 @@ exit
 
 :OUTPUT_TEXT
 mode con cols=125 lines=57
-if "!subprofile!"=="FEL" set "subprofile= :colortxt 0A "FEL"
-if "!subprofile!"=="MEL" set "subprofile= :colortxt 06 "MEL"
+if "!subprofile!"=="FEL" set "subprofile={%HC_GREEN%}FEL"
+if "!subprofile!"=="MEL" set "subprofile={%HC_YELLOW%}MEL"
 if defined L5_FOUND (
-	set "L5_STRING=call :colortxt 0F " Left: !RPU_INPUT_AA_LC! px, Top: !RPU_INPUT_AA_TC! px, Right: !RPU_INPUT_AA_RC! px, Bottom: !RPU_INPUT_AA_BC! px""
+set "L5_STRING=Left: !RPU_INPUT_AA_LC! px, Top: !RPU_INPUT_AA_TC! px, Right: !RPU_INPUT_AA_RC! px, Bottom: !RPU_INPUT_AA_BC! px"
 ) else (
 	if "!DVprofile!"=="8" (
-		set "L5_STRING=call :colortxt 06 " L5 Metadata not found. L5 Fix recommended [DDVT SyncCheck].""
+	set "L5_STRING={%HC_YELLOW%}No L5 Metadata in RPU. L5 Fix recommended [DDVT SyncCheck]."
 	) else (
-		set "L5_STRING=call :colortxt 0F " N/A""
+		set "L5_STRING=N/A"
 	)
 )
 cls
@@ -457,44 +480,42 @@ echo.
 echo.
 echo  == SUMMARY =============================================================================================================
 echo.
-call :colortxt 0E "Filename          " & call :colortxt 0F ": !FILENAME!!FILEEXT!" /n
+!Cecho! {%_YELLOW%}Filename          {%HC_WHITE%}: !FILENAME!!FILEEXT!{#}{\n}
 if defined FILESIZE (
 	echo.
-	call :colortxt 0E "Filesize          " & call :colortxt 0F ": !FILESIZE!" /n
+	!Cecho! {%_YELLOW%}Filesize          {%HC_WHITE%}: !FILESIZE!{#}{\n}
 )
 if defined DURATION (
 	echo.
-	call :colortxt 0E "Duration          " & call :colortxt 0F ": !DURATION!" /n
+	!Cecho! {%_YELLOW%}Duration          {%HC_WHITE%}: !DURATION!{#}{\n}
 )
 echo.
 ::DV P7 INFOLINE
-if "!EL_INPUT!!DVinput!!DVP7!!DVBIN!"=="FALSEYESYESNO" call :colortxt 0E "Video             " & call :colortxt 0F ": Base Layer (" & call :colortxt 0A "!HDRFormat!" & call :colortxt 0F ") + Enhanced Layer (" & call :colortxt 0A "Dolby Vision Profile 7 " & call :colortxt 0F "[" & call !subprofile! & call :colortxt 0F "]" & call :colortxt 0A " !LAYERTYPE!" & call :colortxt 0F ") + RPU (" & call :colortxt 0A "!DM:~2!" & call :colortxt 0F ")" /n
+if "!EL_INPUT!!DVinput!!DVP7!!DVBIN!"=="FALSEYESYESNO" !Cecho! {%_YELLOW%}Video             {%HC_WHITE%}: Base Layer ({%HC_GREEN%}!HDRFormat!{%HC_WHITE%}) + Enhanced Layer ({%HC_GREEN%}Dolby Vision Profile 7{%HC_WHITE%}) [!subprofile!{%HC_WHITE%}]{#}{\n}
 ::DV P5/P8 INFOLINE
-if "!EL_INPUT!!DVinput!!DVP7!!DVBIN!"=="FALSEYESNONO" call :colortxt 0E "Video             " & call :colortxt 0F ": Base Layer (" & call :colortxt 0A "!HDRFormat!" & call :colortxt 0F ") + RPU (" & call :colortxt 0A "Dolby Vision Profile !DVprofile!!DM!" & call :colortxt 0F ")" /n
+if "!EL_INPUT!!DVinput!!DVP7!!DVBIN!"=="FALSEYESNONO" !Cecho! {%_YELLOW%}Video             {%HC_WHITE%}: Base Layer ({%HC_GREEN%}!HDRFormat!{%HC_WHITE%}) + RPU ({%HC_GREEN%}Dolby Vision Profile !DVprofile!!DM!{%HC_WHITE%}){#}{\n}
 ::EL INFOLINE
-if "!EL_INPUT!!DVinput!"=="TRUEYES" call :colortxt 0E "Video             " & call :colortxt 0F ": Enhanced Layer (" & call :colortxt 0A "Dolby Vision Profile 7 " & call :colortxt 0F "[" & call !subprofile! & call :colortxt 0F "]" & call :colortxt 0F ") + RPU (" & call :colortxt 0A "!DM:~2!" & call :colortxt 0F ")" /n
+if "!EL_INPUT!!DVinput!"=="TRUEYES" !Cecho! {%_YELLOW%}Video             {%HC_WHITE%}: Enhanced Layer ({%HC_GREEN%}Dolby Vision Profile 7{%HC_WHITE%}) [!subprofile!{%HC_WHITE%}] + RPU ({%HC_GREEN%}!DM:~2!{%HC_WHITE%}){#}{\n}
 ::DV RPU/XML INFOLINE
-if "!DVinput!!DVBIN!"=="YESYES" call :colortxt 0E "RPU               " & call :colortxt 0F ": Reference Processing Unit Binary (" & call :colortxt 0A "Dolby Vision Profile !DVprofile!!DM!" & call :colortxt 0F ")" /n
+if "!DVinput!!DVBIN!"=="YESYES" !Cecho! {%_YELLOW%}RPU               {%HC_WHITE%}: Reference Processing Unit Binary ({%HC_GREEN%}}Dolby Vision Profile !DVprofile!!DM!{%HC_WHITE%}){#}{\n}
 ::NO_DV
-if "!DVinput!!DVBIN!"=="NONO" call :colortxt 0E "Video             " & call :colortxt 0F ": !CODEC_NAME!" & call :colortxt 0F " (" & call :colortxt 0A "!HDRFormat!" & call :colortxt 0F ")" /n
+if "!DVinput!!DVBIN!"=="NONO" !Cecho! {%_YELLOW%}Video             {%HC_WHITE%}: !CODEC_NAME!" ({%HC_GREEN%}!HDRFormat!{%HC_WHITE%}){#}{\n}
 
 ::RPU STATUS MESSAGE
-if "!RPU_STRING!" NEQ "" call :colortxt 06 "                    !RPU_STRING!" /n
+if "!RPU_STRING!" NEQ "" !Cecho! {%HC_YELLOW%}                    !RPU_STRING!{#}{\n}
 
 ::EL LAYER STATUS MESSAGE
-if "!EL_INPUT!!DVinput!"=="TRUEYES" call :colortxt 06 "                    Enhanced Layer needs muxing into HDR10 Base Layer to work correctly" /n
+if "!EL_INPUT!!DVinput!"=="TRUEYES" !Cecho! {%HC_YELLOW%}                    Enhanced Layer needs muxing into HDR10 Base Layer to work correctly{#}{\n}
 
 ::DV5 NO FALLBACK INFO
-if "!DVprofile!"=="5" (
-	call :colortxt 06 "                    No HDR10 Fallback with Dolby Vision Profile 5" /n
-)
+if "!DVprofile!"=="5" !Cecho! {%HC_YELLOW%}                    No HDR10 Fallback with Dolby Vision Profile 5{#}{\n}
 ::BASE LAYER INFO
 if "!DVBIN!"=="NO" (
 	if "!DVinput!"=="YES" (
 		echo.
 		%YELLOW%
 		echo Base Layer
-		%WHITE%
+		%HCWHITE%
 		echo Codec             : !CODEC_NAME!
 		echo Mastering DCP     : !MDCP!
 		echo Mastering DL      : !Luminance!
@@ -508,13 +529,13 @@ if "!DVinput!!RPU_EXIST!"=="YESTRUE" (
 	echo.
 	%YELLOW%
 	if "!DVBIN!"=="NO" echo RPU
-	%WHITE%
+	%HCWHITE%
 	echo DM Version        : !DM_FULL!
     echo L1-Mastering DL   : !RPULuminanceL1!
     echo L1-MaxCLL         : !RPUCLL_L1!
     echo L1-MaxFALL        : !RPUFALL_L1!
     echo L2-Trims          : !L2_TRIMS!
-	call :colortxt 0F "L5-Active Area    :" & !L5_STRING! /n
+	!Cecho! {%HC_WHITE%}L5-Active Area    : !L5_STRING!{#}{\n}
     echo L6-Mastering DL   : !RPULuminanceL6!
     echo L6-MaxCLL         : !RPUCLL_L6!
 	echo L6-MaxFALL        : !RPUFALL_L6!
@@ -524,35 +545,35 @@ if "!DVinput!!RPU_EXIST!"=="YESTRUE" (
 if "!DVBIN!"=="NO" (
 	if defined RESOLUTION (
 		echo.
-		call :colortxt 0E "Resolution        " & call :colortxt 0F ": !RESOLUTION!" /n
+		!Cecho! {%_YELLOW%}Resolution        {%HC_WHITE%}: !RESOLUTION!{#}{\n}
 	)
 	if defined BITRATE (
 		echo.
-		call :colortxt 0E "Video Bitrate     " & call :colortxt 0F ": !BITRATE!" /n
+		!Cecho! {%_YELLOW%}Video Bitrate     {%HC_WHITE%}: !BITRATE!{#}{\n}
 	)
 	if defined STREAMSIZE (
 		echo.
-		call :colortxt 0E "Video Size        " & call :colortxt 0F ": !STREAMSIZE!" /n
+		!Cecho! {%_YELLOW%}Video Size        {%HC_WHITE%}: !STREAMSIZE!{#}{\n}
 	)
 	if defined FRAMERATE (
 		echo.
-		call :colortxt 0E "Framerate         " & call :colortxt 0F ": !FRAMERATE!" /n
+		!Cecho! {%_YELLOW%}Framerate         {%HC_WHITE%}: !FRAMERATE!{#}{\n}
 	)
 	if defined AUDIO_COUNT (
 		echo.
-		call :colortxt 0E "Audio             " & call :colortxt 0F ": !AUDIO_COUNT!" /n
+		!Cecho! {%_YELLOW%}Audio             {%HC_WHITE%}: !AUDIO_COUNT!{#}{\n}
 	)
 	if defined TEXT_COUNT (
 		echo.
-		call :colortxt 0E "Subtitles         " & call :colortxt 0F ": !TEXT_COUNT!" /n
+		!Cecho! {%_YELLOW%}Subtitles         {%HC_WHITE%}: !TEXT_COUNT!{#}{\n}
 	)
 )
-
 echo.
+%WHITE%
 echo  ========================================================================================================================
-%GREEN%
+%HCGREEN%
 echo.
-echo Finish^^!
+echo Finished^^!
 goto :eof
 
 :OUTPUT_msgBOX
@@ -724,7 +745,7 @@ echo                                         ===================================
 echo.
 echo.
 echo  == CHECK INPUT FILE ====================================================================================================
-%YELLOW%
+%HCYELLOW%
 echo.
 echo No Input File. Use^:
 echo.
@@ -768,58 +789,3 @@ set TempVar=%TempVar%!PasswordChars:~%i%,1!
 if not "%Length%"=="%PasswordLength%" goto GenerateLoop
 set %1=%TempVar%
 goto :eof
-
-:colortxt
-setlocal enableDelayedExpansion
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-	
-:colorPrint Color  Str  [/n]
-setlocal
-set "s=%~2"
-call :colorPrintVar %1 s %3
-exit /b
-
-:colorPrintVar  Color  StrVar  [/n]
-if not defined DEL call :initColorPrint
-setlocal enableDelayedExpansion
-pushd .
-':
-cd \
-set "s=!%~2!"
-::The single blank line within the following IN() clause is critical - DO NOT REMOVE
-for %%n in (^"^
-
-^") do (
-  set "s=!s:\=%%~n\%%~n!"
-  set "s=!s:/=%%~n/%%~n!"
-  set "s=!s::=%%~n:%%~n!"
-)
-for /f delims^=^ eol^= %%s in ("!s!") do (
-  if "!" equ "" setlocal disableDelayedExpansion
-  if %%s==\ (
-    findstr /a:%~1 "." "\'" nul
-    <nul set /p "=%DEL%%DEL%%DEL%"
-  ) else if %%s==/ (
-    findstr /a:%~1 "." "/.\'" nul
-    <nul set /p "=%DEL%%DEL%%DEL%%DEL%%DEL%"
-  ) else (
-    >colorPrint.txt (echo %%s\..\')
-    findstr /a:%~1 /f:colorPrint.txt "."
-    <nul set /p "=%DEL%%DEL%%DEL%%DEL%%DEL%%DEL%%DEL%"
-  )
-)
-if /i "%~3"=="/n" echo(
-popd
-exit /b
-
-:initColorPrint
-for /f %%A in ('"prompt $H&for %%B in (1) do rem"') do set "DEL=%%A %%A"
-<nul >"%temp%\'" set /p "=."
-subst ': "%temp%" >nul
-exit /b
-
-:cleanupColorPrint
-2>nul del "%temp%\'"
-2>nul del "%temp%\colorPrint.txt"
->nul subst ': /d
-exit /b

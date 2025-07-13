@@ -5,11 +5,13 @@ set "HEADER1=File "%~dp0DDVT_OPTIONS.cmd" missing! Script works not correctly!"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"HEADER1=" "%~dp0DDVT_OPTIONS.cmd"') DO set "HEADER1=%%A"
 TITLE DDVT MKVtoMP4 [QfG] v%VERSION%
+set DESIGN=STANDARD
 
 set PasswordChars=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 set PasswordLength=5
 call :CreatePassword Password
 
+set "Cecho=%~dp0tools\cecho_x64.exe" rem Path to cecho_x64.exe
 set "sfkpath=%~dp0tools\sfk.exe" rem Path to sfk.exe
 set "FFMPEGpath=%~dp0tools\ffmpeg.exe" rem Path to ffmpeg.exe
 set "FFPROBEpath=%~dp0tools\ffprobe.exe" rem Path to ffprobe.exe
@@ -36,23 +38,9 @@ set "TMP_FOLDER=SAME AS SOURCE"
 set "TARGET_FOLDER=SAME AS SOURCE"
 set "MKVTOOLNIX_FOLDER=INCLUDED"
 set "HDR_Info=No HDR Infos found"
-set "RESOLUTION=N/A"
-set "HDR=N/A"
-set "CODEC_NAME=N/A"
-set "FRAMERATE=N/A"
-set "FRAMES=N/A"
-set "DIR=FALSE"
 set /a "ERRORCOUNT=0"
 
 setlocal EnableDelayedExpansion
-set "WAIT="!sfkpath!" sleep"
-set "GREEN="!sfkpath!" color green"
-set "RED="!sfkpath!" color red"
-set "YELLOW="!sfkpath!" color yellow"
-set "WHITE="!sfkpath!" color white"
-set "CYAN="!sfkpath!" color cyan"
-set "MAGENTA="!sfkpath!" color magenta"
-set "GREY="!sfkpath!" color grey"
 
 :: Check for INI and Load Settings
 IF EXIST "%~dp0DDVT_OPTIONS.ini" (
@@ -68,7 +56,38 @@ IF EXIST "%~dp0DDVT_OPTIONS.ini" (
 		set "MKVTOOLNIX_FOLDER=%%A"
 		set "MKVTOOLNIX_FOLDER=!MKVTOOLNIX_FOLDER:~18!"
 	)
+	FOR /F "delims=" %%A IN ('findstr /C:"DESIGN=" "%~dp0DDVT_OPTIONS.ini"') DO (
+		set "DESIGN=%%A"
+		set "DESIGN=!DESIGN:~7!"
+	)
 )
+
+set "HCWHITE="!sfkpath!" color white"
+set "HCRED="!sfkpath!" color red"
+set "HCGREEN="!sfkpath!" color green"
+set "HCYELLOW="!sfkpath!" color yellow"
+set "HC_WHITE=0F"
+set "HC_RED=0C"
+set "HC_GREEN=0A"
+set "HC_YELLOW=0E"
+set "GREY="!sfkpath!" color grey"
+set "RED="!sfkpath!" color red"
+set "GREEN="!sfkpath!" color green"
+set "YELLOW="!sfkpath!" color yellow"
+set "BLUE="!sfkpath!" color blue"
+set "MAGENTA="!sfkpath!" color magenta"
+set "CYAN="!sfkpath!" color cyan"
+set "WHITE="!sfkpath!" color white"
+set "_GREY=08"
+set "_RED=0C"
+set "_GREEN=0A"
+set "_YELLOW=0E"
+set "_BLUE=09"
+set "_MAGENTA=0D"
+set "_CYAN=0B"
+set "_WHITE=0F"
+
+if "!DESIGN!" NEQ "STANDARD" call "!DESIGN!"
 
 if "!TARGET_FOLDER!"=="SAME AS SOURCE" (
 	set "TARGET_FOLDER=%~dp1"
@@ -97,7 +116,7 @@ if not exist "%HDR10P_TOOLpath%" set "MISSINGFILE=%HDR10P_TOOLpath%" & goto :COR
 
 cls
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -110,7 +129,7 @@ echo.
 echo.
 echo  == CHECK INPUT FILE ====================================================================================================
 if "%~1"=="" (
-	%YELLOW%
+	%HCYELLOW%
 	echo.
 	echo No Input File. Use DDVT_MKVTOMP4.cmd "YourFilename.mkv"
 	echo.
@@ -124,22 +143,52 @@ if /i "%~x1"==".mkv" set "MKVExtract=TRUE" & goto CHECK
 goto :FALSEINPUT
 
 :CHECK
+set "VIDEO_COUNT="
+set "RESOLUTION="
+set "CODEC_NAME="
+set "FRAMERATE="
+set "DVprofile="
+set "HDRFormat="
+set "ELFILE=FALSE"
+set "RAW_FILE=FALSE"
+set "RAW_FILE=FALSE"
+set "MKVExtract=FALSE"
+set "MP4Extract=FALSE"
+set "HDR=No HDR Infos found"
+set "DVinput=NO"
+set "HDR10Pinput=NO"
+set "HDR_Info=No HDR Infos found"
+set "HDR=FALSE"
+set "HDR10P=FALSE"
+set "DV=FALSE"
+set "FRAMES=N/A"
 if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
-echo.
 %CYAN%
-if "!DIRFOUND!"=="FALSE" echo Analysing File. Please wait...
-if "!DIRFOUND!"=="FALSE" echo.
+if /i "!INPUTFILEEXT!"==".hevc" set "RAW_FILE=TRUE"
+if /i "!INPUTFILEEXT!"==".h265" set "RAW_FILE=TRUE"
+if /i "!INPUTFILEEXT!"==".mkv" set "MKVExtract=TRUE"
+if /i "!INPUTFILEEXT!"==".mp4" set "MP4Extract=TRUE"
+if "!DIRFOUND!"=="FALSE" (
+	echo.
+	echo Analysing File. Please wait...
+	echo.
+)
 set "INPUTSTREAM=!INPUTFILE!"
 set "INFOSTREAM=!INPUTFILE!"
 
-set "VIDEO_COUNT="
 FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=General;%%VideoCount%% "!INFOSTREAM!""') do set "VIDEO_COUNT=%%A"
+
+if "!RAW_FILE!!VIDEO_COUNT!"=="TRUE1" (
+	"!MKVMERGEpath!" --ui-language en --priority higher --output ^"!TMP_FOLDER!\Info.mkv^" --language 0:und --compression 0:none ^"^(^" ^"!INPUTFILE!^" ^"^)^" --split parts:00:00:00-00:00:01 -q
+	if exist "!TMP_FOLDER!\Info.mkv" set "INFOSTREAM=!TMP_FOLDER!\Info.mkv"
+)
 
 ::SET HDR FORMAT
 "!MEDIAINFOpath!" --output=Video;%%HDR_Format_String%% "!INFOSTREAM!">"!TMP_FOLDER!\Info.txt"
 FOR /F "delims=" %%A IN ('findstr /C:"Dolby Vision" "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES"
 FOR /F "delims=" %%A IN ('findstr /C:"HDR10" "!TMP_FOLDER!\Info.txt"') DO set "HDRFormat=HDR10"
 FOR /F "delims=" %%A IN ('findstr /C:"HDR10+" "!TMP_FOLDER!\Info.txt"') DO set "HDRFormat=HDR10+"
+FOR /F "delims=" %%A IN ('findstr /C:"HDR10+" "!TMP_FOLDER!\Info.txt"') DO set "HDR10Pinput=YES"
 FOR /F "delims=" %%A IN ('findstr /C:"dvhe.05" "!TMP_FOLDER!\Info.txt"') DO set "HDRFormat=IPT-PQ-C2"
 FOR /F "delims=" %%A IN ('findstr /C:"HLG" "!TMP_FOLDER!\Info.txt"') DO set "HDRFormat=HLG"
 
@@ -169,28 +218,29 @@ FOR /F "tokens=1,2 delims= " %%A in ('""!MEDIAINFOpath!" --output=Video;%%FrameR
 	set "FRAMERATE_ORIG=%%A"
 )
 FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%FrameCount%% "!INPUTSTREAM!""') do set "FRAMES=%%A"
+
 if "!VIDEO_COUNT!"=="2" set "FRAMES=N/A DL"
 if "!HDRFormat!"=="HDR10" (
 	set "HDR=TRUE"
-	%GREEN%
+	%HCGREEN%
 	if "!DIRFOUND!"=="FALSE" echo HDR10 found.
 )
 if "!HDRFormat!"=="HLG" (
 	set "HDR=TRUE"
-	%GREEN%
+	%HCGREEN%
 	if "!DIRFOUND!"=="FALSE" echo HLG found.
 )
 if "!HDRFormat!"=="HDR10+" (
 	set "HDR=TRUE"
 	set "HDR10P=TRUE"
-	%GREEN%
+	%HCGREEN%
 	if "!DIRFOUND!"=="FALSE" echo HDR10+ SEI found.
 )
 if "!DVprofile!"=="8" (
 	set "HDR=TRUE"
 	set "DV=TRUE"
 	set "DV_Profile=8"
-	%GREEN%
+	%HCGREEN%
 	if "!DIRFOUND!"=="FALSE" echo Dolby Vision Profile 8 found.
 )
 if "!DVprofile!"=="7" (
@@ -199,7 +249,7 @@ if "!DVprofile!"=="7" (
 	set "DV_Profile=7"
 	if "!RESOLUTION!"=="1920x1080" set "ELFILE=TRUE"
 	if exist "!TMP_FOLDER!\RPU.bin" (
-		FOR /F "usebackq" %%A IN ('!TMP_FOLDER!\RPU.bin') DO set "RPUSIZE=%%~zA">nul 2>&1
+		FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU.bin"') DO set "RPUSIZE=%%~zA">nul 2>&1
 		if "!RPUSIZE!" NEQ "0" (
 			"!DO_VI_TOOLpath!" info -s "!TMP_FOLDER!\RPU.bin">"!TMP_FOLDER!\RPUINFO.txt"
 			if exist "!TMP_FOLDER!\RPUINFO.txt" (
@@ -212,7 +262,7 @@ if "!DVprofile!"=="7" (
 			)
 		)
 	)
-	%GREEN%
+	%HCGREEN%
 	if "!ELFILE!"=="FALSE" (
 		if "!DIRFOUND!"=="FALSE" echo Dolby Vision Profile 7!subprofile!!LAYERTYPE! found.
 	) else (
@@ -224,24 +274,24 @@ if "!DVprofile!"=="5" (
 	set "HDR=FALSE"
 	set "DV=TRUE"
 	set "DV_Profile=5"
-	%GREEN%
+	%HCGREEN%
 	if "!DIRFOUND!"=="FALSE" echo Dolby Vision Profile 5 found.
 )
 if "!DVprofile!"=="4" (
 	set "HDR=TRUE"
 	set "DV=TRUE"
 	set "DV_Profile=4"
-	%GREEN%
+	%HCGREEN%
 	if "!DIRFOUND!"=="FALSE" echo Dolby Vision Profile 4 found.
 )
-%GREEN%
+%HCGREEN%
 if "!HDR!"=="TRUE" set "HDR_Info=!HDRFormat!"
 if "!HDR10P!"=="TRUE" set "HDR_Info=HDR10, !HDRFormat!"
 if "!DV!"=="TRUE" set "HDR_Info=Dolby Vision Profile !DV_Profile!"
 if "!HDR!!DV!"=="TRUETRUE" set "HDR_Info=!HDRFormat!, Dolby Vision Profile !DV_Profile!"
 if "!HDR10P!!DV!"=="TRUETRUE" set "HDR_Info=HDR10, !HDRFormat!, Dolby Vision Profile !DV_Profile!"
 echo.
-if "!DIRFOUND!"=="FALSE" echo Analysing complete.
+echo Analysing complete.
 if "!DIRFOUND!"=="TRUE" goto :eof
 TIMEOUT 3 /NOBREAK>nul
 goto :START
@@ -260,10 +310,10 @@ if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
 set "LOG_FILENAME=DDVT MKVtoMP4 (%~nx1)"
 if "!DV_Profile!"=="8" set "FAKEP5ALLOWED=TRUE"
 if "!DIRFOUND!"=="TRUE" set "FAKEP5ALLOWED=TRUE"
-set "MSTATUS=call :colortxt 08 "WAITING"
+set "MSTATUS={08}WAITING"
 cls
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -283,12 +333,12 @@ if "!DIRFOUND!"=="FALSE" (
 ) else (
 	echo  == MASS CONVERTER SETTINGS =============================================================================================
 	echo.
-	call :colortxt 0B "Status     = [" & !MSTATUS! & call :colortxt 0B "]" /n
-	call :colortxt 0B "Folder     = [" & call :colortxt 0A "!SOURCE_FOLDER!" & call :colortxt 0B "]" /n
-	call :colortxt 0B "Info       = [FILES PROCESS/SUM: " & call :colortxt !PFILECOUNTC! "!PFILECOUNT!" & call :colortxt 0B "/!SOURCEFILES!" & call :colortxt 0B "] [DONE: " & call :colortxt !DONECOUNTC! "!DONECOUNT!" & call :colortxt 0B "] [ERROR(S): " & call :colortxt !FERRORCOUNTC! "!FERRORCOUNT!" & call :colortxt 0B "] [SKIPPED: " & call :colortxt !SKIPCOUNTC! "!SKIPCOUNT!" & call :colortxt 0B "]" /n
+	!Cecho! {%_CYAN%}Status     = [!MSTATUS!{%_CYAN%}]{#}{\n}
+	!Cecho! {%_CYAN%}Folder     = [{%HC_WHITE%}!SOURCE_FOLDER!{%_CYAN%}]{#}{\n}
+	!Cecho! {%_CYAN%}Info       = [FILES PROCESS/SUM: {!PFILECOUNTC!}!PFILECOUNT!{%_CYAN%}/!SOURCEFILES!] [DONE: {!DONECOUNTC!}!DONECOUNT!{%_CYAN%}] [ERROR^(S^): {!FERRORCOUNTC!}!FERRORCOUNT!{%_CYAN%}] [SKIPPED: {!SKIPCOUNTC!}!SKIPCOUNT!{%_CYAN%}]{#}{\n}
 )
 echo.
-%YELLOW%
+%HCYELLOW%
 echo Be sure that there no picture based subtitles in your MKV file (PGS or VobSub)^^!
 echo Only textbased subtitles supported.
 echo.
@@ -297,13 +347,13 @@ echo Audio Codec if the source is not compatible with MP4 container.
 echo.
 %WHITE%
 echo  == MENU ================================================================================================================
+%HCWHITE%
 echo.
 echo 1. Audio Codec                    : [!AUDIOCODEC!]
-if "%FAKEP5ALLOWED%"=="TRUE" call :colortxt 0F "2. Fake Profile 5                 : [%FAKEP5%]" & call :colortxt 0E "* *Set Option to [YES] for watching video on old [LG] or [SAMSUNG] TVs." /n
+if "%FAKEP5ALLOWED%"=="TRUE" !Cecho! {%HC_WHITE%}2. Fake Profile 5                 : [%FAKEP5%]{%HC_YELLOW%}*   *Set Option to {%HC_WHITE%}[YES]{%HC_YELLOW%} for watching video on old {%HC_WHITE%}LG{%HC_YELLOW%} or {%HC_WHITE%}SAMSUNG{%HC_YELLOW%} TVs.{#}{\n}
 echo.
 echo S. START
 echo.
-%GREEN%
 echo Change Settings and press [S] to start Converting^^!
 if "%FAKEP5ALLOWED%"=="TRUE" (
 	CHOICE /C 12S /N /M "Select a Letter 1,2,[S]tart"
@@ -337,14 +387,15 @@ if "%FAKEP5ALLOWED%"=="TRUE" (
 goto START
 
 :MBEGIN
-set "MSTATUS=call :colortxt 0F "WORKING"
+set "MSTATUS={0F}WORKING"
 set "FAKEP5O=%FAKEP5%"
 if "!TARGET_FOLDER_TYPE!"=="SOURCE" set "TARGET_FOLDER=!TARGET_FOLDER!\%~n1"
 if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 set "LOG_FILENAME=DDVT MKVtoMP4 (Folder=%~n1)"
+set "logfile=!TARGET_FOLDER!\!LOG_FILENAME!.log"
 rem -------- LOGFILE ------------
-echo  %HEADER1%>"!logfile!"
+echo  !HEADER1!>"!logfile!"
 echo.>>"!logfile!"
 echo                                         ====================================>>"!logfile!"
 echo                                              Dolby Vision Tool MKVtoMP4>>"!logfile!"
@@ -363,17 +414,21 @@ for %%A in ("!SOURCE_FOLDER!\*.mkv") do (
 	) else (
 		set "FERRORCOUNTC=0A"
 	)
+
 	if "!DONECOUNT!" NEQ "0" (
 		set "DONECOUNTC=0A"
 	) else (
 		set "DONECOUNTC=0E"
 	)
+
 	if "!SKIPCOUNT!" NEQ "0" (
 		set "SKIPCOUNTC=0E"
 	) else (
 		set "SKIPCOUNTC=0A"
 	)
+
 	if "!PFILECOUNT!" NEQ "0" set "PFILECOUNTC=0F"
+
 	set "INPUTFILE=%%~dpnxA"
 	set "INPUTFILEPATH=%%~dpA"
 	set "INPUTFILENAME=%%~nA"
@@ -381,7 +436,7 @@ for %%A in ("!SOURCE_FOLDER!\*.mkv") do (
 	call :CHECK
 	cls
 	%GREEN%
-	echo  %HEADER1%
+	echo  !HEADER1!
 	echo.
 	%WHITE%
 	echo                                         ====================================
@@ -394,9 +449,10 @@ for %%A in ("!SOURCE_FOLDER!\*.mkv") do (
 	echo  == MASS CONVERTER ======================================================================================================
 	echo.
 	%CYAN%
-	call :colortxt 0B "Status     = [" & !MSTATUS! & call :colortxt 0B "]" /n
-	call :colortxt 0B "Info       = [MKV FILES PROCESS/SUM: " & call :colortxt !PFILECOUNTC! "!PFILECOUNT!" & call :colortxt 0B "/!SOURCEFILES!" & call :colortxt 0B "] [DONE: " & call :colortxt !DONECOUNTC! "!DONECOUNT!" & call :colortxt 0B "] [ERROR(S): " & call :colortxt !FERRORCOUNTC! "!FERRORCOUNT!" & call :colortxt 0B "] [SKIPPED: " & call :colortxt !SKIPCOUNTC! "!SKIPCOUNT!" & call :colortxt 0B "]" /n
-	echo Filename   = [!INPUTFILENAME!!INPUTFILEEXT!]
+	!Cecho! {%_CYAN%}Status     = [!MSTATUS!{%_CYAN%}]{#}{\n}
+	!Cecho! {%_CYAN%}Folder     = [{%HC_WHITE%}!SOURCE_FOLDER!{%_CYAN%}]{#}{\n}
+	!Cecho! {%_CYAN%}Filename   = [{%HC_WHITE%}!INPUTFILENAME!!INPUTFILEEXT!{%_CYAN%}]{#}{\n}
+	!Cecho! {%_CYAN%}Info       = [FILES PROCESS/SUM: {!PFILECOUNTC!}!PFILECOUNT!{%_CYAN%}/!SOURCEFILES!] [DONE: {!DONECOUNTC!}!DONECOUNT!{%_CYAN%}] [ERROR^(S^): {!FERRORCOUNTC!}!FERRORCOUNT!{%_CYAN%}] [SKIPPED: {!SKIPCOUNTC!}!SKIPCOUNT!{%_CYAN%}]{#}{\n}
 	echo Video Info = [Resolution = !RESOLUTION!] [Codec = !CODEC_NAME!] [Frames = !FRAMES!] [FPS = !FRAMERATE!]
 	echo HDR Info   = [!HDR_Info!]
 	set "FAKEP5=%FAKEP5O%"
@@ -404,9 +460,9 @@ for %%A in ("!SOURCE_FOLDER!\*.mkv") do (
 	call :BEGIN
 )
 cls
-set "MSTATUS=call :colortxt 0A "DONE"
+set "MSTATUS={0A}DONE"
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -419,17 +475,17 @@ echo.
 echo  == MASS CONVERTER ======================================================================================================
 echo.
 %CYAN%
-call :colortxt 0B "Status     = [" & !MSTATUS! & call :colortxt 0B "]" /n
-call :colortxt 0B "Folder     = [" & call :colortxt 0A "!SOURCE_FOLDER!" & call :colortxt 0B "]" /n
-call :colortxt 0B "Info       = [FILES PROCESS/SUM: " & call :colortxt !PFILECOUNTC! "!PFILECOUNT!" & call :colortxt 0B "/!SOURCEFILES!" & call :colortxt 0B "] [DONE: " & call :colortxt !DONECOUNTC! "!DONECOUNT!" & call :colortxt 0B "] [ERROR(S): " & call :colortxt !FERRORCOUNTC! "!FERRORCOUNT!" & call :colortxt 0B "] [SKIPPED: " & call :colortxt !SKIPCOUNTC! "!SKIPCOUNT!" & call :colortxt 0B "]" /n
+!Cecho! {%_CYAN%}Status     = [!MSTATUS!{%_CYAN%}]{#}{\n}
+!Cecho! {%_CYAN%}Folder     = [{%HC_WHITE%}!SOURCE_FOLDER!{%_CYAN%}]{#}{\n}
+!Cecho! {%_CYAN%}Info       = [FILES PROCESS/SUM: {%_CYAN%}!PFILECOUNT!{%_CYAN%}/!SOURCEFILES!] [DONE: {!DONECOUNTC!}!DONECOUNT!{%_CYAN%}] [ERROR^(S^): {!FERRORCOUNTC!}!FERRORCOUNT!{%_CYAN%}] [SKIPPED: {!SKIPCOUNTC!}!SKIPCOUNT!{%_CYAN%}]{#}{\n}
 echo.
 %WHITE%
 echo  ========================================================================================================================
 echo.
-%GREEN%
+%HCGREEN%
 echo CONVERTING DONE^^!.
 echo.
-%YELLOW%
+%HCYELLOW%
 echo Open logfile for detailed Infos.
 echo.
 echo.>>"!logfile!"
@@ -453,7 +509,7 @@ if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 set "WORKFILE=!INPUTFILE!"
 if "!DIRFOUND!"=="FALSE" (
 	rem -------- LOGFILE ------------
-	echo  %HEADER1%>"!logfile!"
+	echo  !HEADER1!>"!logfile!"
 	echo.>>"!logfile!"
 	echo                                         ====================================>>"!logfile!"
 	echo                                              Dolby Vision Tool MKVtoMP4>>"!logfile!"
@@ -467,7 +523,7 @@ if "!DIRFOUND!"=="FALSE" (
 	echo.>>"!logfile!"
 	cls
 	%GREEN%
-	echo  %HEADER1%
+	echo  !HEADER1!
 	echo.
 	%WHITE%
 	echo                                         ====================================
@@ -514,17 +570,16 @@ if "!FAKEP5!"=="YES" (
 		%WHITE%
 		"!MP4MUXERpath!" --dv-profile 5 --input-file "!TMP_FOLDER!\temp.hevc" --output-file "!TMP_FOLDER!\temp.mp4">nul
 	) else (
-		%RED%
+		%HCRED%
 		echo Error.
-		echo.
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	)
 	if exist "!TMP_FOLDER!\temp.mp4" (
 		"!FFMPEGpath!" %DRC% -y -i "!INPUTFILE!" -i "!TMP_FOLDER!\temp.mp4" -strict experimental -loglevel panic -stats -map 1:v? -map 0:a? -map 0:s? -dn -map_chapters -1 -movflags +faststart -c:v copy !AUDIOCODECC! -c:s mov_text -strict -2 "!TARGET_FOLDER!\!INPUTFILENAME!.mp4"
 	) else (
-		%RED%
+		%HCRED%
+		if exist "!TMP_FOLDER!\temp.mp4" del "!TMP_FOLDER!\temp.mp4">nul
 		echo Error.
-		echo.
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	)	
 ) else (
@@ -534,20 +589,34 @@ if "!FAKEP5!"=="YES" (
 	"!FFMPEGpath!" %DRC% -y -i "!INPUTFILE!" -strict experimental -loglevel panic -stats -map 0:v? -map 0:a? -map 0:s? -dn -map_chapters -1 -movflags +faststart -c:v copy !AUDIOCODECC! -c:s mov_text -strict -2 "!TARGET_FOLDER!\!INPUTFILENAME!.mp4"
 )
 if exist "!TARGET_FOLDER!\!INPUTFILENAME!.mp4" (
-	%GREEN%
-	"!MP4FPSMODpath!" -i !duration! "!TARGET_FOLDER!\!INPUTFILENAME!.mp4"
-	set /A DONECOUNT=!DONECOUNT!+1
-	echo ^[DONE^] ^[!INPUTFILENAME!!INPUTFILEEXT!^] -^> ^[!INPUTFILENAME!.mp4^]>>"!logfile!"
-	echo.
+	FOR /F "usebackq" %%A IN ('"!TARGET_FOLDER!\!INPUTFILENAME!.mp4"') DO set filesize=%%~zA
+	if "!filesize!"=="0" (
+		%HCRED%
+		del "!TARGET_FOLDER!\!INPUTFILENAME!.mp4"
+		echo Error.
+		echo ^[ERROR^^!^] ^[!INPUTFILENAME!!INPUTFILEEXT!^]>>"!logfile!"
+		echo.
+		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+		set /A "FERRORCOUNT=!FERRORCOUNT!+1"
+	) else (
+		%HCGREEN%
+		"!MP4FPSMODpath!" -i !duration! "!TARGET_FOLDER!\!INPUTFILENAME!.mp4"
+		set /A DONECOUNT=!DONECOUNT!+1
+		echo ^[DONE^] ^[!INPUTFILENAME!!INPUTFILEEXT!^] -^> ^[!INPUTFILENAME!.mp4^]>>"!logfile!"
+		echo.
+	)
 ) else (
-	%RED%
+	%HCRED%
 	echo Error.
 	echo ^[ERROR^^!^] ^[!INPUTFILENAME!!INPUTFILEEXT!^]>>"!logfile!"
 	echo.
 	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	set /A "FERRORCOUNT=!FERRORCOUNT!+1"
 )
-if "!DIRFOUND!"=="TRUE" goto :eof
+if "!DIRFOUND!"=="TRUE" (
+	del /F /S /Q "!TMP_FOLDER!\*.*">nul
+	goto :eof
+)
 echo.>>"!logfile!"
 echo  == INFO ================================================================================================================>>"!logfile!"
 echo.>>"!logfile!"
@@ -571,10 +640,10 @@ echo Please wait. Cleaning Temp Folder...
 if exist "!TMP_FOLDER!" (
 	RD /S /Q "!TMP_FOLDER!">nul
 	if "%ERRORLEVEL%"=="0" (
-		%GREEN%
+		%HCGREEN%
 		echo Deleting Temp Folder - Done.
 	) else (
-		%RED%
+		%HCRED%
 		echo Deleting Temp Folder - Error.
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	)
@@ -586,14 +655,14 @@ echo.
 echo  == EXIT ================================================================================================================
 echo.
 if "%ERRORCOUNT%"=="0" (
-	%GREEN%
+	%HCGREEN%
 	echo All Operations successful.
-	%WHITE%
+	%HCWHITE%
 	TIMEOUT 30
 ) else (
-	%RED%
+	%HCRED%
 	echo SOME Operations failed.
-	%WHITE%
+	%HCWHITE%
 	TIMEOUT 30
 	goto :ERROR
 )
@@ -645,59 +714,3 @@ set TempVar=%TempVar%!PasswordChars:~%i%,1!
 if not "%Length%"=="%PasswordLength%" goto GenerateLoop
 set %1=%TempVar%
 goto :eof
-
-:colortxt
-setlocal enableDelayedExpansion
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-	
-:colorPrint Color  Str  [/n]
-setlocal
-set "s=%~2"
-call :colorPrintVar %1 s %3
-exit /b
-
-:colorPrintVar  Color  StrVar  [/n]
-if not defined DEL call :initColorPrint
-setlocal enableDelayedExpansion
-pushd .
-':
-cd \
-set "s=!%~2!"
-:: The single blank line within the following IN() clause is critical - DO NOT REMOVE
-for %%n in (^"^
-
-^") do (
-  set "s=!s:\=%%~n\%%~n!"
-  set "s=!s:/=%%~n/%%~n!"
-  set "s=!s::=%%~n:%%~n!"
-)
-for /f delims^=^ eol^= %%s in ("!s!") do (
-  if "!" equ "" setlocal disableDelayedExpansion
-  if %%s==\ (
-    findstr /a:%~1 "." "\'" nul
-    <nul set /p "=%DEL%%DEL%%DEL%"
-  ) else if %%s==/ (
-    findstr /a:%~1 "." "/.\'" nul
-    <nul set /p "=%DEL%%DEL%%DEL%%DEL%%DEL%"
-  ) else (
-    >colorPrint.txt (echo %%s\..\')
-    findstr /a:%~1 /f:colorPrint.txt "."
-    <nul set /p "=%DEL%%DEL%%DEL%%DEL%%DEL%%DEL%%DEL%"
-  )
-)
-if /i "%~3"=="/n" echo(
-popd
-exit /b
-
-
-:initColorPrint
-for /f %%A in ('"prompt $H&for %%B in (1) do rem"') do set "DEL=%%A %%A"
-<nul >"%temp%\'" set /p "=."
-subst ': "%temp%" >nul
-exit /b
-
-:cleanupColorPrint
-2>nul del "%temp%\'"
-2>nul del "%temp%\colorPrint.txt"
->nul subst ': /d
-exit /b

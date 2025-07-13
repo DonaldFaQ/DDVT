@@ -1,10 +1,12 @@
 @echo off & setlocal
 mode con cols=125 lines=57
-set VERSION=0.65.5 beta
+set VERSION=0.70 beta
 set HEADER1=powered by quietvoids tools                                                                  GNU License (GPL) 2021-2025
 TITLE DDVT OPTIONS [QfG] v%VERSION%
+set DESIGN=STANDARD
 
 rem --- Hardcoded settings. Can be changed manually ---
+set "Cecho=%~dp0tools\cecho_x64.exe" rem Path to cecho_x64.exe
 set "sfkpath=%~dp0tools\sfk.exe" rem Path to sfk.exe
 
 rem --- Hardcoded settings. Cannot be changed ---
@@ -24,15 +26,6 @@ setlocal EnableDelayedExpansion
 set "NewLine=[System.Environment]::NewLine"
 set "Line1=Start the script with ADMINISTRATOR permissions to activate/deactivate the Windows SHELL EXTENSIONS. Without ADMINISTRATOR permissions you have insufficent rights changing Windows registry^!"
 START /MIN PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('!Line1!', 'DDVT OPTIONS [QfG] %VERSION%', 'Ok','Info')"
-
-set "WAIT="!sfkpath!" sleep"
-set "GREEN="!sfkpath!" color green"
-set "RED="!sfkpath!" color red"
-set "YELLOW="!sfkpath!" color yellow"
-set "WHITE="!sfkpath!" color white"
-set "CYAN="!sfkpath!" color cyan"
-set "MAGENTA="!sfkpath!" color magenta"
-set "GREY="!sfkpath!" color grey"
 
 ::Check for INI and Load Settings
 IF EXIST "!TOOLFOLDER!DDVT_OPTIONS.ini" (
@@ -73,9 +66,46 @@ IF EXIST "!TOOLFOLDER!DDVT_OPTIONS.ini" (
 		set "FIX_SCENECUTS=%%A"
 		set "FIX_SCENECUTS=!FIX_SCENECUTS:~14!"
 	)
+	FOR /F "delims=" %%A IN ('findstr /C:"DESIGN=" "%~dp0DDVT_OPTIONS.ini"') DO (
+		set "DESIGN=%%A"
+		set "DESIGN=!DESIGN:~7!"
+		FOR /F "usebackq" %%A IN ('"!DESIGN!"') DO set "DESIGN_STRING=%%~nA">nul 2>&1
+	)
 )
 
 :MAINMENU
+set "HCWHITE="!sfkpath!" color white"
+set "HCRED="!sfkpath!" color red"
+set "HCGREEN="!sfkpath!" color green"
+set "HCYELLOW="!sfkpath!" color yellow"
+set "HC_WHITE=0F"
+set "HC_RED=0C"
+set "HC_GREEN=0A"
+set "HC_YELLOW=0E"
+set "GREY="!sfkpath!" color grey"
+set "RED="!sfkpath!" color red"
+set "GREEN="!sfkpath!" color green"
+set "YELLOW="!sfkpath!" color yellow"
+set "BLUE="!sfkpath!" color blue"
+set "MAGENTA="!sfkpath!" color magenta"
+set "CYAN="!sfkpath!" color cyan"
+set "WHITE="!sfkpath!" color white"
+set "_GREY=08"
+set "_RED=0C"
+set "_GREEN=0A"
+set "_YELLOW=0E"
+set "_BLUE=09"
+set "_MAGENTA=0D"
+set "_CYAN=0B"
+set "_WHITE=0F"
+
+if "!DESIGN!" NEQ "STANDARD" (
+	call "!DESIGN!"
+	FOR /F "usebackq" %%A IN ('"!DESIGN!"') DO set "DESIGN_STRING=%%~nA
+) else (
+	set "DESIGN_STRING=STANDARD"
+)
+
 if "!JSON_SUPPORT!"=="NO" set "JSON_PROCESS=DISABLED"
 if "!FIX_SCENECUTS!" NEQ "YES" (
 	set "COL_FIX_SCENECUTS=08"
@@ -97,6 +127,7 @@ if "!JSON_PROCESS!"=="DISABLED" (
 ) else (
 	set "COL_JSON_PROCESS=0A"
 )
+	
 if "!TMP_FOLDER!"=="" set "TMP_FOLDER=SAME AS SOURCE"
 if "!TARGET_FOLDER!"=="" set "TARGET_FOLDER=SAME AS SOURCE"
 set "TMP_FOLDER_STRING=!TMP_FOLDER!\DDVT_<CODE>_TMP"
@@ -105,25 +136,25 @@ set "MKVTOOLNIX_FOLDER_STRING=!MKVTOOLNIX_FOLDER!"
 if "!TMP_FOLDER!"=="SAME AS SOURCE" set "TMP_FOLDER_STRING=<SOURCEDIR>\DDVT_<CODE>_TMP"
 if "!TARGET_FOLDER!"=="SAME AS SOURCE" set "TARGET_FOLDER_STRING=<SOURCEDIR>\<FILENAME>_[<SCRIPTNAME>]"
 if "!MKVTOOLNIX_FOLDER!"=="INCLUDED" (
-	set "MKVTOOLNIX_FOLDER_STRING=<TOOLDIR>\tools"
+	set "MKVTOOLNIX_FOLDER_STRING=...\tools"
 	set "MKVTOOLNIX_REAL_FOLDER=!TOOLFOLDER!tools"
 ) else (
 	set "MKVTOOLNIX_REAL_FOLDER=!MKVTOOLNIX_FOLDER!"
 )
 if exist "!MKVTOOLNIX_REAL_FOLDER!\mkvextract.exe" (
-	set "MKVTOOLNIX_STAT=call :colortxt 0A "OK""
+	set "MKVTOOLNIX_STAT={%HC_GREEN%}OK"
 ) else (
-	set "MKVTOOLNIX_STAT=call :colortxt 0C "FAILED""
+	set "MKVTOOLNIX_STAT={%HC_RED%}FAILED"
 )
 if exist "!AVISYNTH_FOLDER!\plugins+\DirectShowSource.dll" (
-	set "AVISYNTH_STAT=call :colortxt 0A "OK""
+	set "AVISYNTH_STAT={%HC_GREEN%}OK"
 ) else (
-	set "AVISYNTH_STAT=call :colortxt 0C "FAILED""
+	set "AVISYNTH_STAT={%HC_RED%}FAILED"
 )
 if exist "!LAVFILTERS_FOLDER!\x64\LAVSplitter.ax" (
-	set "LAVFILTER_STAT=call :colortxt 0A "OK""
+	set "LAVFILTER_STAT={%HC_GREEN%}OK"
 ) else (
-	set "LAVFILTER_STAT=call :colortxt 0C "FAILED""
+	set "LAVFILTER_STAT={%HC_RED%}FAILED"
 )
 cls
 %GREEN%
@@ -144,40 +175,39 @@ echo.
 %CYAN%
 echo TEMP FOLDER        = !TMP_FOLDER_STRING!
 echo OUTPUT FOLDER      = !TARGET_FOLDER_STRING!
-call :colortxt 0B "MKVTOOLNIX FOLDER  = !MKVTOOLNIX_FOLDER_STRING! [" & !MKVTOOLNIX_STAT! & call :colortxt 0B "]" /n
-call :colortxt 0B "AVISYNTH+ FOLDER   = !AVISYNTH_FOLDER! [" & !AVISYNTH_STAT! & call :colortxt 0B "]" /n
-call :colortxt 0B "LAV Filters FOLDER = !LAVFILTERS_FOLDER! [" & !LAVFILTER_STAT! & call :colortxt 0B "]" /n
+%Cecho% {%_CYAN%}MKVTOOLNIX FOLDER  = !MKVTOOLNIX_FOLDER_STRING! [!MKVTOOLNIX_STAT!{%_CYAN%}]{#}{\n}
+%Cecho% {%_CYAN%}AVISYNTH+ FOLDER   = !AVISYNTH_FOLDER! [!AVISYNTH_STAT!{%_CYAN%}]{#}{\n}
+%Cecho% {%_CYAN%}LAV Filters FOLDER = !LAVFILTERS_FOLDER! [!LAVFILTER_STAT!{%_CYAN%}]{#}{\n}
 echo.
 %WHITE%
 echo  == OPTIONS MENU ========================================================================================================
 echo.
-%GREEN%
+%CYAN%
 echo 1. Set TEMP Directory
 echo 2. Set OUTPUT Directory
-echo 3. Set MKVTOOLNIX Directory 
-echo 4. Set AVISYNTH+ Directory    [Also you can install AVISYNTH+ via this switch]
-echo 5. Set LAV Filters Directory  [Also you can install LAV Filters via this switch]
-%WHITE%
-echo.
-call :colortxt 0F "M. MediaInfo Logfile [" & call :colortxt !COL_MEDIAINFO_LOGFILE! "!MEDIAINFO_LOGFILE!" & call :colortxt 0F "]" /n
-call :colortxt 0F "C. Injector Custom Edit Support [" & call :colortxt !COL_JSON_SUPPORT! "!JSON_SUPPORT!" & call :colortxt 0F "]" /n
-call :colortxt 0F "P. Injector Custom Edit Processing [" & call :colortxt !COL_JSON_PROCESS! "!JSON_PROCESS!" & call :colortxt 0F "]" /n
-call :colortxt 0F "F. Fix Scenecut Flags [" & call :colortxt !COL_FIX_SCENECUTS! "!FIX_SCENECUTS!" & call :colortxt 0F "]" /n
+echo 3. Set MKVTOOLNIX Directory
+%Cecho% {%_CYAN%}4. Set AVISYNTH+ Directory    [{%HC_YELLOW%}Also you can install AVISYNTH+ via this switch{%_CYAN%}]{#}{\n}
+%Cecho% {%_CYAN%}5. Set LAV Filters Directory  [{%HC_YELLOW%}Also you can install LAV Filters via this switch{%_CYAN%}]{#}{\n}
+%Cecho% {%HC_WHITE%}M. MediaInfo Logfile [{%COL_MEDIAINFO_LOGFILE%}!MEDIAINFO_LOGFILE!{%HC_WHITE%}]{#}{\n}
+%Cecho% {%HC_WHITE%}C. Injector Custom Edit Support [{%COL_JSON_SUPPORT%}!JSON_SUPPORT!{%HC_WHITE%}]{#}{\n}
+%Cecho% {%HC_WHITE%}P. Injector Custom Edit Processing [{%COL_JSON_PROCESS%}!JSON_PROCESS!{%HC_WHITE%}]{#}{\n}
+%Cecho% {%HC_WHITE%}F. Fix Scenecut Flags [{%COL_FIX_SCENECUTS%}!FIX_SCENECUTS!{%HC_WHITE%}]{#}{\n}
 echo.
 echo 6. Create Shell Extensions
 echo 7. Delete Shell Extensions
 echo.
-%GREEN%
+%Cecho% {%HC_WHITE%}D. Design [{%HC_YELLOW%}!DESIGN_STRING!{%HC_WHITE%}]{#}{\n}
+echo.
+%HCYELLOW%
 echo S. SAVE SETTINGS
-%WHITE%
+%HCWHITE%
 echo E. Exit
 echo.
-%GREEN%
 echo Change Settings or press [E] to Exit^^!
-CHOICE /C 12345MCPF67SE /N /M "Select a Letter 1,2,3,4,5,M,C,P,F,6,7,[S]ave,[E]xit"
+CHOICE /C 12345MCPF67DSE /N /M "Select a Letter 1,2,3,4,5,M,C,P,F,6,7,D,[S]ave,[E]xit"
 
-if "%ERRORLEVEL%"=="13" goto EXIT
-if "%ERRORLEVEL%"=="12" (
+if "%ERRORLEVEL%"=="14" goto EXIT
+if "%ERRORLEVEL%"=="13" (
 	(
 	echo :: INI File for DDVT. Do not modify, using DDVT_OPTIONS.cmd.
 	echo.
@@ -191,12 +221,28 @@ if "%ERRORLEVEL%"=="12" (
 	echo JSON_SUPPORT=!JSON_SUPPORT!
 	echo JSON_PROCESS=!JSON_PROCESS!
 	echo FIX_SCENECUTS=!FIX_SCENECUTS!
+	echo DESIGN=!DESIGN!
 	echo --------------------------
 	)>"!TOOLFOLDER!DDVT_OPTIONS.ini"
 	echo.
 	%GREEN%
 	echo Settings Saved.
 	%WAIT% 1000
+)
+if "%ERRORLEVEL%"=="12" (
+	echo.
+	%HCYELLOW%
+	echo [Info] Set own Design file here. Design sample files in ...\themes folder.
+	echo        Leave blank and hit ENTER to use STANDARD Design.
+	echo.
+	echo        Design file MUST have one of the following extensions^:
+	echo        bat^/cmd^ ^^!
+	echo.
+	%HCWHITE%
+	echo.
+	!Cecho! {%HC_WHITE%}Drag 'n' Drop {%_GREEN%}DESIGN File {%HC_WHITE%}here and press ENTER:{#}{\n}
+	%GREEN%
+	set /p "DESIGN=" || set "DESIGN=STANDARD"
 )
 if "%ERRORLEVEL%"=="11" (
 	reg delete "HKCR\*\Shell\DDVT Demuxer" /f>nul 2>&1
@@ -308,105 +354,48 @@ if "%ERRORLEVEL%"=="6" (
 	if "%MEDIAINFO_LOGFILE%"=="NO" set "MEDIAINFO_LOGFILE=YES"
 )
 if "%ERRORLEVEL%"=="5" (
-	%YELLOW%
+	%HCYELLOW%
 	echo.
 	echo If you must install LAV Filters leave blank and hit [ENTER]^ for installing^^!
 	echo Don't forget to [S]AVE your settings after editing^^!
-	%WHITE%
+	%HCWHITE%
 	set /p "LAVFILTERS_FOLDER=:>" || "!TOOLFOLDER!tools\Install\LAVFilters-0.80-Installer.exe"
 	goto MAINMENU
 )
 if "%ERRORLEVEL%"=="4" (
-	%YELLOW%
+	%HCYELLOW%
 	echo.
 	echo If you must install AVISYNTH+ leave blank and hit [ENTER]^ for installing^^!
 	echo Don't forget to [S]AVE your settings after editing^^!
-	%WHITE%
+	%HCWHITE%
 	set /p "AVISYNTH_FOLDER=:>" || "!TOOLFOLDER!tools\Install\AviSynthPlus_3.7.5_20250420"
 	goto MAINMENU
 )
 if "%ERRORLEVEL%"=="3" (
-	%YELLOW%
+	%HCYELLOW%
 	echo.
 	echo If you will use the INCLUDED MKVTOOLNIX SET leave blank an press [ENTER]^^!
 	echo Don't forget to [S]AVE your settings after editing^^!
-	%WHITE%
+	%HCWHITE%
 	set /p "MKVTOOLNIX_FOLDER=:>" || SET "MKVTOOLNIX_FOLDER=INCLUDED"
 )
 if "%ERRORLEVEL%"=="2" (
-	%YELLOW%
+	%HCYELLOW%
 	echo.
 	echo If you will use the STANDARD SOURCE folder leave blank an press [ENTER]^^!
 	echo Don't forget to [S]AVE your settings after editing^^!
-	%WHITE%
+	%HCWHITE%
 	set /p "TARGET_FOLDER=Type in your OUTPUT Folder and press [ENTER]:" || SET "TARGET_FOLDER=SAME AS SOURCE"
 )
 if "%ERRORLEVEL%"=="1" (
-	%YELLOW%
+	%HCYELLOW%
 	echo.
 	echo If you will use the STANDARD TEMP folder leave blank an press [ENTER]^^!
 	echo Don't forget to [S]AVE your settings after editing^^!
-	%WHITE%
+	%HCWHITE%
 	set /p "TMP_FOLDER=Type in your TEMP Folder and press [ENTER]:" || SET "TMP_FOLDER=SAME AS SOURCE"
 )
 goto MAINMENU
-
-:colortxt
-setlocal enableDelayedExpansion
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-:colorPrint Color  Str  [/n]
-setlocal
-set "s=%~2"
-call :colorPrintVar %1 s %3
-exit /b
-
-:colorPrintVar  Color  StrVar  [/n]
-if not defined DEL call :initColorPrint
-setlocal enableDelayedExpansion
-pushd .
-':
-cd \
-set "s=!%~2!"
-:: The single blank line within the following IN() clause is critical - DO NOT REMOVE
-for %%n in (^"^
-
-^") do (
-  set "s=!s:\=%%~n\%%~n!"
-  set "s=!s:/=%%~n/%%~n!"
-  set "s=!s::=%%~n:%%~n!"
-)
-for /f delims^=^ eol^= %%s in ("!s!") do (
-  if "!" equ "" setlocal disableDelayedExpansion
-  if %%s==\ (
-    findstr /a:%~1 "." "\'" nul
-    <nul set /p "=%DEL%%DEL%%DEL%"
-  ) else if %%s==/ (
-    findstr /a:%~1 "." "/.\'" nul
-    <nul set /p "=%DEL%%DEL%%DEL%%DEL%%DEL%"
-  ) else (
-    >colorPrint.txt (echo %%s\..\')
-    findstr /a:%~1 /f:colorPrint.txt "."
-    <nul set /p "=%DEL%%DEL%%DEL%%DEL%%DEL%%DEL%%DEL%"
-  )
-)
-if /i "%~3"=="/n" echo(
-popd
-exit /b
-
-
-:initColorPrint
-for /f %%A in ('"prompt $H&for %%B in (1) do rem"') do set "DEL=%%A %%A"
-<nul >"%temp%\'" set /p "=."
-subst ': "%temp%" >nul
-exit /b
-
-
-:cleanupColorPrint
-2>nul del "%temp%\'"
-2>nul del "%temp%\colorPrint.txt"
->nul subst ': /d
-exit /b
 
 :EXIT
 %WHITE%

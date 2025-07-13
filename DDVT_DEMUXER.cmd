@@ -5,11 +5,13 @@ set "HEADER1=File "%~dp0DDVT_OPTIONS.cmd" missing! Script works not correctly!"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"HEADER1=" "%~dp0DDVT_OPTIONS.cmd"') DO set "HEADER1=%%A"
 TITLE DDVT Demuxer [QfG] v%VERSION%
+set DESIGN=STANDARD
 
 set PasswordChars=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 set PasswordLength=5
 call :CreatePassword Password
 
+set "Cecho=%~dp0tools\cecho_x64.exe" rem Path to cecho_x64.exe
 set "sfkpath=%~dp0tools\sfk.exe" rem Path to sfk.exe
 set "jqpath=%~dp0tools\jq-win64.exe" rem Path to jq.exe
 set "FFMPEGpath=%~dp0tools\ffmpeg.exe" rem Path to ffmpeg.exe
@@ -73,14 +75,6 @@ set "DEMUX_RPU=FALSE"
 set /a "ERRORCOUNT=0"
 
 setlocal EnableDelayedExpansion
-set "WAIT="!sfkpath!" sleep"
-set "GREEN="!sfkpath!" color green"
-set "RED="!sfkpath!" color red"
-set "YELLOW="!sfkpath!" color yellow"
-set "WHITE="!sfkpath!" color white"
-set "CYAN="!sfkpath!" color cyan"
-set "MAGENTA="!sfkpath!" color magenta"
-set "GREY="!sfkpath!" color grey"
 
 ::Check for INI and Load Settings
 if exist "%~dp0DDVT_OPTIONS.ini" (
@@ -96,7 +90,39 @@ if exist "%~dp0DDVT_OPTIONS.ini" (
 		set "MKVTOOLNIX_FOLDER=%%A"
 		set "MKVTOOLNIX_FOLDER=!MKVTOOLNIX_FOLDER:~18!"
 	)
+	FOR /F "delims=" %%A IN ('findstr /C:"DESIGN=" "%~dp0DDVT_OPTIONS.ini"') DO (
+		set "DESIGN=%%A"
+		set "DESIGN=!DESIGN:~7!"
+	)
 )
+
+set "HCWHITE="!sfkpath!" color white"
+set "HCRED="!sfkpath!" color red"
+set "HCGREEN="!sfkpath!" color green"
+set "HCYELLOW="!sfkpath!" color yellow"
+set "HC_WHITE=0F"
+set "HC_RED=0C"
+set "HC_GREEN=0A"
+set "HC_YELLOW=0E"
+set "GREY="!sfkpath!" color grey"
+set "RED="!sfkpath!" color red"
+set "GREEN="!sfkpath!" color green"
+set "YELLOW="!sfkpath!" color yellow"
+set "BLUE="!sfkpath!" color blue"
+set "MAGENTA="!sfkpath!" color magenta"
+set "CYAN="!sfkpath!" color cyan"
+set "WHITE="!sfkpath!" color white"
+set "_GREY=08"
+set "_RED=0C"
+set "_GREEN=0A"
+set "_YELLOW=0E"
+set "_BLUE=09"
+set "_MAGENTA=0D"
+set "_CYAN=0B"
+set "_WHITE=0F"
+
+if "!DESIGN!" NEQ "STANDARD" call "!DESIGN!"
+
 if "%TMP_FOLDER%"=="SAME AS SOURCE" (
 	set "TMP_FOLDER=%~dp1DDVT_%Password%_TMP"
 ) else (
@@ -132,7 +158,7 @@ if not "!INPUTFILE!"=="" goto :FALSEINPUT
 :CHECK
 CLS
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -146,7 +172,7 @@ echo.
 echo  == CHECK INPUT FILE ====================================================================================================
 
 if "%~1"=="" (
-	%YELLOW%
+	%HCYELLOW%
 	echo.
 	echo No Input File. Use DDVT_DEMUXER.cmd "YourFilename.hevc/h265/mkv/mp4"
 	echo.
@@ -285,25 +311,25 @@ if "!RPU_FILE!"=="FALSE" (
 	FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%FrameCount%% "!BL_INFOVIDEO!""') do set "FRAMES=%%A"
 	if "!HDRFormat!"=="HDR10" (
 		set "HDR=TRUE"
-		%GREEN%
+		%HCGREEN%
 		echo HDR10 found.
 	)
 	if "!HDRFormat!"=="HLG" (
 		set "HDR=TRUE"
-		%GREEN%
+		%HCGREEN%
 		echo HLG found.
 	)
 	if "!HDRFormat!"=="HDR10+" (
 		set "HDR=TRUE"
 		set "HDR10P=TRUE"
-		%GREEN%
+		%HCGREEN%
 		echo HDR10+ SEI found.
 	)
 	if "!DVprofile!"=="8" (
 		set "HDR=TRUE"
 		set "DV=TRUE"
 		set "DV_Profile=8"
-		%GREEN%
+		%HCGREEN%
 		echo Dolby Vision Profile 8 found.
 	)
 	if "!DVprofile!"=="7" (
@@ -325,7 +351,7 @@ if "!RPU_FILE!"=="FALSE" (
 				)
 			)
 		)
-		%GREEN%
+		%HCGREEN%
 		if "!ELFILE!"=="TRUE" (
 			echo Dolby Vision Profile 7!subprofile!!LAYERTYPE! EL found.
 		) else (
@@ -337,17 +363,17 @@ if "!RPU_FILE!"=="FALSE" (
 		set "HDR=FALSE"
 		set "DV=TRUE"
 		set "DV_Profile=5"
-		%GREEN%
+		%HCGREEN%
 		echo Dolby Vision Profile 5 found.
 	)
 	if "!DVprofile!"=="4" (
 		set "HDR=TRUE"
 		set "DV=TRUE"
 		set "DV_Profile=4"
-		%GREEN%
+		%HCGREEN%
 		echo Dolby Vision Profile 4 found.
 	)
-	%GREEN%
+	%HCGREEN%
 	echo.
 	if exist "!TMP_FOLDER!\Info.mkv" del "!TMP_FOLDER!\Info.mkv">nul
 	if exist "!TMP_FOLDER!\BL.mkv" del "!TMP_FOLDER!\BL.mkv">nul
@@ -362,13 +388,13 @@ if "!RPU_FILE!"=="FALSE" (
 ) else (
 	"!DO_VI_TOOLpath!" info -s "!RPU!" >"!TMP_FOLDER!\RPUINFO.txt"
 	if not exist "!TMP_FOLDER!\RPUINFO.txt" (
-		%RED%
+		%HCRED%
 		echo.
 		echo Corrupt RPU or not RPU File.
 		echo.
 		goto :EXIT
 	)
-	%GREEN%
+	%HCGREEN%
 	echo.
 	echo Analysing complete.
 )
@@ -402,7 +428,6 @@ if exist "!TMP_FOLDER!\RPUINFO.txt" (
 if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
 
 if "!HDRFormat!"=="HLG" set "CONVERT=PROFILE 8.1 HDR10"
-if "!DV_Profile!"=="8" set "CONVERT=NO"
 
 TIMEOUT 3 /NOBREAK>nul
 
@@ -411,7 +436,7 @@ if "!RPU!"=="NO" set "CONVERT=NO"
 if "!RPU_FILE!"=="TRUE" goto :STARTRPU
 cls
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -433,7 +458,7 @@ if "!DVprofile!"=="8" goto :DV8
 if "!DVprofile!"=="7" goto :DV7
 if "!DVprofile!"=="5" goto :DV5
 if "!HDR10P!!DV!"=="TRUEFALSE" goto HDR10Plus
-%RED%
+%HCYELLOW%
 echo No HDR10^+ ^/ Dolby Vision found.
 echo Abort Operation now.
 echo.
@@ -442,7 +467,7 @@ goto :EXIT
 :STARTRPU
 cls
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -468,17 +493,17 @@ goto :EXIT
 if "!CM_VERSION!"=="V40" set "CM_VERSION_text=4.0"
 if "!CM_VERSION!"=="V29" set "CM_VERSION_text=2.9"
 echo  == MENU ================================================================================================================
+%HCWHITE%
 echo.
-echo 1. SAVE BL                        : [%BL%]
-echo 2. SAVE HDR10+ Metadata           : [%SAVHDR10P%]
-echo 3. Skip HDR10+ Validation         : [%SKIPHDR10P%]
-echo 4. Remove HDR10+ Metadata from BL : [%REMHDR10P%]
-echo 5. Convert HDR10+ Metadata to DV  : [%CHGHDR10P%]
-if "%CHGHDR10P%"=="YES" echo 6. Content Mapping Version        : [%CM_VERSION_text%]
+echo 1. SAVE BL                      : [%BL%]
+echo 2. SAVE HDR10+ SEI              : [%SAVHDR10P%]
+echo 3. Skip HDR10+ Validation       : [%SKIPHDR10P%]
+echo 4. Remove HDR10+ SEI from BL    : [%REMHDR10P%]
+echo 5. Convert HDR10+ SEI to DV RPU : [%CHGHDR10P%]
+if "%CHGHDR10P%"=="YES" echo 6. Content Mapping Version      : [%CM_VERSION_text%]
 echo.
 echo S. START
 echo.
-%GREEN%
 echo Change Settings and press [S] to start Extracting^^!
 if "%CHGHDR10P%"=="YES" (
 	CHOICE /C 123456S /N /M "Select a Letter 1,2,3,4,5,6,[S]tart"
@@ -536,7 +561,7 @@ if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 cls
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -549,15 +574,17 @@ echo.
 echo  == SETTINGS ============================================================================================================
 %CYAN%
 echo.
-echo SAVE BL                        : [%BL%]
-echo SAVE HDR10+ Metadata           : [%SAVHDR10P%]
-echo Skip HDR10+ Validation         : [%SKIPHDR10P%]
-echo Remove HDR10+ Metadata from BL : [%REMHDR10P%]
-echo Convert HDR10+ Metadata to DV  : [%CHGHDR10P%]
-if "%CHGHDR10P%"=="YES" echo Content Mapping Version        : [%CM_VERSION_text%]
+echo SAVE BL                      : [%BL%]
+echo SAVE HDR10+ SEI              : [%SAVHDR10P%]
+echo Skip HDR10+ Validation       : [%SKIPHDR10P%]
+echo Remove HDR10+ SEI from BL    : [%REMHDR10P%]
+echo Convert HDR10+ SEI to DV RPU : [%CHGHDR10P%]
+
+if "%CHGHDR10P%"=="YES" echo Content Mapping Version      : [%CM_VERSION_text%]
 echo.
 
 call :SWITCHES
+
 if "%RAW_FILE%"=="FALSE" call :DEMUX
 if %BL%==YES call :DEMUX_BLEL
 if "%SAVHDR10P%%CHGHDR10P%"=="YESNO" call :SAVE_HDR10P
@@ -569,16 +596,15 @@ goto :EXIT
 :DV8
 if "%HDR10P%"=="TRUE" goto DV8HDR10P
 echo  == MENU ================================================================================================================
+%HCWHITE%
 echo.
 echo 1. SAVE BL             : [%BL%]
 echo 2. SAVE RPU            : [%RPU%]
 echo 3. CONVERT RPU         : [%CONVERT%]
-call :colortxt 0F "4. CROP RPU" & call :colortxt 0E "*" & call :colortxt 0F "           : [%CROP%]" & call :colortxt 0E " *Whenever the final result doesn't have letterboxed bars set to [YES]." /n
-%WHITE%
+!Cecho! {%HC_WHITE%}4. CROP RPU{%HC_YELLOW%}*{%HC_WHITE%}           : [%CROP%]   {%HC_YELLOW%}*Whenever the final result doesn't have letterboxed bars set to {%HC_WHITE%}[YES]{%HC_YELLOW%}.{#}{\n}
 echo.
 echo S. START
 echo.
-%GREEN%
 echo Change Settings and press [S] to start Extracting^^!
 CHOICE /C 1234S /N /M "Select a Letter 1,2,3,4,[S]tart"
 
@@ -612,17 +638,16 @@ goto START
 :DV8HDR10P
 echo  == MENU ================================================================================================================
 echo.
-echo 1. SAVE BL                        : [%BL%]
-echo 2. SAVE RPU                       : [%RPU%]
-echo 3. CONVERT RPU                    : [%CONVERT%]
-call :colortxt 0F "4. CROP RPU" & call :colortxt 0E "*" & call :colortxt 0F "                      : [%CROP%]" & call :colortxt 0E " *Whenever the final result doesn't have letterboxed bars set to [YES]." /n
-echo 5. Remove HDR10+ Metadata from BL : [%REMHDR10P%]
-echo 6. SAVE HDR10+ Metadata           : [%SAVHDR10P%]
-%WHITE%
+%HCWHITE%
+echo 1. SAVE BL                   : [%BL%]
+echo 2. SAVE RPU                  : [%RPU%]
+echo 3. CONVERT RPU               : [%CONVERT%]
+!Cecho! {%HC_WHITE%}4. CROP RPU{%HC_YELLOW%}*                 {%HC_WHITE%}: [%CROP%]   {%HC_YELLOW%}*Whenever the final result doesn't have letterboxed bars set to {%HC_WHITE%}[YES]{%HC_YELLOW%}.{#}{\n}
+echo 5. Remove HDR10+ SEI from BL : [%REMHDR10P%]
+echo 6. SAVE HDR10+ SEI           : [%SAVHDR10P%]
 echo.
 echo S. START
 echo.
-%GREEN%
 echo Change Settings and press [S] to start Extracting^^!
 CHOICE /C 123456S /N /M "Select a Letter 1,2,3,4,5,6,[S]tart"
 
@@ -672,7 +697,7 @@ if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 cls
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -686,21 +711,21 @@ if "%HDR10P%"=="TRUE" (
 	echo  == SETTINGS ============================================================================================================
 	%CYAN%
 	echo.
-	echo SAVE BL                        : [%BL%]
-	echo CROP RPU                       : [%CROP%]
-	echo CONVERT RPU                    : [%CONVERT%]
-	echo Remove HDR10+ Metadata from BL : [%REMHDR10P%]
-	echo SAVE HDR10+ Metadata           : [%SAVHDR10P%]
-	echo SAVE RPU                       : [%RPU%]
+	echo SAVE BL                   : [%BL%]
+	echo CROP RPU                  : [%CROP%]
+	echo CONVERT RPU               : [%CONVERT%]
+	echo Remove HDR10+ SEI from BL : [%REMHDR10P%]
+	echo SAVE HDR10+ SEI           : [%SAVHDR10P%]
+	echo SAVE RPU                  : [%RPU%]
 	%WHITE%
 ) else (
 	echo  == SETTINGS ============================================================================================================
 	%CYAN%	
 	echo.
-	echo SAVE BL                        : [%BL%]
-	echo CROP RPU                       : [%CROP%]
-	echo CONVERT RPU                    : [%CONVERT%]
-	echo SAVE RPU                       : [%RPU%]
+	echo SAVE BL     : [%BL%]
+	echo CROP RPU    : [%CROP%]
+	echo CONVERT RPU : [%CONVERT%]
+	echo SAVE RPU    : [%RPU%]
 	%WHITE%
 )
 echo.
@@ -721,15 +746,15 @@ if "!ELFILE!"=="TRUE" (
 if "%HDR10P%"=="TRUE" goto DV7HDR10P
 echo  == MENU ================================================================================================================
 echo.
-if "!ELFILE!"=="FALSE" call :colortxt 0F "1. SAVE BL" & call :colortxt 0E "*" & call :colortxt 0F "            : [%BL%]" & call :colortxt 0E " *For creating a Dual layer Profile 7 Disc set to [YES]." /n
-if "!ELFILE!"=="FALSE" call :colortxt 0F "2. SAVE EL" & call :colortxt 0E "*" & call :colortxt 0F "            : [%EL%]" & call :colortxt 0E " *For creating a Dual layer Profile 7 Disc set to [YES]." /n
-echo 3. SAVE RPU            : [%RPU%]
-echo 4. CONVERT RPU         : [%CONVERT%]
-call :colortxt 0F "5. CROP RPU" & call :colortxt 0E "*" & call :colortxt 0F "           : [%CROP%]" & call :colortxt 0E " *Whenever the final result doesn't have letterboxed bars set to [YES]." /n
+%HCWHITE%
+if "!ELFILE!"=="FALSE" !Cecho! {%HC_WHITE%}1. SAVE BL{%HC_YELLOW%}*    {%HC_WHITE%}: [%BL%]   {%HC_YELLOW%}*For creating a Dual layer Profile 7 Disc set to  {%HC_WHITE%}[YES]{%HC_YELLOW%}.{#}{\n}
+if "!ELFILE!"=="FALSE" !Cecho! {%HC_WHITE%}2. SAVE EL{%HC_YELLOW%}*    {%HC_WHITE%}: [%EL%]   {%HC_YELLOW%}*For creating a Dual layer Profile 7 Disc set to {%HC_WHITE%}[YES]{%HC_YELLOW%}.{#}{\n}
+echo 3. SAVE RPU    : [%RPU%]
+echo 4. CONVERT RPU : [%CONVERT%]
+!Cecho! {%HC_WHITE%}5. CROP RPU{%HC_YELLOW%}*   {%HC_WHITE%}: [%CROP%]   {%HC_YELLOW%}*Whenever the final result doesn't have letterboxed bars set to {%HC_WHITE%}[YES]{%HC_YELLOW%}.{#}{\n}
 echo.
 echo S. START
 echo.
-%GREEN%
 echo Change Settings and press [S] to start Extracting^^!
 CHOICE /C 12345S /N /M "Select a Letter 1,2,3,4,5,[S]tart"
 if "%ERRORLEVEL%"=="6" goto DV7EXT
@@ -773,18 +798,18 @@ if "!ELFILE!"=="TRUE" (
 )
 echo  == MENU ================================================================================================================
 echo.
-if "!ELFILE!"=="FALSE" call :colortxt 0F "1. SAVE BL" & call :colortxt 0E "*" & call :colortxt 0F "                       : [%BL%]" & call :colortxt 0E " *For creating a Dual layer Profile 7 Disc set to [YES]." /n
-echo 2. Remove HDR10+ Metadata from BL : [%REMHDR10P%]
-echo 3. SAVE HDR10+ Metadata           : [%SAVHDR10P%]
-echo 4. Skip HDR10+ Validation         : [%SKIPHDR10P%]
-if "!ELFILE!"=="FALSE" call :colortxt 0F "5. SAVE EL" & call :colortxt 0E "*" & call :colortxt 0F "                       : [%EL%]" & call :colortxt 0E " *For creating a Dual layer Profile 7 Disc set to [YES]." /n
-echo 6. SAVE RPU                       : [%RPU%]
-echo 7. CONVERT RPU                    : [%CONVERT%]
-call :colortxt 0F "8. CROP RPU" & call :colortxt 0E "*" & call :colortxt 0F "                      : [%CROP%]" & call :colortxt 0E " *Whenever the final result doesn't have letterboxed bars set to [YES]." /n
+%HCWHITE%
+if "!ELFILE!"=="FALSE" !Cecho! {%HC_WHITE%}1. SAVE BL{%HC_YELLOW%}*                  {%HC_WHITE%}: [%BL%]   {%HC_YELLOW%}*For creating a Dual layer Profile 7 Disc set to  {%HC_WHITE%}[YES]{%HC_YELLOW%}.{#}{\n}
+echo 2. Remove HDR10+ SEI from BL : [%REMHDR10P%]
+echo 3. SAVE HDR10+ SEI           : [%SAVHDR10P%]
+echo 4. Skip HDR10+ Validation    : [%SKIPHDR10P%]
+if "!ELFILE!"=="FALSE" !Cecho! {%HC_WHITE%}5. SAVE EL{%HC_YELLOW%}*                  {%HC_WHITE%}: [%EL%]   {%HC_YELLOW%}*For creating a Dual layer Profile 7 Disc set to {%HC_WHITE%}[YES]{%HC_YELLOW%}.{#}{\n}
+echo 6. SAVE RPU                  : [%RPU%]
+echo 7. CONVERT RPU               : [%CONVERT%]
+!Cecho! {%HC_WHITE%}8. CROP RPU{%HC_YELLOW%}*                 {%HC_WHITE%}: [%CROP%]   {%HC_YELLOW%}*Whenever the final result doesn't have letterboxed bars set to {%HC_WHITE%}[YES]{%HC_YELLOW%}.{#}{\n}
 echo.
 echo S. START
 echo.
-%GREEN%
 echo Change Settings and press [S] to start Extracting^^!
 CHOICE /C 12345678S /N /M "Select a Letter 1,2,3,4,5,6,7,8,[S]tart"
 
@@ -851,7 +876,7 @@ if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 cls
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -878,11 +903,11 @@ if "%HDR10P%"=="TRUE" (
 	echo  == SETTINGS ============================================================================================================
 	%CYAN%
 	echo.
-	if "!ELFILE!"=="FALSE" echo SAVE BL             : [%BL%]
-	if "!ELFILE!"=="FALSE" echo SAVE EL             : [%EL%]
-	echo SAVE RPU            : [%RPU%]
-	echo CONVERT RPU         : [%CONVERT%]
-	echo CROP RPU            : [%CROP%]
+	if "!ELFILE!"=="FALSE" echo SAVE BL     : [%BL%]
+	if "!ELFILE!"=="FALSE" echo SAVE EL     : [%EL%]
+	echo SAVE RPU    : [%RPU%]
+	echo CONVERT RPU : [%CONVERT%]
+	echo CROP RPU    : [%CROP%]
 	%WHITE%
 )
 echo.
@@ -899,12 +924,12 @@ goto :EXIT
 :DV5
 echo  == MENU ================================================================================================================
 echo.
-echo 1. CONVERT RPU         : [%CONVERT%]
-call :colortxt 0F "2. CROP RPU" & call :colortxt 0E "*" & call :colortxt 0F "           : [%CROP%]" & call :colortxt 0E " *Whenever the final result doesn't have letterboxed bars set to [YES]." /n
+%HCWHITE%
+echo 1. CONVERT RPU : [%CONVERT%]
+!Cecho! {%HC_WHITE%}2. CROP RPU{%HC_YELLOW%}*   {%HC_WHITE%}: [%CROP%]   {%HC_YELLOW%}*Whenever the final result doesn't have letterboxed bars set to {%HC_WHITE%}[YES]{%HC_YELLOW%}.{#}{\n}
 echo.
 echo S. START
 echo.
-%GREEN%
 echo Change Settings and press [S] to start Extracting^^!
 CHOICE /C 12S /N /M "Select a Letter 1,2,[S]tart"
 
@@ -925,7 +950,7 @@ if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 cls
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -938,8 +963,8 @@ echo.
 echo  == SETTINGS ============================================================================================================
 %CYAN%
 echo.
-echo CONVERT RPU         : [%CONVERT%]
-echo CROP RPU            : [%CROP%]
+echo CONVERT RPU : [%CONVERT%]
+echo CROP RPU    : [%CROP%]
 echo.
 
 call :SWITCHES
@@ -965,7 +990,7 @@ if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 %WHITE%
 echo  == DEMUXING ============================================================================================================
 echo.
-%YELLOW%
+%HCYELLOW%
 echo ATTENTION^^! You need a lot of HDD Space for this operation.
 PUSHD "!TMP_FOLDER!"
 if "!VIDEO_COUNT!"=="1" (
@@ -977,11 +1002,20 @@ if "!VIDEO_COUNT!"=="1" (
 			%WHITE%
 			"!FFMPEGpath!" -loglevel panic -stats -y -i "!INPUTFILE!" -c:v copy -bsf:v hevc_metadata -f hevc - | "!DO_VI_TOOLpath!" demux !EXTSTRING! -
 			if exist "!TMP_FOLDER!\EL.hevc" (
+				FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\EL.hevc"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+				if "!CHECKSIZE!" NEQ "0" (
+					%HCGREEN%
+					echo EL Done.
+				) else (
+					%HCRED%
+					set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+					echo EL Error.
+				)
 				set "ELSTREAM=!TMP_FOLDER!\EL.hevc"
-				%GREEN%
+				%HCGREEN%
 				echo EL Done.
 			) else (
-				%RED%
+				%HCRED%
 				echo EL Error.
 				set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 			)
@@ -992,12 +1026,19 @@ if "!VIDEO_COUNT!"=="1" (
 			%WHITE%
 			"!FFMPEGpath!" -loglevel panic -stats -y -i "!INPUTFILE!" -c:v copy -bsf:v hevc_metadata -f hevc "!TMP_FOLDER!\temp.hevc"
 			if exist "!TMP_FOLDER!\temp.hevc" (
-				set "BLSTREAM=!TMP_FOLDER!\temp.hevc"
-				set "ELSTREAM=!TMP_FOLDER!\temp.hevc"
-				%GREEN%
-				echo Done.
+				FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\temp.hevc"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+				if "!CHECKSIZE!" NEQ "0" (
+					%HCGREEN%
+					echo Done.
+					set "BLSTREAM=!TMP_FOLDER!\temp.hevc"
+					set "ELSTREAM=!TMP_FOLDER!\temp.hevc"
+				) else (
+					%HCRED%
+					set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+					echo Error.
+				)
 			) else (
-				%RED%
+				%HCRED%
 				echo Error.
 				set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 			)
@@ -1009,12 +1050,19 @@ if "!VIDEO_COUNT!"=="1" (
 		%WHITE%
 		"!FFMPEGpath!" -loglevel panic -stats -y -i "!INPUTFILE!" -c:v copy -bsf:v hevc_metadata -f hevc "!TMP_FOLDER!\temp.hevc"
 		if exist "!TMP_FOLDER!\temp.hevc" (
-			set "BLSTREAM=!TMP_FOLDER!\temp.hevc"
-			set "ELSTREAM=!TMP_FOLDER!\temp.hevc"
-			%GREEN%
-			echo Done.
+			FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\temp.hevc"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+			if "!CHECKSIZE!" NEQ "0" (
+				%HCGREEN%
+				echo Done.
+				set "BLSTREAM=!TMP_FOLDER!\temp.hevc"
+				set "ELSTREAM=!TMP_FOLDER!\temp.hevc"
+			) else (
+				%HCRED%
+				set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+				echo Error.
+			)
 		) else (
-			%RED%
+			%HCRED%
 			echo Error.
 			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 		)
@@ -1030,10 +1078,10 @@ if "!VIDEO_COUNT!"=="1" (
 			if "%BL%"=="NO" del "!TMP_FOLDER!\BL.hevc">nul
 			if exist "!TMP_FOLDER!\BL.hevc" (
 				set "BLSTREAM=!TMP_FOLDER!\BL.hevc"
-				%GREEN%
+				%HCGREEN%
 				echo BL Done.
 			) else (
-				%RED%
+				%HCRED%
 				echo BL Error.
 				set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 			)		
@@ -1047,10 +1095,10 @@ if "!VIDEO_COUNT!"=="1" (
 		"!FFMPEGpath!" -loglevel panic -stats -y -i "!INPUTFILE!" !DT! -c:v copy -bsf:v hevc_metadata -f hevc "!TMP_FOLDER!\EL.hevc"
 		if exist "!TMP_FOLDER!\EL.hevc" (
 			set "ELSTREAM=!TMP_FOLDER!\EL.hevc"
-			%GREEN%
+			%HCGREEN%
 			echo EL Done.
 		) else (
-			%RED%
+			%HCRED%
 			echo EL Error.
 			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 		)	
@@ -1089,11 +1137,18 @@ if "%BL%"=="YES" (
 			ren "!TARGET_FOLDER!\BL.hevc" "!INPUTFILENAME!_[!NAMESTRING!].hevc">nul
 		)
 	)		
-	if exist "%TARGET_FOLDER%\!INPUTFILENAME!_[!NAMESTRING!].hevc" (
-		%GREEN%
-		echo BL Done.
+	if exist "!TARGET_FOLDER!\!INPUTFILENAME!_[!NAMESTRING!].hevc" (
+		FOR /F "usebackq" %%A IN ('"!TARGET_FOLDER!\!INPUTFILENAME!_[!NAMESTRING!].hevc"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+		if "!CHECKSIZE!" NEQ "0" (
+			%HCGREEN%
+			echo BL Done.
+		) else (
+			%HCRED%
+			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+			echo BL Error.
+		)
 	) else (
-		%RED%
+		%HCRED%
 		echo BL Error.
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	)
@@ -1108,11 +1163,20 @@ if "%EL%"=="YES" (
 			ren "!TARGET_FOLDER!\EL.hevc" "!INPUTFILENAME!_[EL].hevc"
 		)
 	)		
-	if exist "%TARGET_FOLDER%\!INPUTFILENAME!_[EL].hevc" (
-		%GREEN%
+	if exist "!TARGET_FOLDER!\!INPUTFILENAME!_[EL].hevc" (
+		FOR /F "usebackq" %%A IN ('"!TARGET_FOLDER!\!INPUTFILENAME!_[EL].hevc"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+		if "!CHECKSIZE!" NEQ "0" (
+			%HCGREEN%
+			echo EL Done.
+		) else (
+			%HCRED%
+			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+			echo EL Error.
+		)
+		%HCGREEN%
 		echo EL Done.
 	) else (
-		%RED%
+		%HCRED%
 		echo EL Error.
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	)
@@ -1142,11 +1206,19 @@ echo Please wait. Demuxing DV Reference Processing Unit...
 %WHITE%
 "!DO_VI_TOOLpath!" %CROPSTRING% %CONVERTSTRING% extract-rpu "!ELSTREAM!" -o "!TARGET_FOLDER!\!INPUTFILENAME!_[RPU!CSTRING!].bin"
 if exist "!TARGET_FOLDER!\!INPUTFILENAME!_[RPU!CSTRING!].bin" (
-	%GREEN%
-	echo Done.
-	echo.
+	FOR /F "usebackq" %%A IN ('"!TARGET_FOLDER!\!INPUTFILENAME!_[RPU!CSTRING!].bin"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+	if "!CHECKSIZE!" NEQ "0" (
+		%HCGREEN%
+		echo Done.
+		echo.
+	) else (
+		%HCRED%
+		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+		echo Error.
+		echo.
+	)
 ) else (
-	%RED%
+	%HCRED%
 	echo Error.
 	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	echo.
@@ -1162,10 +1234,19 @@ echo Please wait. Extracting DV Reference Processing Unit...
 %WHITE%
 "!DOVI_METApath!" convert "!RPU!" "!TARGET_FOLDER!\!INPUTFILENAME!!HEADERNAME!.xml"
 if exist "!TARGET_FOLDER!\!INPUTFILENAME!!HEADERNAME!.xml" (
-	%GREEN%
-	echo XML Done.
+	FOR /F "usebackq" %%A IN ('"!TARGET_FOLDER!\!INPUTFILENAME!!HEADERNAME!.xml"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+	if "!CHECKSIZE!" NEQ "0" (
+		%HCGREEN%
+		echo XML Done.
+		echo.
+	) else (
+		%HCRED%
+		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+		echo XML Error.
+		echo.
+	)
 ) else (
-	%RED%
+	%HCRED%
 	echo XML Error.
 	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 )
@@ -1174,11 +1255,19 @@ echo.
 "!DO_VI_TOOLpath!" export -i "!RPU!" -d all="!TMP_FOLDER!\info.json"
 "!jqpath!" . "!TMP_FOLDER!\info.json">"!TARGET_FOLDER!\!INPUTFILENAME!!HEADERNAME!.json"
 if exist "!TARGET_FOLDER!\!INPUTFILENAME!!HEADERNAME!.json" (
-	%GREEN%
-	echo JSON Done.
-	echo.
+	FOR /F "usebackq" %%A IN ('"!TARGET_FOLDER!\!INPUTFILENAME!!HEADERNAME!.json"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+	if "!CHECKSIZE!" NEQ "0" (
+		%HCGREEN%
+		echo JSON Done.
+		echo.
+	) else (
+		%HCRED%
+		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+		echo JSON Error.
+		echo.
+	)
 ) else (
-	%RED%
+	%HCRED%
 	echo JSON Error.
 	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	echo.
@@ -1186,17 +1275,26 @@ if exist "!TARGET_FOLDER!\!INPUTFILENAME!!HEADERNAME!.json" (
 goto :eof
 
 :CHG_HDR10P
+if "!RAW_FILE!"=="TRUE" set "BLSTREAM=!INPUTFILE!"
 %CYAN%
 echo Please wait. Extracting HDR10+ SEI...
 %WHITE%
 "!HDR10P_TOOLpath!"%SKIPHDR10PString% extract "!BLSTREAM!" -o "!TMP_FOLDER!\HDR10Plus.json"
 if exist "!TMP_FOLDER!\HDR10Plus.json" (
-	if "%SAVHDR10P%"=="YES" copy "!TMP_FOLDER!\HDR10Plus.json" "!TARGET_FOLDER!\!INPUTFILENAME!_[HDR10+].json">nul
-	%GREEN%
-	echo Done.
-	echo.
+	FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\HDR10Plus.json"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+	if "!CHECKSIZE!" NEQ "0" (
+		if "%SAVHDR10P%"=="YES" copy "!TMP_FOLDER!\HDR10Plus.json" "!TARGET_FOLDER!\!INPUTFILENAME!_[HDR10+].json">nul
+		%HCGREEN%
+		echo Done.
+		echo.
+	) else (
+		%HCRED%
+		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+		echo Error.
+		echo.
+	)
 ) else (
-	%RED%
+	%HCRED%
 	echo Error.
 	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	echo.
@@ -1216,11 +1314,11 @@ echo 	}
 echo }
 )>"!TMP_FOLDER!\Extra.json"
 if exist "!TMP_FOLDER!\Extra.json" (
-	%GREEN%
+	%HCGREEN%
 	echo Done.
 	echo.
 ) else (
-	%RED%
+	%HCRED%
 	echo Error.
 	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	echo.
@@ -1230,11 +1328,19 @@ echo Please wait. Generate RPU.bin...
 %WHITE%
 "!DO_VI_TOOLpath!" generate -j "!TMP_FOLDER!\Extra.json" --hdr10plus-json "!TMP_FOLDER!\HDR10Plus.json" -o "!TARGET_FOLDER!\!INPUTFILENAME!_[HDR10+ RPU].bin"
 if exist "!TARGET_FOLDER!\!INPUTFILENAME!_[HDR10+ RPU].bin" (
-	%GREEN%
-	echo Done.
-	echo.
+	FOR /F "usebackq" %%A IN ('"!TARGET_FOLDER!\!INPUTFILENAME!_[HDR10+ RPU].bin"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+	if "!CHECKSIZE!" NEQ "0" (
+		%HCGREEN%
+		echo Done.
+		echo.
+	) else (
+		%HCRED%
+		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+		echo Error.
+		echo.
+	)
 ) else (
-	%RED%
+	%HCRED%
 	echo Error during RPU.bin creating.
 	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	echo.
@@ -1242,17 +1348,26 @@ if exist "!TARGET_FOLDER!\!INPUTFILENAME!_[HDR10+ RPU].bin" (
 goto :eof
 
 :SAVE_HDR10P
+if "!RAW_FILE!"=="TRUE" set "BLSTREAM=!INPUTFILE!"
 if not exist "!TARGET_FOLDER!\!INPUTFILENAME!_[HDR10+].json" (
 	%CYAN%
 	echo Please wait. Extracting HDR10+ SEI...
 	%WHITE%
 	"!HDR10P_TOOLpath!"%SKIPHDR10PString% extract "!BLSTREAM!" -o "!TARGET_FOLDER!\!INPUTFILENAME!_[HDR10+].json"
 	if exist "!TARGET_FOLDER!\!INPUTFILENAME!_[HDR10+].json" (
-		%GREEN%
-		echo Done.
-		echo.
+		FOR /F "usebackq" %%A IN ('"!TARGET_FOLDER!\!INPUTFILENAME!_[HDR10+].json"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+		if "!CHECKSIZE!" NEQ "0" (
+			%HCGREEN%
+			echo Done.
+			echo.
+		) else (
+			%HCRED%
+			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+			echo Error.
+			echo.
+		)
 	) else (
-		%RED%
+		%HCRED%
 		echo Error.
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 		echo.
@@ -1269,10 +1384,10 @@ echo Please wait. Cleaning Temp Folder...
 if exist "!TARGET_FOLDER!\EL.hevc" if "%EL%"=="NO" (
 	del "!TARGET_FOLDER!\EL.hevc">nul
 	if "%ERRORLEVEL%"=="0" (
-		%GREEN%
+		%HCGREEN%
 		echo Deleting EL.hevc - Done.
 	) else (
-		%RED%
+		%HCRED%
 		echo Deleting EL.hevc - Error.
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	)
@@ -1280,10 +1395,10 @@ if exist "!TARGET_FOLDER!\EL.hevc" if "%EL%"=="NO" (
 if exist "!TMP_FOLDER!" (
 	RD /S /Q "!TMP_FOLDER!">nul
 	if "%ERRORLEVEL%"=="0" (
-		%GREEN%
+		%HCGREEN%
 		echo Deleting Temp Folder - Done.
 	) else (
-		%RED%
+		%HCRED%
 		echo Deleting Temp Folder - Error.
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	)
@@ -1295,14 +1410,14 @@ echo.
 echo  == EXIT ================================================================================================================
 echo.
 if "%ERRORCOUNT%"=="0" (
-	%GREEN%
+	%HCGREEN%
 	echo All Operations successful.
-	%WHITE%
+	%HCWHITE%
 	TIMEOUT 30
 ) else (
-	%RED%
+	%HCRED%
 	echo SOME Operations failed.
-	%WHITE%
+	%HCWHITE%
 	TIMEOUT 30
 	goto :ERROR
 )
@@ -1353,60 +1468,3 @@ set TempVar=%TempVar%!PasswordChars:~%i%,1!
 if not "%Length%"=="%PasswordLength%" goto GenerateLoop
 set %1=%TempVar%
 goto :eof
-
-:colortxt
-setlocal enableDelayedExpansion
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-	
-:colorPrint Color  Str  [/n]
-setlocal
-set "s=%~2"
-call :colorPrintVar %1 s %3
-exit /b
-
-:colorPrintVar  Color  StrVar  [/n]
-if not defined DEL call :initColorPrint
-setlocal enableDelayedExpansion
-pushd .
-':
-cd \
-set "s=!%~2!"
-:: The single blank line within the following IN() clause is critical - DO NOT REMOVE
-for %%n in (^"^
-
-^") do (
-  set "s=!s:\=%%~n\%%~n!"
-  set "s=!s:/=%%~n/%%~n!"
-  set "s=!s::=%%~n:%%~n!"
-)
-for /f delims^=^ eol^= %%s in ("!s!") do (
-  if "!" equ "" setlocal disableDelayedExpansion
-  if %%s==\ (
-    findstr /a:%~1 "." "\'" nul
-    <nul set /p "=%DEL%%DEL%%DEL%"
-  ) else if %%s==/ (
-    findstr /a:%~1 "." "/.\'" nul
-    <nul set /p "=%DEL%%DEL%%DEL%%DEL%%DEL%"
-  ) else (
-    >colorPrint.txt (echo %%s\..\')
-    findstr /a:%~1 /f:colorPrint.txt "."
-    <nul set /p "=%DEL%%DEL%%DEL%%DEL%%DEL%%DEL%%DEL%"
-  )
-)
-if /i "%~3"=="/n" echo(
-popd
-exit /b
-
-
-:initColorPrint
-for /f %%A in ('"prompt $H&for %%B in (1) do rem"') do set "DEL=%%A %%A"
-<nul >"%temp%\'" set /p "=."
-subst ': "%temp%" >nul
-exit /b
-
-
-:cleanupColorPrint
-2>nul del "%temp%\'"
-2>nul del "%temp%\colorPrint.txt"
->nul subst ': /d
-exit /b

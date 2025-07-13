@@ -5,11 +5,13 @@ set "HEADER1=File "%~dp0DDVT_OPTIONS.cmd" missing! Script works not correctly!"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"HEADER1=" "%~dp0DDVT_OPTIONS.cmd"') DO set "HEADER1=%%A"
 TITLE DDVT Injector [QfG] v%VERSION%
+set DESIGN=STANDARD
 
 set PasswordChars=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 set PasswordLength=5
 call :CreatePassword Password
 
+set "Cecho=%~dp0tools\cecho_x64.exe" rem Path to cecho_x64.exe
 set "sfkpath=%~dp0tools\sfk.exe" rem Path to sfk.exe
 set "FFMPEGpath=%~dp0tools\ffmpeg.exe" rem Path to ffmpeg.exe
 set "MP4BOXpath=%~dp0tools\mp4box.exe" rem Path to mp4box.exe
@@ -83,14 +85,6 @@ set "RPU_DVSP="
 set /a "ERRORCOUNT=0"
 
 setlocal EnableDelayedExpansion
-set "WAIT="!sfkpath!" sleep"
-set "GREEN="!sfkpath!" color green"
-set "RED="!sfkpath!" color red"
-set "YELLOW="!sfkpath!" color yellow"
-set "WHITE="!sfkpath!" color white"
-set "CYAN="!sfkpath!" color cyan"
-set "MAGENTA="!sfkpath!" color magenta"
-set "GREY="!sfkpath!" color grey"
 
 ::Check for INI and Load Settings
 if exist "%~dp0DDVT_OPTIONS.ini" (
@@ -112,14 +106,45 @@ if exist "%~dp0DDVT_OPTIONS.ini" (
 	)
 	FOR /F "delims=" %%A IN ('findstr /C:"JSON_PROCESS=" "%~dp0DDVT_OPTIONS.ini"') DO (
 		set "CUSTOMEDIT=%%A"
-		echo "!CUSTOMEDIT!"
 		set "CUSTOMEDIT=!CUSTOMEDIT:~13!"
 	)
 	FOR /F "delims=" %%A IN ('findstr /C:"FIX_SCENECUTS=" "%~dp0DDVT_OPTIONS.ini"') DO (
 		set "FIX_SCENECUTS=%%A"
 		set "FIX_SCENECUTS=!FIX_SCENECUTS:~14!"
 	)
+	FOR /F "delims=" %%A IN ('findstr /C:"DESIGN=" "%~dp0DDVT_OPTIONS.ini"') DO (
+		set "DESIGN=%%A"
+		set "DESIGN=!DESIGN:~7!"
+	)
 )
+
+set "HCWHITE="!sfkpath!" color white"
+set "HCRED="!sfkpath!" color red"
+set "HCGREEN="!sfkpath!" color green"
+set "HCYELLOW="!sfkpath!" color yellow"
+set "HC_WHITE=0F"
+set "HC_RED=0C"
+set "HC_GREEN=0A"
+set "HC_YELLOW=0E"
+set "GREY="!sfkpath!" color grey"
+set "RED="!sfkpath!" color red"
+set "GREEN="!sfkpath!" color green"
+set "YELLOW="!sfkpath!" color yellow"
+set "BLUE="!sfkpath!" color blue"
+set "MAGENTA="!sfkpath!" color magenta"
+set "CYAN="!sfkpath!" color cyan"
+set "WHITE="!sfkpath!" color white"
+set "_GREY=08"
+set "_RED=0C"
+set "_GREEN=0A"
+set "_YELLOW=0E"
+set "_BLUE=09"
+set "_MAGENTA=0D"
+set "_CYAN=0B"
+set "_WHITE=0F"
+
+if "!DESIGN!" NEQ "STANDARD" call "!DESIGN!"
+
 if "%TMP_FOLDER%"=="SAME AS SOURCE" (
 	set "TMP_FOLDER=%~dp1DDVT_%Password%_TMP"
 ) else (
@@ -145,7 +170,7 @@ if not exist "%HDR10PDELAYSCRIPTpath%" set "MISSINGFILE=%HDR10PDELAYSCRIPTpath%"
 
 cls
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -169,7 +194,7 @@ if /i "%~x1"==".bin" set "RPU_FILE=TRUE" & goto :PREPARE_CJ
 if not "!INPUTFILE!"=="" goto :FALSEINPUT
 
 if "%~1"=="" (
-	%YELLOW%
+	%HCYELLOW%
 	echo.
 	echo No Input File. Use DDVT_INJECTOR.cmd "YourFilename.mkv/mp4/hevc/h265"
 	%WHITE%
@@ -180,7 +205,7 @@ if "%~1"=="" (
 :PREPARE_DV
 FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=General;%%VideoCount%% "!INPUTFILE!""') do set "VIDEO_COUNT=%%A"
 if "!VIDEO_COUNT!" NEQ "1" (
-	%YELLOW%
+	%HCYELLOW%
 	echo.
 	echo No Support for Dual Layer Container^^!
 	%WHITE%
@@ -189,7 +214,7 @@ if "!VIDEO_COUNT!" NEQ "1" (
 )
 cls
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -201,12 +226,13 @@ echo.
 echo.
 echo  == INSERT RPU FILE / ENHANCED LAYER ====================================================================================
 echo.
-%GREEN%
+%HCYELLOWN%
 echo [Info] For injecting DV Metadata, drag 'n' drop here your RPU [*.bin] or your ENHANCED LAYER [*.hevc, *.h265] and hit ENTER. 
 echo        To skip DV injection leave blank and hit ENTER.
 echo.
-call :colortxt 0E "Drag 'n' Drop" & call :colortxt 0A " RPU FILE / ENHANCED LAYER " & call :colortxt 0E "file here and press ENTER:" /n
 %WHITE%
+!Cecho! {%_WHITE%}Drag 'n' Drop" {%_GREEN%}RPU FILE / ENHANCED LAYER {%_WHITE%}file here and press ENTER:{#}{\n}
+%GREEN%
 set /p "DV_File=" || set "DV_File=NONE"
 if "!DV_File!" NEQ "NONE" for %%f in (!DV_File!) do set "DV_Filename=%%~nf"
 if "!DV_File!" NEQ "NONE" for %%f in (!DV_File!) do set "DV_Fileext=%%~xf"
@@ -219,12 +245,12 @@ if /I "%DV_Fileext%"==".xml" set "DV_OK=TRUE" & set "XML_exist=YES" & set "DV_IN
 
 if "!DV_OK!"=="FALSE" (
 	if "!DV_File!"=="NONE" (
-		%YELLOW%
+		%HCYELLOW%
 		echo No Dolby Vision file choosen. Skip Dolby Vision injection...
 		TIMEOUT 2 /NOBREAK >nul
 		goto :PREPARE_HDR10P
 	) else (
-		%RED%
+		%HCRED%
 		echo.
 		echo File not Supported^^! Only .xml^/.bin^/.hevc^/.h265 files supported.
 		TIMEOUT 3 /NOBREAK >nul
@@ -235,7 +261,7 @@ if "!DV_OK!"=="FALSE" (
 :PREPARE_HDR10P
 cls
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -247,12 +273,13 @@ echo.
 echo.
 echo  == HDR10 PLUS FILE =====================================================================================================
 echo.
-%GREEN%
+%HCYELLOW%
 echo [Info] For injecting HDR10+ SEI, drag 'n' drop here your HDR10+ JSON file [*.json] and hit ENTER. 
 echo        To skip HDR10+ injection leave blank and hit ENTER.
 echo.
-call :colortxt 0E "Drag 'n' Drop" & call :colortxt 0A " HDR10+ JSON " & call :colortxt 0E "file here and press ENTER:" /n
 %WHITE%
+!Cecho! {%_WHITE%}Drag 'n' Drop" {%_GREEN%}HDR10+ JSON {%_WHITE%}file here and press ENTER:{#}{\n}
+%GREEN%
 set /p "HDR10P_file=" || set "HDR10P_file=NONE"
 if "!HDR10P_file!" NEQ "NONE" for %%f in (!HDR10P_file!) do set "HDR10P_Filename=%%~nf"
 if "!HDR10P_file!" NEQ "NONE" for %%f in (!HDR10P_file!) do set "HDR10P_Fileext=%%~xf"
@@ -262,12 +289,12 @@ if /I "%HDR10P_Fileext%"==".json" set "HDR10P_OK=TRUE" & set "HDR10P_exist=YES" 
 
 if "!HDR10P_OK!"=="FALSE" (
 	if "!HDR10P_file!"=="NONE" (
-		%YELLOW%
+		%HCYELLOW%
 		echo No HDR10+ file choosen. Skip HDR10+ injection...
 		TIMEOUT 2 /NOBREAK >nul
 		goto :PREPARE_CJ
 	) else (
-		%RED%
+		%HCRED%
 		echo.
 		echo File not Supported^^! Only .json files supported.
 		TIMEOUT 3 /NOBREAK >nul
@@ -279,7 +306,7 @@ if "!HDR10P_OK!"=="FALSE" (
 if "!JSON_SUPPORT!"=="NO" goto :CHECK
 cls
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -291,13 +318,14 @@ echo.
 echo.
 echo  == CUSTOM EDIT FILE ====================================================================================================
 echo.
-%GREEN%
+%HCYELLOW%
 echo [Info] For operation with a custom json file, drag 'n' drop here your CUSTOM EDIT FILE [*.json] and hit ENTER. 
-echo        Attention^^! The CUSTOM EDIT FILE will be processed BEFORE the tool functions processed.
+echo        Attention^^! You can set in options if CUSTOM EDIT FILE will prcessed BEFORE or AFTER tool processings.
 if "!RPU_FILE!"=="FALSE" echo        To skip this operation leave blank and hit ENTER.
 echo.
-call :colortxt 0E "Drag 'n' Drop" & call :colortxt 0A " CUSTOM EDIT FILE " & call :colortxt 0E "file here and press ENTER:" /n
 %WHITE%
+!Cecho! {%_WHITE%}Drag 'n' Drop" {%_GREEN%}CUSTOM EDIT FILE {%_WHITE%}file here and press ENTER:{#}{\n}
+%GREEN%
 set /p "CJ_File=" || set "CJ_File=NONE"
 if "!CJ_File!" NEQ "NONE" for %%f in (!CJ_File!) do set "CJ_Filename=%%~nf"
 if "!CJ_File!" NEQ "NONE" for %%f in (!CJ_File!) do set "CJ_Fileext=%%~xf"
@@ -308,12 +336,12 @@ if /I "%CJ_Fileext%"==".json" set "CJ_OK=TRUE" & set "CJ_INJ=TRUE"
 if "!RPU_FILE!"=="FALSE" (
 	if "!CJ_OK!"=="FALSE" (
 		if "!CJ_File!"=="NONE" (
-			%YELLOW%
+			%HCYELLOW%
 			echo No EDIT file choosen. Skip CUSTOM EDIT operation...
 			TIMEOUT 2 /NOBREAK >nul
 			goto :CHECK
 		) else (
-			%RED%
+			%HCRED%
 			echo.
 			echo File not Supported^^! Only .json files supported.
 			TIMEOUT 3 /NOBREAK >nul
@@ -324,13 +352,13 @@ if "!RPU_FILE!"=="FALSE" (
 if "!RPU_FILE!"=="TRUE" (
 	if "!CJ_OK!"=="FALSE" (
 		if "!CJ_File!"=="NONE" (
-			%YELLOW%
+			%HCYELLOW%
 			echo No EDIT file choosen. Nothing to do...
 			TIMEOUT 2 /NOBREAK >nul
 			echo.
 			goto :CHECK
 		) else (
-			%RED%
+			%HCRED%
 			echo.
 			echo File not Supported^^! Only .json files supported.
 			TIMEOUT 2 /NOBREAK >nul
@@ -342,7 +370,7 @@ if "!RPU_FILE!"=="TRUE" (
 :CHECK
 cls
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -358,7 +386,7 @@ if "!RPU_FILE!"=="TRUE" (
 ) else (
 	echo  == CHECK INPUT FILE^(S^) =================================================================================================
 	if "%XML_Exist%%RPU_exist%%EL_exist%"=="NONONO" (
-		%YELLOW%
+		%HCYELLOW%
 		set "DV_INJ=FALSE"
 		echo.
 		echo Dolby Vision Input File not set^^!
@@ -366,7 +394,7 @@ if "!RPU_FILE!"=="TRUE" (
 	)
 
 	if "%HDR10P_exist%"=="NO" (
-		%YELLOW%
+		%HCYELLOW%
 		set "HDR10P_INJ=FALSE"
 		echo.
 		echo HDR10+ Input File not set^^!
@@ -374,7 +402,7 @@ if "!RPU_FILE!"=="TRUE" (
 	)
 		
 	if "%JSON_SUPPORT%!CJ_File!"=="YESNONE" (
-		%YELLOW%
+		%HCYELLOW%
 		set "CJ_INJ=FALSE"
 		echo.
 		echo Custom Edit Input File not set^^!
@@ -382,20 +410,20 @@ if "!RPU_FILE!"=="TRUE" (
 	)
 
 	if "%JSON_SUPPORT%%XML_Exist%%RPU_exist%%EL_exist%%HDR10P_exist%"=="NONONONONO" (
-		%RED%
+		%HCRED%
 		echo.
 		echo Dolby Vision and HDR10+ Files not set^^!
-		%YELLOW%
+		%HCYELLOW%
 		echo.
 		echo Abort Operation now.
 		echo.
 		goto :EXIT
 	)
 	if "!CJ_File!%XML_Exist%%RPU_exist%%EL_exist%%HDR10P_exist%"=="NONENONONONO" (
-		%RED%
+		%HCRED%
 		echo.
 		echo No Input Files set^^!
-		%YELLOW%
+		%HCYELLOW%
 		echo.
 		echo Abort Operation now.
 		echo.
@@ -494,25 +522,25 @@ if "!RPU_FILE!"=="FALSE" (
 	if "!VIDEO_COUNT!"=="2" set "FRAMES=N/A DL"
 	if "!HDR_HDRFormat!"=="HDR10" (
 		set "HDR_HDR=TRUE"
-		%GREEN%
+		%HCGREEN%
 		echo HDR10 found.
 	)
 	if "!HDR_HDRFormat!"=="HLG" (
 		set "HDR_HDR=TRUE"
-		%GREEN%
+		%HCGREEN%
 		echo HLG found.
 	)
 	if "!HDR_HDRFormat!"=="HDR10+" (
 		set "HDR_HDR=TRUE"
 		set "HDR_HDR10P=TRUE"
-		%GREEN%
+		%HCGREEN%
 		echo HDR10+ SEI found.
 	)
 	if "!DVprofile!"=="8" (
 		set "HDR_HDR=TRUE"
 		set "HDR_DV=TRUE"
 		set "HDR_DV_Profile=8"
-		%GREEN%
+		%HCGREEN%
 		echo Dolby Vision Profile 8 found.
 	)
 	if "!DVprofile!"=="7" (
@@ -521,7 +549,7 @@ if "!RPU_FILE!"=="FALSE" (
 		set "HDR_DV_Profile=7"
 		if "!RESOLUTION!"=="1920x1080" set "ELFILE=TRUE"
 		if exist "!TMP_FOLDER!\RPU.bin" (
-			FOR /F "usebackq" %%A IN ('!TMP_FOLDER!\RPU.bin') DO set "RPUSIZE=%%~zA">nul 2>&1
+			FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU.bin"') DO set "RPUSIZE=%%~zA">nul 2>&1
 			if "!RPUSIZE!" NEQ "0" (
 				"!DO_VI_TOOLpath!" info -s "!TMP_FOLDER!\RPU.bin">"!TMP_FOLDER!\RPUINFO.txt"
 				if exist "!TMP_FOLDER!\RPUINFO.txt" (
@@ -534,7 +562,7 @@ if "!RPU_FILE!"=="FALSE" (
 				)
 			)
 		)
-		%GREEN%
+		%HCGREEN%
 		if "!ELFILE!"=="TRUE" (
 			echo Dolby Vision Profile 7!subprofile!!LAYERTYPE! EL found.
 		) else (
@@ -546,17 +574,17 @@ if "!RPU_FILE!"=="FALSE" (
 		set "HDR_HDR=FALSE"
 		set "HDR_DV=TRUE"
 		set "HDR_DV_Profile=5"
-		%GREEN%
+		%HCGREEN%
 		echo Dolby Vision Profile 5 found.
 	)
 	if "!DVprofile!"=="4" (
 		set "HDR_HDR=TRUE"
 		set "HDR_DV=TRUE"
 		set "HDR_DV_Profile=4"
-		%GREEN%
+		%HCGREEN%
 		echo Dolby Vision Profile 4 found.
 	)
-	%GREEN%
+	%HCGREEN%
 	if exist "!TMP_FOLDER!\Info.mkv" del "!TMP_FOLDER!\Info.mkv">nul
 	if exist "!TMP_FOLDER!\BL.mkv" del "!TMP_FOLDER!\BL.mkv">nul
 	if exist "!TMP_FOLDER!\RPU.bin" del "!TMP_FOLDER!\RPU.bin">nul
@@ -569,18 +597,18 @@ if "!RPU_FILE!"=="FALSE" (
 
 	if "%JSON_SUPPORT%!CJ_OK!"=="YESTRUE" (
 		if "!HDR_DVinput!!XML_Exist!!RPU_exist!!EL_exist!!HDR10P_exist!"=="YESNONONONO" (
-			%GREEN%
+			%HCGREEN%
 			echo Custom Edit Processing enabled.
 			set "CUSTOM_ONLY=TRUE"
 		) else (
 			if "!XML_Exist!!RPU_exist!!EL_exist!" NEQ "NONONO" (
-				%GREEN%
+				%HCGREEN%
 				echo Custom Edit Processing enabled.
 			) else (
-				%RED%
+				%HCRED%
 				echo.
 				echo Custom Edit Processing enabled but video input file contains no Dolby Vision^^!
-				%YELLOW%
+				%HCYELLOW%
 				echo Use a video input file with Dolby Vision or insert RPU file / Enhanced Layer.
 				echo.
 				goto :EXIT
@@ -590,9 +618,9 @@ if "!RPU_FILE!"=="FALSE" (
 
 
 	if "!DVprofile!!CUSTOM_ONLY!"=="7TRUE" (
-		%RED%
+		%HCRED%
 		echo Custom Edit Files alone cannot processed with Dolby Vision Profile !HDR_DV_Profile!^^!
-		%YELLOW%
+		%HCYELLOW%
 		echo.
 		echo Abort Operation now.
 		echo.
@@ -622,10 +650,10 @@ if "!RPU_FILE!"=="FALSE" (
 		)
 		if exist "!TMP_FOLDER!\Crop.txt" (
 			del "!TMP_FOLDER!\Crop.txt"
-			%GREEN%
+			%HCGREEN%
 			echo Done.
 		) else (
-			%YELLOW%
+			%HCYELLOW%
 			echo Analysing failed.
 			set "AA_INPUT_LC="
 			set "AA_INPUT_TC="
@@ -640,11 +668,11 @@ if "!RPU_FILE!"=="FALSE" (
 		echo Analysing DV EL Stream. Please wait...
 		"!FFMPEGpath!" -loglevel panic -i "!ELSTREAM!" -c:v copy -bsf:v hevc_metadata -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU_EL.bin" - >nul 2>&1
 		if exist "!TMP_FOLDER!\RPU_EL.bin" (
-			%GREEN%
+			%HCGREEN%
 			set "RPUFILE=!TMP_FOLDER!\RPU_EL.bin"
 			echo Done.
 		) else (
-			%YELLOW%
+			%HCRED%
 			echo Analysing failed.
 		)
 		echo.
@@ -656,11 +684,11 @@ if "!RPU_FILE!"=="FALSE" (
 		%WHITE%
 		"!DO_VI_TOOLpath!" generate --xml "!XMLFILE!"!CANVASSTRING! --rpu-out "!TMP_FOLDER!\RPU_XML.bin" >nul 2>&1
 		if exist "!TMP_FOLDER!\RPU_XML.bin" (
-			%GREEN%
+			%HCGREEN%
 			set "RPUFILE=!TMP_FOLDER!\RPU_XML.bin"
 			echo Done.
 		) else (
-			%RED%
+			%HCRED%
 			echo Analysing failed.
 		)
 		echo.
@@ -675,11 +703,11 @@ if exist "!RPUFILE!" (
 	"!DO_VI_TOOLpath!" info -i "!RPUFILE!" -f 01>"!TMP_FOLDER!\Info.json"
 	"!DO_VI_TOOLpath!" info -s "!RPUFILE!">"!TMP_FOLDER!\RPUINFO.txt"
 	if exist "!TMP_FOLDER!\Info.json" (
-		%GREEN%
+		%HCGREEN%
 		echo Done.
 		echo.
 	) else (
-		%YELLOW%
+		%HCRED%
 		echo Analysing failed.
 		echo.
 	)
@@ -777,7 +805,7 @@ if "%MUXINMP4%%MP4Extract%"=="YESTRUE" set "%MUXINMKV%"=="NO" & set "HEADER_EXT=
 set "RPU_AA_String=[LEAVE UNTOUCHED]"
 cls
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -858,14 +886,14 @@ goto :CUSTOM_ONLY_MENU
 :RPU_MENU
 set "HEADER_FILENAME=!INPUTFILENAME!_[EDITED]"
 set "HEADER_EXT=.bin"
-set "HEADER_RPU_AA_String=call :colortxt 0B "Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px]" /n"
-if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_AA_String=call :colortxt 0B "Borders    = [" & call :colortxt 06 "BORDERS NOT SET IN RPU" & call :colortxt 0B "]" /n"
-set "HEADER_RPU_OUTPUT_String=call :colortxt 0E "Borders    = [LEFT=!RPU_AA_LC! px], [TOP=!RPU_AA_TC! px], [RIGHT=!RPU_AA_RC! px], [BOTTOM=!RPU_AA_BC! px]" /n"
-if "!RPU_AA_String!"=="[LEAVE UNTOUCHED]" set "HEADER_RPU_OUTPUT_String=call :colortxt 0E "Borders    = [" & call :colortxt 0F "LEAVE UNTOUCHED" & call :colortxt 0E "]" /n"
+set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px]{#}{\n}
+if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_GREY%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}
+set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=!RPU_AA_LC! px], [TOP=!RPU_AA_TC! px], [RIGHT=!RPU_AA_RC! px], [BOTTOM=!RPU_AA_BC! px]{#}{\n}
+if "!RPU_AA_String!"=="[LEAVE UNTOUCHED]" set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [{%HC_WHITE%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}
 
 cls
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -903,14 +931,13 @@ echo.
 %WHITE%
 echo  == MENU ================================================================================================================
 echo.
+%HCWHITE%
 echo 1. DELAY               : [!DELAY! FRAMES]
 echo.
-call :colortxt 0F "E. EDIT ACTIVE AREA" & call :colortxt 0E "*" & call :colortxt 0E "   *Setting Crop Values. DISCARD set Borders to [" & call :colortxt 0F "LEAVE UNTOUCHED" & call :colortxt 0E "]." /n
-%WHITE%
+!Cecho! {%HC_WHITE%}E. EDIT ACTIVE AREA{%_YELLOW%}*   *Setting Crop Values. DISCARD set Borders to [{%HC_WHITE%}LEAVE UNTOUCHED{%_YELLOW%}].{#}{\n}
 echo.
 echo S. START
 echo.
-%GREEN%
 echo Change Settings and press [S] to start Injecting^^!
 CHOICE /C 1ES /N /M "Select a Letter 1,[E]dit,[S]tart"
 
@@ -918,7 +945,7 @@ if "%ERRORLEVEL%"=="3" goto :RPU_BEGIN
 if "%ERRORLEVEL%"=="2" call :AA_AREA
 if "%ERRORLEVEL%"=="1" (
 	echo.
-	%WHITE%
+	%HCWHITE%
 	echo Type in the RPU DELAY, which will be added.
 	echo Importend^^! Set "-" for negative Delay.
 	echo Example: For cutting 3 Frames type "-3" and press Enter^^!
@@ -940,7 +967,7 @@ if "%MUXINMKV%%MKVExtract%"=="YESTRUE" set "%MUXINMP4%"=="NO" & set "HEADER_EXT=
 if "%MUXINMP4%%MP4Extract%"=="YESTRUE" set "%MUXINMKV%"=="NO" & set "HEADER_EXT=.mp4"
 cls
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -977,6 +1004,7 @@ echo FPS        = [!FPS_string!]
 echo.
 echo  == MENU ================================================================================================================
 echo.
+%HCWHITE%
 echo 1. DELAY               : [!DELAY! FRAMES]
 echo 2. Change FPS          : [!CHGFPS!]
 if "!MKVExtract!"=="TRUE" echo 3. Mux Stream in MKV   : [!MUXINMKV!]
@@ -985,7 +1013,6 @@ echo.
 echo.
 echo S. START
 echo.
-%GREEN%
 echo Change Settings and press [S] to start Injecting^^!
 if "!RAW_FILE!"=="FALSE" (
 	CHOICE /C 123S /N /M "Select a Letter 1,2,3,[S]tart"
@@ -1012,7 +1039,7 @@ if "!RAW_FILE!"=="FALSE" (
 	)		
 	if "%ERRORLEVEL%"=="1" (
 		echo.
-		%WHITE%
+		%HCWHITE%
 		echo Type in the JSON HDR10+ DELAY, which will be added.
 		echo Importend^^! Set "-" for negative Delay.
 		echo Example: For cutting 3 Frames type "-3" and press Enter^^!
@@ -1029,7 +1056,7 @@ if "!RAW_FILE!"=="FALSE" (
 	)
 	if "%ERRORLEVEL%"=="1" (
 		echo.
-		%WHITE%
+		%HCWHITE%
 		echo Type in the JSON HDR10+ DELAY, which will be added.
 		echo Importend^^! Set "-" for negative Delay.
 		echo Example: For cutting 3 Frames type "-3" and press Enter^^!
@@ -1075,50 +1102,55 @@ if "!MUXINMP4!!MP4Extract!"=="YESTRUE" set "!MUXINMKV!"=="NO" & set "HEADER_EXT=
 ::VIDEO LINE
 :: VIDEO-INPUT = RPU-INPUT
 if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%" (
-	set "HEADER_RPU_AA_String=call :colortxt 0B "Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [" & call :colortxt 0A "MATCH WITH VIDEO" & call :colortxt 0B "]" /n"
-	set "AA_String=call :colortxt 0B "Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [" & call :colortxt 0A "MATCH WITH INPUT RPU" & call :colortxt 0B "]" /n"
+	set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_CYAN%}]{#}{\n}
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_GREEN%}MATCH WITH INPUT RPU{%_CYAN%}]{#}{\n}
 ) else (
-	set "HEADER_RPU_AA_String=call :colortxt 0B "Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [" & call :colortxt 0C "NOT MATCH WITH VIDEO" & call :colortxt 0B "]" /n"
-	set "AA_String=call :colortxt 0B "Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [" & call :colortxt 0C "NOT MATCH WITH INPUT RPU" & call :colortxt 0B "]" /n"
+	set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_RED%}NOT MATCH WITH INPUT RPU{%_CYAN%}]{#}{\n}
 )
+
 ::RPU LINE
 :: RPU-INPUT = NONE
-if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_AA_String=call :colortxt 0B "Borders    = [" & call :colortxt 06 "BORDERS NOT SET IN RPU" & call :colortxt 0B "]" /n"
+if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_GREY%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}
+
 ::OUTPUT_LINE
-set "HEADER_RPU_OUTPUT_String=call :colortxt 0E "Borders    = [LEFT=!RPU_AA_LC! px], [TOP=!RPU_AA_TC! px], [RIGHT=!RPU_AA_RC! px], [BOTTOM=!RPU_AA_BC! px] [" & call :colortxt 0C "NOT MATCH WITH VIDEO" & call :colortxt 0E "]" /n"
+set "HEADER_RPU_OUTPUT_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}
+
 :: RPU-OUTPUT = VIDEO-INPUT
 if "%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%"=="%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%" (
-	set "HEADER_RPU_OUTPUT_String=call :colortxt 0E "Borders    = [LEFT=!RPU_AA_LC! px], [TOP=!RPU_AA_TC! px], [RIGHT=!RPU_AA_RC! px], [BOTTOM=!RPU_AA_BC! px] [" & call :colortxt 0A "MATCH WITH VIDEO" & call :colortxt 0E "]" /n"
-	set "AA_String=call :colortxt 0B "Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [" & call :colortxt 0A "MATCH WITH OUTPUT RPU" & call :colortxt 0B "]" /n"
+	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_YELLOW%}]{#}{\n}
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_GREEN%}MATCH WITH OUTPUT{%_CYAN%}]{#}{\n}
 ) else (
-	set "HEADER_RPU_OUTPUT_String=call :colortxt 0E "Borders    = [LEFT=!RPU_AA_LC! px], [TOP=!RPU_AA_TC! px], [RIGHT=!RPU_AA_RC! px], [BOTTOM=!RPU_AA_BC! px] [" & call :colortxt 0C "NOT MATCH WITH VIDEO" & call :colortxt 0E "]" /n"
-	set "AA_String=call :colortxt 0B "Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [" & call :colortxt 0C "NOT MATCH WITH OUTPUT RPU" & call :colortxt 0B "]" /n"
+	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_YELLOW%}]{#}{\n}
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_RED%}NOT MATCH WITH OUTPUT{%_CYAN%}]{#}{\n}
 )
+	
 ::OUTPUT LINE
 :: VIDEO-INPUT = NONE
 if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="" (
-	set "AA_String=call :colortxt 0B "Borders    = [" & call :colortxt 06 "NOT FOUND. MUX FILE IN CONTAINER OR SET CROPPING VALUES MANUALLY" & call :colortxt 0B "]" /n"
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = ["  %_YELLOW% "NOT FOUND. MUX FILE IN CONTAINER OR SET CROPPING VALUES MANUALLY{%_CYAN%}]{#}{\n}
 	if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" (
-		set "HEADER_RPU_AA_String=call :colortxt 0B "Borders    = [" & call :colortxt 06 "BORDERS NOT SET IN RPU" & call :colortxt 0B "]" /n"	
+		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    =[{%_YELLOW%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}
 	) else (
-		set "HEADER_RPU_AA_String=call :colortxt 0B "Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [" & call :colortxt 06 "VIDEO BORDERS NOT FOUND" & call :colortxt 0B "]" /n"
+		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%_YELLOW%}VIDEO BORDERS NOT FOUND{%_CYAN%}]{#}{\n}
 	)
-	set "HEADER_RPU_OUTPUT_String=call :colortxt 0E "Borders    = [LEFT=!RPU_AA_LC! px], [TOP=!RPU_AA_TC! px], [RIGHT=!RPU_AA_RC! px], [BOTTOM=!RPU_AA_BC! px] [" & call :colortxt 06 "VIDEO BORDERS NOT FOUND" & call :colortxt 0E "]" /n"
+	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%_WHITE%}VIDEO BORDERS NOT FOUND{%_YELLOW%}]{#}{\n}
 )
-set "HEADER_RPU_AA_String_RPU=call :colortxt 0B "Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px]" /n"	
-set "HEADER_RPU_OUTPUT_String_RPU=call :colortxt 0E "Borders    = [LEFT=!RPU_AA_LC! px], [TOP=!RPU_AA_TC! px], [RIGHT=!RPU_AA_RC! px], [BOTTOM=!RPU_AA_BC! px]" /n"
+
+set "HEADER_RPU_AA_String_RPU=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px]{#}{\n}
+set "HEADER_RPU_OUTPUT_String_RPU=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px]{#}{\n}
 if "!RPU_AA_String!"=="[LEAVE UNTOUCHED]" (
 	if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%" (
-		set "HEADER_RPU_OUTPUT_String=call :colortxt 0E "Borders    = [" & call :colortxt 0A "LEAVE UNTOUCHED" & call :colortxt 0E "]" /n"
+		set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [{%HC_GREEN%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}
 	) else (
-		set "HEADER_RPU_OUTPUT_String=call :colortxt 0E "Borders    = [" & call :colortxt 0C "LEAVE UNTOUCHED" & call :colortxt 0E "]" /n"
+		set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [{%HC_RED%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}
 	)
-	if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_OUTPUT_String=call :colortxt 0E "Borders    = [" & call :colortxt 06 "LEAVE UNTOUCHED" & call :colortxt 0E "]" /n"
-	if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="" set "HEADER_RPU_OUTPUT_String=call :colortxt 0E "Borders    = [" & call :colortxt 06 "LEAVE UNTOUCHED" & call :colortxt 0E "]" /n"
+	if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [{%HC_WHITE%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}
+	if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="" set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [{%HC_WHITE%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}
 )
 cls
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -1212,7 +1244,7 @@ if "!XML_exist!!RPU_exist!!EL_exist!"=="NONOYES" (
 	echo Video Info = [Resolution = !RESOLUTION!] [Codec = !CODEC_NAME!] [Frames = !FRAMES!] [FPS = !FPS_string!]
 	echo EL Info    = [Dolby Vision Profile !RPU_DVP!!RPU_DVSP!] [DM = !RPU_CMV!] [Frames = !RPU_FRAMES!] [FPS = !FPS_string!]
 	if "!FRAMES!" NEQ "!RPU_FRAMES!" (
-		%RED%
+		%HCRED%
 		echo              Warning^^! BL and EL framecount not identical. This will not be corrected during processing.
 	)
 	%HEADER_RPU_OUTPUT_String%
@@ -1222,7 +1254,7 @@ if "!DV5!"=="TRUE" (
 	if not "!RPU_DVP!"=="5" (
 		echo  == ERROR ===============================================================================================================
 		echo.
-		%RED%
+		%HCRED%
 		echo Found DV Profile 5 VIDEO STREAM, but the RPU has Profile !RPU_DVP!!RPU_DVSP!.
 		echo.
 		goto :EXIT
@@ -1232,7 +1264,7 @@ if "!DV5!"=="FALSE" (
 	if "!RPU_DVP!"=="5" (
 		echo  == ERROR ===============================================================================================================
 		echo.
-		%RED%
+		%HCRED%
 		echo Found !HDR_INFO! VIDEO STREAM, 
 		echo but the RPU has Profile 5.
 		echo.
@@ -1242,21 +1274,20 @@ if "!DV5!"=="FALSE" (
 %WHITE%
 echo  == MENU ================================================================================================================
 echo.
+%HCWHITE%
 if not exist "!ELSTREAM!" echo 1. DELAY               : [!DELAY! FRAMES]
 echo 2. Change FPS          : [!CHGFPS!]
-call :colortxt 0F "3. Video HDR to RPU L6 : [!L6EDITING!]" & call :colortxt 0E "*" & call :colortxt 0E "   *Change L6 Metadata in RPU." /n
-call :colortxt 0F "4. RPU L6 to Video HDR : [!VEDITING!]" & call :colortxt 0E "*" & call :colortxt 0E "   *Change HDR Metadata in Video." /n
-if "!HDR10P!"=="TRUE" echo 5. Remove HDR10+       : [!REMHDR10P!]
+!Cecho! {%HC_WHITE%}3. Video HDR to RPU L6 : [!L6EDITING!]{%HC_YELLOW%}*   *Change L6 Metadata in RPU.{#}{\n}
+!Cecho! {%HC_WHITE%}4. RPU L6 to Video HDR : [!VEDITING!]{%HC_YELLOW%}*   *Change HDR Metadata in Video.{#}{\n}
+if "!HDR10P!"=="TRUE" echo 5. Remove HDR10+ SEI   : [!REMHDR10P!]
 if "!MKVExtract!"=="TRUE" echo 6. MUX STREAM IN MKV   : [!MUXINMKV!]
 if "!MP4Extract!"=="TRUE" echo 6. MUX STREAM IN MP4   : [!MUXINMP4!]
-if exist "!ELSTREAM!" call :colortxt 0F "7. MUX EL IN BL        : [!MUXP7SETTING!]" & call :colortxt 0E "*" & call :colortxt 0E " *Create Profile 7 Single Layer File." /n
+if exist "!ELSTREAM!" !Cecho! {%HC_WHITE%}7. MUX EL IN BL        : [!MUXP7SETTING!]{%HC_YELLOW%}*   *Create Profile 7 Single Layer File.{#}{\n}
 echo.
-call :colortxt 0F "E. EDIT ACTIVE AREA" & call :colortxt 0E "*" & call :colortxt 0E "   *Setting Crop Values. DISCARD set Borders to [" & call :colortxt 0F "LEAVE UNTOUCHED" & call :colortxt 0E "]." /n
-%WHITE%
+!Cecho! {%HC_WHITE%}E. EDIT ACTIVE AREA{%HC_YELLOW%}*   *Setting Crop Values. DISCARD set Borders to [{%HC_WHITE%}LEAVE UNTOUCHED{%HC_YELLOW%}].{#}{\n}
 echo.
 echo S. START
 echo.
-%GREEN%
 if exist "!ELSTREAM!" (
 	if "%HDR10P%"=="TRUE" (
 		if "!RAW_FILE!"=="FALSE" (
@@ -1502,7 +1533,7 @@ if exist "!ELSTREAM!" (
 			)
 			if "%ERRORLEVEL%"=="1" (
 				echo.
-				%WHITE%
+				%HCWHITE%
 				echo Type in the RPU DELAY, which will be added.
 				echo Importend^^! Set "-" for negative Delay.
 				echo Example: For cutting 3 Frames type "-3" and press Enter^^!
@@ -1546,7 +1577,7 @@ if exist "!ELSTREAM!" (
 			)
 			if "%ERRORLEVEL%"=="1" (
 				echo.
-				%WHITE%
+				%HCWHITE%
 				echo Type in the RPU DELAY, which will be added.
 				echo Importend^^! Set "-" for negative Delay.
 				echo Example: For cutting 3 Frames type "-3" and press Enter^^!
@@ -1590,7 +1621,7 @@ if exist "!ELSTREAM!" (
 			)
 			if "%ERRORLEVEL%"=="1" (
 				echo.
-				%WHITE%
+				%HCWHITE%
 				echo Type in the RPU DELAY, which will be added.
 				echo Importend^^! Set "-" for negative Delay.
 				echo Example: For cutting 3 Frames type "-3" and press Enter^^!
@@ -1626,7 +1657,7 @@ if exist "!ELSTREAM!" (
 			)
 			if "%ERRORLEVEL%"=="1" (
 				echo.
-				%WHITE%
+				%HCWHITE%
 				echo Type in the RPU DELAY, which will be added.
 				echo Importend^^! Set "-" for negative Delay.
 				echo Example: For cutting 3 Frames type "-3" and press Enter^^!
@@ -1643,21 +1674,9 @@ goto :DV_MENU
 if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 set "HDR10P_File=NONE"
-rem -------- LOGFILE ------------
-echo  %HEADER1%>"!logfile!"
-echo.>>"!logfile!"
-echo                                         ====================================>>"!logfile!"
-echo                                              Dolby Vision Tool INJECTOR>>"!logfile!"
-echo                                         ====================================>>"!logfile!"
-echo.>>"!logfile!"
-echo.>>"!logfile!"
-echo  == LOGFILE START =======================================================================================================>>"!logfile!"
-echo.>>"!logfile!"
-echo %date%  %time%>>"!logfile!"
-echo.>>"!logfile!"
 cls
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -1677,21 +1696,10 @@ goto :EXIT
 :HDR10P_BEGIN
 if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
-rem -------- LOGFILE ------------
-echo  %HEADER1%>"!logfile!"
-echo.>>"!logfile!"
-echo                                         ====================================>>"!logfile!"
-echo                                              Dolby Vision Tool INJECTOR>>"!logfile!"
-echo                                         ====================================>>"!logfile!"
-echo.>>"!logfile!"
-echo.>>"!logfile!"
-echo  == LOGFILE START =======================================================================================================>>"!logfile!"
-echo.>>"!logfile!"
-echo %date%  %time%>>"!logfile!"
-echo.>>"!logfile!"
+call :LOGFILESTART
 cls
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -1704,7 +1712,7 @@ echo.
 echo.
 echo  == INJECTING ===========================================================================================================
 echo.
-%YELLOW%
+%HCYELLOW%
 echo ATTENTION^^! You need a lot of HDD Space for this operation.
 echo.
 %CYAN%
@@ -1713,15 +1721,25 @@ if "!RAW_FILE!"=="FALSE" (
 	echo Please wait. Extracting Video Layer...
 	%WHITE%
 	"!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -c:v copy -bsf:v hevc_metadata -f hevc "!TMP_FOLDER!\temp.hevc"
-	set "VIDEOSTREAM=!TMP_FOLDER!\temp.hevc"
-	if "!ERRORLEVEL!"=="0" (
-		%GREEN%
-		echo Done.
-		echo.
-		echo Done.>>"!logfile!"
-		echo.>>"!logfile!"
+	if exist "!TMP_FOLDER!\temp.hevc" (
+		FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\temp.hevc"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+		if "!CHECKSIZE!" NEQ "0" (
+			%HCGREEN%
+			set "VIDEOSTREAM=!TMP_FOLDER!\temp.hevc"
+			echo Done.
+			echo.
+			echo Done.>>"!logfile!"
+			echo.>>"!logfile!"
+		) else (
+			%HCRED%
+			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+			echo Error.
+			echo.
+			echo Error.>>"!logfile!"
+			echo.>>"!logfile!"
+		)
 	) else (
-		%RED%
+		%HCRED%
 		echo Error.
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 		echo.
@@ -1742,7 +1760,7 @@ if "!DV_File!"=="NONE" (
 )
 call :HDR10PINJECT
 if "!DV_File!"=="NONE" call :MUXINCONT
-call :LOGFILEEND
+if "!DV_File!"=="NONE" call :LOGFILEEND
 goto :eof
 
 :HDR10PINJECT
@@ -1752,15 +1770,25 @@ echo [Injecting HDR10+ Metadata into stream]>>"!logfile!"
 %WHITE%
 "!HDR10Plus_TOOLpath!" inject -i "!VIDEOSTREAM!" -j "!HDR10PFILE!" -o "!TMP_FOLDER!\hdr10p_temp.hevc"
 if exist "!TMP_FOLDER!\hdr10p_temp.hevc" (
-	%GREEN%
-	if "!RAW_FILE!"=="FALSE" del "!VIDEOSTREAM!"
-	set "VIDEOSTREAM=!TMP_FOLDER!\hdr10p_temp.hevc"
-	echo Done.
-	echo.
-	echo Done.>>"!logfile!"
-	echo.>>"!logfile!"
+	FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\hdr10p_temp.hevc"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+	if "!CHECKSIZE!" NEQ "0" (
+		%HCGREEN%
+		if "!RAW_FILE!"=="FALSE" del "!VIDEOSTREAM!"
+		set "VIDEOSTREAM=!TMP_FOLDER!\hdr10p_temp.hevc"
+		echo Done.
+		echo.
+		echo Done.>>"!logfile!"
+		echo.>>"!logfile!"
+	) else (
+		%HCRED%
+		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+		echo Error.
+		echo.
+		echo Error.>>"!logfile!"
+		echo.>>"!logfile!"
+	)
 ) else (
-	%RED%
+	%HCRED%
 	echo Error.
 	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	echo.
@@ -1772,9 +1800,10 @@ goto :eof
 :DV_BEGIN
 if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
+call :LOGFILESTART
 cls
 %GREEN%
-echo  %HEADER1%
+echo  !HEADER1!
 echo.
 %WHITE%
 echo                                         ====================================
@@ -1791,39 +1820,35 @@ echo.
 echo.
 echo  == INJECTING ===========================================================================================================
 echo.
-%YELLOW%
+%HCYELLOW%
 echo ATTENTION^^! You need a lot of HDD Space for this operation.
 echo.
 %CYAN%
-
-rem -------- LOGFILE ------------
-echo  %HEADER1%>"!logfile!"
-echo.>>"!logfile!"
-echo                                         ====================================>>"!logfile!"
-echo                                              Dolby Vision Tool INJECTOR>>"!logfile!"
-echo                                         ====================================>>"!logfile!"
-echo.>>"!logfile!"
-echo.>>"!logfile!"
-echo  == LOGFILE START =======================================================================================================>>"!logfile!"
-echo.>>"!logfile!"
-echo %date%  %time%>>"!logfile!"
-echo.>>"!logfile!"
-
 if "!RAW_FILE!"=="FALSE" (
 	%CYAN%
 	echo Please wait. Extracting Video Layer...
 	echo [Extracting Video Layer]>>"!logfile!"
 	%WHITE%
 	"!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -c:v copy -bsf:v hevc_metadata -f hevc "!TMP_FOLDER!\temp.hevc"
-	set "VIDEOSTREAM=!TMP_FOLDER!\temp.hevc"
-	if "%ERRORLEVEL%"=="0" (
-		%GREEN%
-		echo Done.
-		echo.
-		echo Done.>>"!logfile!"
-		echo.>>"!logfile!"
+	if exist "!TMP_FOLDER!\temp.hevc" (
+		FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\temp.hevc"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+		if "!CHECKSIZE!" NEQ "0" (
+			%HCGREEN%
+			set "VIDEOSTREAM=!TMP_FOLDER!\temp.hevc"
+			echo Done.
+			echo.
+			echo Done.>>"!logfile!"
+			echo.>>"!logfile!"
+		) else (
+			%HCRED%
+			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+			echo Error.
+			echo.
+			echo Error.>>"!logfile!"
+			echo.>>"!logfile!"
+		)
 	) else (
-		%RED%
+		%HCRED%
 		echo Error.
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 		echo.
@@ -1840,14 +1865,24 @@ if "!CUSTOM_ONLY!"=="TRUE" (
 		echo [Extracting RPU]>>"!logfile!"
 		"!DO_VI_TOOLpath!" extract-rpu "!VIDEOSTREAM!" -o "!TMP_FOLDER!\RPU_CE.bin"
 		if exist "!TMP_FOLDER!\RPU_CE.bin" (
-			set "RPUFILE=!TMP_FOLDER!\RPU_CE.bin"
-			%GREEN%
-			echo Done.
-			echo.
-			echo Done.>>"!logfile!"
-			echo.>>"!logfile!"
+			FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU_CE.bin"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+			if "!CHECKSIZE!" NEQ "0" (
+				%HCGREEN%
+				set "RPUFILE=!TMP_FOLDER!\RPU_CE.bin"
+				echo Done.
+				echo.
+				echo Done.>>"!logfile!"
+				echo.>>"!logfile!"
+			) else (
+				%HCRED%
+				set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+				echo Error.
+				echo.
+				echo Error.>>"!logfile!"
+				echo.>>"!logfile!"
+			)
 		) else (
-			%YELLOW%
+			%HCRED%
 			echo Error.
 			echo.
 			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
@@ -1865,14 +1900,24 @@ if exist "!ELSTREAM!" (
 		echo [Extracting RPU from EL]>>"!logfile!"
 		"!DO_VI_TOOLpath!" extract-rpu "!ELSTREAM!" -o "!TMP_FOLDER!\RPU_EL.bin"
 		if exist "!TMP_FOLDER!\RPU_EL.bin" (
-			set "RPUFILE=!TMP_FOLDER!\RPU_EL.bin"
-			%GREEN%
-			echo Done.
-			echo.
-			echo Done.>>"!logfile!"
-			echo.>>"!logfile!"
+			FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU_EL.bin"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+			if "!CHECKSIZE!" NEQ "0" (
+				%HCGREEN%
+				set "RPUFILE=!TMP_FOLDER!\RPU_EL.bin"
+				echo Done.
+				echo.
+				echo Done.>>"!logfile!"
+				echo.>>"!logfile!"
+			) else (
+				%HCRED%
+				set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+				echo Error.
+				echo.
+				echo Error.>>"!logfile!"
+				echo.>>"!logfile!"
+			)
 		) else (
-			%YELLOW%
+			%HCRED%
 			echo Error.
 			echo.
 			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
@@ -1910,15 +1955,25 @@ echo [Creating RPU Binary]>>"!logfile!"
 %WHITE%
 "!DO_VI_TOOLpath!" generate --xml "!XMLFILE!"!CANVASSTRING! --rpu-out "!TMP_FOLDER!\RPU-CREATED.bin">>"!logfile!"
 if exist "!TMP_FOLDER!\RPU-CREATED.bin" (
-	%GREEN%
-	set "RPUFILE=!TMP_FOLDER!\RPU-CREATED.bin"
-	echo Done.
-	echo.
-	echo Done.>>"!logfile!"
-	echo.>>"!logfile!"
-	goto :eof
+	FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU-CREATED.bin"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+	if "!CHECKSIZE!" NEQ "0" (
+		%HCGREEN%
+		set "RPUFILE=!TMP_FOLDER!\RPU-CREATED.bin"
+		echo Done.
+		echo.
+		echo Done.>>"!logfile!"
+		echo.>>"!logfile!"
+		goto :eof
+	) else (
+		%HCRED%
+		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+		echo Error.
+		echo.
+		echo Error.>>"!logfile!"
+		echo.>>"!logfile!"
+	)
 ) else (
-	%RED%
+	%HCRED%
 	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	echo Error.
 	echo.
@@ -1934,14 +1989,24 @@ echo [Applying Custom Edit script]>>"!logfile!"
 %WHITE%
 "!DO_VI_TOOLpath!" editor -i "!RPUFILE!" -j "!CJ_File!" -o "!TMP_FOLDER!\RPU-CUSTOM.bin">>"!logfile!"
 if exist "!TMP_FOLDER!\RPU-CUSTOM.bin" (
-	%GREEN%
-	set "RPUFILE=!TMP_FOLDER!\RPU-CUSTOM.bin"
-	echo Done.
-	echo.
-	echo Done.>>"!logfile!"
-	echo.>>"!logfile!"
+	FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU-CUSTOM.bin"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+	if "!CHECKSIZE!" NEQ "0" (
+		%HCGREEN%
+		set "RPUFILE=!TMP_FOLDER!\RPU-CUSTOM.bin"
+		echo Done.
+		echo.
+		echo Done.>>"!logfile!"
+		echo.>>"!logfile!"
+	) else (
+		%HCRED%
+		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+		echo Error.
+		echo.
+		echo Error.>>"!logfile!"
+		echo.>>"!logfile!"
+	)
 ) else (
-	%RED%
+	%HCRED%
 	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	echo Error.
 	echo.
@@ -1976,15 +2041,25 @@ echo }
 )>"!TMP_FOLDER!\EDIT.json"
 "!DO_VI_TOOLpath!" editor -i "!RPUFILE!" -j "!TMP_FOLDER!\EDIT.json" -o "!TMP_FOLDER!\RPU-CROPPED.bin">>"!logfile!"
 if exist "!TMP_FOLDER!\RPU-CROPPED.bin" (
-	%GREEN%
-	set "RPUFILE=!TMP_FOLDER!\RPU-CROPPED.bin"
-	set "CROP_RPU=TRUE"
-	echo Done.
-	echo.
-	echo Done.>>"!logfile!"
-	echo.>>"!logfile!"
+	FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU-CROPPED.bin"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+	if "!CHECKSIZE!" NEQ "0" (
+		%HCGREEN%
+		set "RPUFILE=!TMP_FOLDER!\RPU-CROPPED.bin"
+		set "CROP_RPU=TRUE"
+		echo Done.
+		echo.
+		echo Done.>>"!logfile!"
+		echo.>>"!logfile!"
+	) else (
+		%HCRED%
+		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+		echo Error.
+		echo.
+		echo Error.>>"!logfile!"
+		echo.>>"!logfile!"
+	)
 ) else (
-	%RED%
+	%HCRED%
 	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	echo Error.
 	echo.	
@@ -1996,7 +2071,7 @@ goto :eof
 :RPUL6EDITING
 echo [Editing RPU L6 Metadata]>>"!logfile!"
 if "!L6_EDITING!"=="FALSE" (
-	%YELLOW%
+	%HCYELLOW%
 	echo SKIPPED. NEEDED ENTRIES FOR L6 EDITING NOT FOUND IN VIDEO STREAM^^!
 	echo SKIPPED. NEEDED ENTRIES FOR L6 EDITING NOT FOUND IN VIDEO STREAM^^!>>"!logfile!"
 	echo.>>"!logfile!"
@@ -2018,15 +2093,24 @@ if "!L6_EDITING!"=="FALSE" (
 	)>"!TMP_FOLDER!\EDIT.json"
 	"!DO_VI_TOOLpath!" editor -i "!RPUFILE!" -j "!TMP_FOLDER!\EDIT.json" -o "!TMP_FOLDER!\RPU-L6EDIT.bin">>"!logfile!"
 	if exist "!TMP_FOLDER!\RPU-L6EDIT.bin" (
-		%GREEN%
-		del "!TMP_FOLDER!\EDIT.json"
-		set "RPUFILE=!TMP_FOLDER!\RPU-L6EDIT.bin"
-		echo Done.
-		echo.
-		echo Done.>>"!logfile!"
-		echo.>>"!logfile!"
+		FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU-L6EDIT.bin"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+		if "!CHECKSIZE!" NEQ "0" (
+			%HCGREEN%
+			set "RPUFILE=!TMP_FOLDER!\RPU-L6EDIT.bin"
+			echo Done.
+			echo.
+			echo Done.>>"!logfile!"
+			echo.>>"!logfile!"
+		) else (
+			%HCRED%
+			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+			echo Error.
+			echo.
+			echo Error.>>"!logfile!"
+			echo.>>"!logfile!"
+		)
 	) else (
-		%RED%
+		%HCRED%
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 		echo Error.
 		echo.
@@ -2043,7 +2127,7 @@ for %%f in (!VIDEOSTREAM!) do set "VS_EXT=%%~xf"
 %CYAN%
 echo [Editing Video HDR Metadata]>>"!logfile!"
 if "!V_EDITING!"=="FALSE" (
-	%YELLOW%
+	%HCYELLOW%
 	echo.>>"!logfile!"
 	echo SKIPPED. NEEDED ENTRIES FOR HDR EDITING NOT FOUND IN VIDEO STREAM^^!
 	echo SKIPPED. NEEDED ENTRIES FOR HDR EDITING NOT FOUND IN VIDEO STREAM^^!>>"!logfile!"
@@ -2068,15 +2152,25 @@ echo Please wait. Editing Video HDR Metadata...
 %WHITE%
 "!VS_DIR!\HDRMetadataEditor.exe" !HDR_MDCP! !RPUMinDML_L6!,!RPUMaxDML_L6! !RPUCLL_L6!,!RPUFALL_L6! "!VS_DIR!\!VS_NAME!!VS_EXT!">>"!logfile!"
 if exist "!VS_DIR!\!VS_NAME! ^(HDR10-Edited^)!VS_EXT!"  (
-	%GREEN%
-	move "!VS_DIR!\!VS_NAME! ^(HDR10-Edited^)!VS_EXT!" "!TMP_FOLDER!\HDREDIT.hevc">nul
-	set "VIDEOSTREAM=!TMP_FOLDER!\HDREDIT.hevc"
-	echo Done.
-	echo.
-	echo Done.>>"!logfile!"
-	echo.>>"!logfile!"
+	FOR /F "usebackq" %%A IN ('"!VS_DIR!\!VS_NAME! ^(HDR10-Edited^)!VS_EXT!"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+	if "!CHECKSIZE!" NEQ "0" (
+		%HCGREEN%
+		move "!VS_DIR!\!VS_NAME! ^(HDR10-Edited^)!VS_EXT!" "!TMP_FOLDER!\HDREDIT.hevc">nul
+		set "VIDEOSTREAM=!TMP_FOLDER!\HDREDIT.hevc"
+		echo Done.
+		echo.
+		echo Done.>>"!logfile!"
+		echo.>>"!logfile!"
+	) else (
+		%HCRED%
+		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+		echo Error.
+		echo.
+		echo Error.>>"!logfile!"
+		echo.>>"!logfile!"
+	)
 ) else (
-	%RED%
+	%HCRED%
 	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	echo Error.
 	echo.
@@ -2131,15 +2225,25 @@ if "%ERRORLEVEL%"=="0" (
 )
 "!DO_VI_TOOLpath!" editor -i "!RPUFILE!" -j "!TMP_FOLDER!\EDIT.json" -o "!TMP_FOLDER!\RPU-DELAYED.bin">>"!logfile!"
 if exist "!TMP_FOLDER!\RPU-DELAYED.bin" (
-	%GREEN%
-	del "!TMP_FOLDER!\EDIT.json"
-	set "RPUFILE=!TMP_FOLDER!\RPU-DELAYED.bin"
-	echo Done.
-	echo.
-	echo Done.>>"!logfile!"
-	echo.>>"!logfile!"
+	FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU-DELAYED.bin"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+	if "!CHECKSIZE!" NEQ "0" (
+		%HCGREEN%
+		del "!TMP_FOLDER!\EDIT.json"
+		set "RPUFILE=!TMP_FOLDER!\RPU-DELAYED.bin"
+		echo Done.
+		echo.
+		echo Done.>>"!logfile!"
+		echo.>>"!logfile!"
+	) else (
+		%HCRED%
+		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+		echo Error.
+		echo.
+		echo Error.>>"!logfile!"
+		echo.>>"!logfile!"
+	)
 ) else (
-	%RED%
+	%HCRED%
 	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	echo Error.
 	echo.
@@ -2163,15 +2267,25 @@ if exist "!RPUFILE!" (
 	)>"!TMP_FOLDER!\Edit.json"
 	"!DO_VI_TOOLpath!" editor -i "!RPUFILE!" -j "!TMP_FOLDER!\EDIT.json" -o "!TMP_FOLDER!\RPU-SCFIXED.bin">>"!logfile!"
 	if exist "!TMP_FOLDER!\RPU-SCFIXED.bin" (
-		%GREEN%
-		del "!TMP_FOLDER!\EDIT.json"
-		set "RPUFILE=!TMP_FOLDER!\RPU-SCFIXED.bin"
-		echo Done.
-		echo.
-		echo Done.>>"!logfile!"
-		echo.>>"!logfile!"
+		FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU-SCFIXED.bin"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+		if "!CHECKSIZE!" NEQ "0" (
+			%HCGREEN%
+			del "!TMP_FOLDER!\EDIT.json"
+			set "RPUFILE=!TMP_FOLDER!\RPU-SCFIXED.bin"
+			echo Done.
+			echo.
+			echo Done.>>"!logfile!"
+			echo.>>"!logfile!"
+		) else (
+			%HCRED%
+			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+			echo Error.
+			echo.
+			echo Error.>>"!logfile!"
+			echo.>>"!logfile!"
+		)
 	) else (
-		%RED%
+		%HCRED%
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 		echo Error.
 		echo.
@@ -2196,14 +2310,24 @@ if "%ERRORLEVEL%"=="0" (
 	"!PYTHONpath!" "!HDR10PDELAYSCRIPTpath!" -i "!HDR10PFILE!" -d !DELAY! -o "!TMP_FOLDER!\HDR10PlusDELAYED.json">>"!logfile!"
 )
 if exist "!TMP_FOLDER!\HDR10PlusDELAYED.json" (
-	%GREEN%
-	set "HDR10PFILE=!TMP_FOLDER!\HDR10PlusDELAYED.json"
-	echo Done.
-	echo.
-	echo Done.>>"!logfile!"
-	echo.>>"!logfile!"	
+	FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\HDR10PlusDELAYED.json"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+	if "!CHECKSIZE!" NEQ "0" (
+		%HCGREEN%
+		set "HDR10PFILE=!TMP_FOLDER!\HDR10PlusDELAYED.json"
+		echo Done.
+		echo.
+		echo Done.>>"!logfile!"
+		echo.>>"!logfile!"
+	) else (
+		%HCRED%
+		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+		echo Error.
+		echo.
+		echo Error.>>"!logfile!"
+		echo.>>"!logfile!"
+	)
 ) else (
-	%RED%
+	%HCRED%
 	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	echo Error.
 	echo.
@@ -2222,15 +2346,25 @@ echo [Changing HDR Stream FPS to !CHGFPS!]>>"!logfile!"
 %WHITE%
 "!FFMPEGpath!" -y -i "!VIDEOSTREAM!" -loglevel panic -stats -an -sn -dn -c copy -bsf:v hevc_metadata=tick_rate=!FPS!:num_ticks_poc_diff_one=1 "!TMP_FOLDER!\HDR_FPSCHANGED.hevc"
 if exist "!TMP_FOLDER!\HDR_FPSCHANGED.hevc" (
-	%GREEN%
-	del "!VIDEOSTREAM!"
-	set "VIDEOSTREAM=!TMP_FOLDER!\HDR_FPSCHANGED.hevc"
-	echo Done.
-	echo.
-	echo Done.>>"!logfile!"
-	echo.>>"!logfile!"
+	FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\HDR_FPSCHANGED.hevc"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+	if "!CHECKSIZE!" NEQ "0" (
+		%HCGREEN%
+		del "!VIDEOSTREAM!"
+		set "VIDEOSTREAM=!TMP_FOLDER!\HDR_FPSCHANGED.hevc"
+		echo Done.
+		echo.
+		echo Done.>>"!logfile!"
+		echo.>>"!logfile!"
+	) else (
+		%HCRED%
+		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+		echo Error.
+		echo.
+		echo Error.>>"!logfile!"
+		echo.>>"!logfile!"
+	)
 ) else (
-	%RED%
+	%HCRED%
 	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	echo Error.
 	echo.
@@ -2244,15 +2378,25 @@ if "!EL_exist!"=="YES" (
 	%WHITE%
 	"!FFMPEGpath!" -y -i "!ELSTREAM!" -loglevel panic -stats -an -sn -dn -c copy -bsf:v hevc_metadata=tick_rate=!FPS!:num_ticks_poc_diff_one=1 "!TMP_FOLDER!\EL_FPSCHANGED.hevc"
 	if exist "!TMP_FOLDER!\EL_FPSCHANGED.hevc" (
-		%GREEN%
-		set "ELSTREAM=!TMP_FOLDER!\EL_FPSCHANGED.hevc"
-		echo Done.
-		echo.
-		echo Done.>>"!logfile!"
-		echo.>>"!logfile!"
+		FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\EL_FPSCHANGED.hevc"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+		if "!CHECKSIZE!" NEQ "0" (
+			%HCGREEN%
+			set "ELSTREAM=!TMP_FOLDER!\EL_FPSCHANGED.hevc"
+			echo Done.
+			echo.
+			echo Done.>>"!logfile!"
+			echo.>>"!logfile!"
+		) else (
+			%HCRED%
+			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+			echo Error.
+			echo.
+			echo Error.>>"!logfile!"
+			echo.>>"!logfile!"
+		)
 	) else (
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
-		%RED%
+		%HCRED%
 		echo Error.
 		echo.
 		echo Error.>>"!logfile!"
@@ -2268,14 +2412,24 @@ if "!RPU_FILE!"=="TRUE" (
 	echo [Move RPU to Target Folder]>>"!logfile!"
 	move "!RPUFILE!" "!TARGET_FOLDER!\!HEADER_FILENAME!.bin">nul
 	if exist "!TARGET_FOLDER!\!HEADER_FILENAME!.bin" (
-		%GREEN%
-		echo Done.
-		echo.
-		echo Done.>>"!logfile!"
-		echo.>>"!logfile!"
+		FOR /F "usebackq" %%A IN ('"!TARGET_FOLDER!\!HEADER_FILENAME!.bin"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+		if "!CHECKSIZE!" NEQ "0" (
+			%HCGREEN%
+			echo Done.
+			echo.
+			echo Done.>>"!logfile!"
+			echo.>>"!logfile!"
+		) else (
+			%HCRED%
+			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+			echo Error.
+			echo.
+			echo Error.>>"!logfile!"
+			echo.>>"!logfile!"
+		)
 	) else (
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
-		%RED%
+		%HCRED%
 		echo Error.
 		echo.
 		echo Error.>>"!logfile!"
@@ -2294,16 +2448,25 @@ if "%EL_exist%"=="YES" (
 		echo [Injecting RPU in DV EL]>>"!logfile!"
 		%WHITE%
 		"!DO_VI_TOOLpath!" inject-rpu "!ELSTREAM!" --rpu-in "!RPUFILE!" -o "!TMP_FOLDER!\ELtemp.hevc"
-		if "!ERRORLEVEL!"=="0" (
-			%GREEN%
-			set "ELSTREAM=!TMP_FOLDER!\ELtemp.hevc"
-			echo Done.
-			echo.
-			echo Done.>>"!logfile!"
-			echo.>>"!logfile!"
-			echo.
+		if exist "!TMP_FOLDER!\ELtemp.hevc" (
+			FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\ELtemp.hevc"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+			if "!CHECKSIZE!" NEQ "0" (
+				%HCGREEN%
+				set "ELSTREAM=!TMP_FOLDER!\ELtemp.hevc"
+				echo Done.
+				echo.
+				echo Done.>>"!logfile!"
+				echo.>>"!logfile!"
+			) else (
+				%HCRED%
+				set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+				echo Error.
+				echo.
+				echo Error.>>"!logfile!"
+				echo.>>"!logfile!"
+			)
 		) else (
-			%RED%
+			%HCRED%
 			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 			echo Error.
 			echo.
@@ -2317,15 +2480,24 @@ if "%EL_exist%"=="YES" (
 	%WHITE%
 	"!DO_VI_TOOLpath!" !REMHDR10PString!mux !MUXP7String!--bl "!VIDEOSTREAM!" --el "!ELSTREAM!" -o "!TMP_FOLDER!\BL+EL.hevc"
 	if exist "!TMP_FOLDER!\BL+EL.hevc" (
-		%GREEN%
-		if exist "!TMP_FOLDER!\temp.hevc" DEL "!TMP_FOLDER!\temp.hevc"
-		set "VIDEOSTREAM=!TMP_FOLDER!\BL+EL.hevc"
-		echo Done.
-		echo.
-		echo Done.>>"!logfile!"
-		echo.>>"!logfile!"
+		FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\BL+EL.hevc"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+		if "!CHECKSIZE!" NEQ "0" (
+			%HCGREEN%
+			set "VIDEOSTREAM=!TMP_FOLDER!\BL+EL.hevc"
+			echo Done.
+			echo.
+			echo Done.>>"!logfile!"
+			echo.>>"!logfile!"
+		) else (
+			%HCRED%
+			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+			echo Error.
+			echo.
+			echo Error.>>"!logfile!"
+			echo.>>"!logfile!"
+		)
 	) else (
-		%RED%
+		%HCRED%
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 		echo Error.
 		echo.
@@ -2338,16 +2510,25 @@ if "%EL_exist%"=="YES" (
 	echo [Injecting RPU into stream]>>"!logfile!"
 	%WHITE%
 	"!DO_VI_TOOLpath!" !REMHDR10PString!inject-rpu "!VIDEOSTREAM!" --rpu-in "!RPUFILE!" -o "!TMP_FOLDER!\BL+RPU.hevc"
-	if "!ERRORLEVEL!"=="0" (
-		%GREEN%
-		if exist "!TMP_FOLDER!\temp.hevc" DEL "!TMP_FOLDER!\temp.hevc"
-		set "VIDEOSTREAM=!TMP_FOLDER!\BL+RPU.hevc"
-		echo Done.
-		echo.
-		echo Done.>>"!logfile!"
-		echo.>>"!logfile!"
+	if exist "!TMP_FOLDER!\BL+RPU.hevc" (
+		FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\BL+RPU.hevc"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+		if "!CHECKSIZE!" NEQ "0" (
+			%HCGREEN%
+			set "VIDEOSTREAM=!TMP_FOLDER!\BL+RPU.hevc"
+			echo Done.
+			echo.
+			echo Done.>>"!logfile!"
+			echo.>>"!logfile!"
+		) else (
+			%HCRED%
+			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+			echo Error.
+			echo.
+			echo Error.>>"!logfile!"
+			echo.>>"!logfile!"
+		)
 	) else (
-		%RED%
+		%HCRED%
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 		echo Error.
 		echo.
@@ -2355,7 +2536,6 @@ if "%EL_exist%"=="YES" (
 		echo.>>"!logfile!"
 	)
 )
-
 goto :eof
 
 :MUXINCONT
@@ -2366,13 +2546,23 @@ if "!MUXINMKV!!MUXINMP4!"=="NONO" (
 	echo [Moving RAW Stream to Target Folder]>>"!logfile!"
 	move "!VIDEOSTREAM!" "!TARGET_FOLDER!\!HEADER_FILENAME!.hevc">nul
 	if exist "!TARGET_FOLDER!\!HEADER_FILENAME!.hevc" (
-		%GREEN%
-		echo Done.
-		echo.
-		echo Done.>>"!logfile!"
-		echo.>>"!logfile!"
+		FOR /F "usebackq" %%A IN ('"!TARGET_FOLDER!\!HEADER_FILENAME!.hevc"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+		if "!CHECKSIZE!" NEQ "0" (
+			%HCGREEN%
+			echo Done.
+			echo.
+			echo Done.>>"!logfile!"
+			echo.>>"!logfile!"
+		) else (
+			%HCRED%
+			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+			echo Error.
+			echo.
+			echo Error.>>"!logfile!"
+			echo.>>"!logfile!"
+		)
 	) else (
-		%RED%
+		%HCRED%
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 		echo Error.
 		echo.
@@ -2392,17 +2582,27 @@ if "!MUXINMKV!"=="YES" (
 	%CYAN%
 	echo Please wait. Muxing !INPUTFILENAME! into MKV Container...
 	echo [Muxing !INPUTFILENAME! into MKV Container]>>"!logfile!"
-	%YELLOW%
+	%HCYELLOW%
 	echo Don't close the "Muxing !INPUTFILENAME! into MKV" cmd window.
 	start /WAIT /MIN "Muxing !INPUTFILENAME! into MKV" "!MKVMERGEpath!" --ui-language en --priority higher --output ^"!TARGET_FOLDER!\!HEADER_FILENAME!.mkv^" --stop-after-video-ends --no-video ^"^(^" ^"!INPUTFILE!^" ^"^)^" --language 0:und --compression 0:none !duration! ^"^(^" ^"!VIDEOSTREAM!^" ^"^)^" --track-order 1:0
 	if exist "!TARGET_FOLDER!\!HEADER_FILENAME!.mkv" (
-		%GREEN%
-		echo Done.
-		echo.
-		echo Done.>>"!logfile!"
-		echo.>>"!logfile!"
+		FOR /F "usebackq" %%A IN ('"!TARGET_FOLDER!\!HEADER_FILENAME!.mkv"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+		if "!CHECKSIZE!" NEQ "0" (
+			%HCGREEN%
+			echo Done.
+			echo.
+			echo Done.>>"!logfile!"
+			echo.>>"!logfile!"
+		) else (
+			%HCRED%
+			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+			echo Error.
+			echo.
+			echo Error.>>"!logfile!"
+			echo.>>"!logfile!"
+		)
 	) else (
-		%RED%
+		%HCRED%
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 		echo Error.
 		echo.
@@ -2419,13 +2619,23 @@ if "%MUXINMP4%"=="YES" (
 	"!MP4BOXpath!" -add "!VIDEOSTREAM!:ID=1:fps=!FRAMERATE!:name=" "!TMP_FOLDER!\temp.mp4" -out "!TARGET_FOLDER!\!HEADER_FILENAME!.mp4"
 	if exist "!TMP_FOLDER!\temp.mp4" del "!TMP_FOLDER!\temp.mp4"
 	if exist "!TARGET_FOLDER!\!HEADER_FILENAME!.mp4" (
-		%GREEN%
-		echo Done.
-		echo.
-		echo Done.>>"!logfile!"
-		echo.>>"!logfile!"
+		FOR /F "usebackq" %%A IN ('"!TARGET_FOLDER!\!HEADER_FILENAME!.mp4"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+		if "!CHECKSIZE!" NEQ "0" (
+			%HCGREEN%
+			echo Done.
+			echo.
+			echo Done.>>"!logfile!"
+			echo.>>"!logfile!"
+		) else (
+			%HCRED%
+			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+			echo Error.
+			echo.
+			echo Error.>>"!logfile!"
+			echo.>>"!logfile!"
+		)
 	) else (
-		%RED%
+		%HCRED%
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 		echo Error.
 		echo.
@@ -2436,6 +2646,7 @@ if "%MUXINMP4%"=="YES" (
 goto :eof
 
 :AA_AREA
+mode con cols=125 lines=55
 set "RPU_AA_String="
 if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" (
 	if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%" NEQ "" (
@@ -2450,60 +2661,53 @@ if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" (
 		set "RPU_AA_BC=0"
 	)
 )
-if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%" NEQ "" (
-	if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%" NEQ "" (
-		set "RPU_AA_LC=%AA_INPUT_LC%"
-		set "RPU_AA_TC=%AA_INPUT_TC%"
-		set "RPU_AA_RC=%AA_INPUT_RC%"
-		set "RPU_AA_BC=%AA_INPUT_BC%"
-	) else (
-		set "RPU_AA_LC=0"
-		set "RPU_AA_TC=0"
-		set "RPU_AA_RC=0"
-		set "RPU_AA_BC=0"
-	)
-)
+
 :AA_AREA_BASE
 ::VIDEO LINE
 :: VIDEO-INPUT = RPU-INPUT
 if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%" (
-	set "HEADER_RPU_AA_String=call :colortxt 0B "Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [" & call :colortxt 0A "MATCH WITH VIDEO" & call :colortxt 0B "]" /n"
-	set "AA_String=call :colortxt 0B "Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [" & call :colortxt 0A "MATCH WITH INPUT RPU" & call :colortxt 0B "]" /n"
+	set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_CYAN%}]{#}{\n}
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_GREEN%}MATCH WITH INPUT RPU{%_CYAN%}]{#}{\n}
 ) else (
-	set "HEADER_RPU_AA_String=call :colortxt 0B "Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [" & call :colortxt 0C "NOT MATCH WITH VIDEO" & call :colortxt 0B "]" /n"
-	set "AA_String=call :colortxt 0B "Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [" & call :colortxt 0C "NOT MATCH WITH INPUT RPU" & call :colortxt 0B "]" /n"
+	set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_RED%}NOT MATCH WITH INPUT RPU{%_CYAN%}]{#}{\n}
 )
+
 ::RPU LINE
 :: RPU-INPUT = NONE
-if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_AA_String=call :colortxt 0B "Borders    = [" & call :colortxt 06 "BORDERS NOT SET IN RPU" & call :colortxt 0B "]" /n"	
+if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_GREY%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}
+
 ::OUTPUT_LINE
-set "HEADER_RPU_OUTPUT_String=call :colortxt 0E "Borders    = [LEFT=!RPU_AA_LC! px], [TOP=!RPU_AA_TC! px], [RIGHT=!RPU_AA_RC! px], [BOTTOM=!RPU_AA_BC! px] [" & call :colortxt 0C "NOT MATCH WITH VIDEO" & call :colortxt 0E "]" /n"
+set "HEADER_RPU_OUTPUT_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}
+
 :: RPU-OUTPUT = VIDEO-INPUT
 if "%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%"=="%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%" (
-	set "HEADER_RPU_OUTPUT_String=call :colortxt 0E "Borders    = [LEFT=!RPU_AA_LC! px], [TOP=!RPU_AA_TC! px], [RIGHT=!RPU_AA_RC! px], [BOTTOM=!RPU_AA_BC! px] [" & call :colortxt 0A "MATCH WITH VIDEO" & call :colortxt 0E "]" /n"
-	set "AA_String=call :colortxt 0B "Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [" & call :colortxt 0A "MATCH WITH OUTPUT RPU" & call :colortxt 0B "]" /n"
+	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_YELLOW%}]{#}{\n}
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_GREEN%}MATCH WITH OUTPUT{%_CYAN%}]{#}{\n}
 ) else (
-	set "HEADER_RPU_OUTPUT_String=call :colortxt 0E "Borders    = [LEFT=!RPU_AA_LC! px], [TOP=!RPU_AA_TC! px], [RIGHT=!RPU_AA_RC! px], [BOTTOM=!RPU_AA_BC! px] [" & call :colortxt 0C "NOT MATCH WITH VIDEO" & call :colortxt 0E "]" /n"
-	set "AA_String=call :colortxt 0B "Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [" & call :colortxt 0C "NOT MATCH WITH OUTPUT RPU" & call :colortxt 0B "]" /n"
+	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_YELLOW%}]{#}{\n}
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_RED%}NOT MATCH WITH OUTPUT{%_CYAN%}]{#}{\n}
 )
+	
 ::OUTPUT LINE
 :: VIDEO-INPUT = NONE
 if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="" (
-	set "AA_String=call :colortxt 0B "Borders    = [" & call :colortxt 06 "NOT FOUND. MUX FILE IN CONTAINER OR SET CROPPING VALUES MANUALLY" & call :colortxt 0B "]" /n"
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = ["  %_YELLOW% "NOT FOUND. MUX FILE IN CONTAINER OR SET CROPPING VALUES MANUALLY{%_CYAN%}]{#}{\n}
 	if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" (
-		set "HEADER_RPU_AA_String=call :colortxt 0B "Borders    = [" & call :colortxt 06 "BORDERS NOT SET IN RPU" & call :colortxt 0B "]" /n"	
+		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    =[{%_YELLOW%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}
 	) else (
-		set "HEADER_RPU_AA_String=call :colortxt 0B "Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [" & call :colortxt 06 "VIDEO BORDERS NOT FOUND" & call :colortxt 0B "]" /n"
+		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%_YELLOW%}VIDEO BORDERS NOT FOUND{%_CYAN%}]{#}{\n}
 	)
-	set "HEADER_RPU_OUTPUT_String=call :colortxt 0E "Borders    = [LEFT=!RPU_AA_LC! px], [TOP=!RPU_AA_TC! px], [RIGHT=!RPU_AA_RC! px], [BOTTOM=!RPU_AA_BC! px] [" & call :colortxt 06 "VIDEO BORDERS NOT FOUND" & call :colortxt 0E "]" /n"
+	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%_WHITE%}VIDEO BORDERS NOT FOUND{%_YELLOW%}]{#}{\n}
 )
-set "HEADER_RPU_AA_String_RPU=call :colortxt 0B "Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px]" /n"	
-set "HEADER_RPU_OUTPUT_String_RPU=call :colortxt 0E "Borders    = [LEFT=!RPU_AA_LC! px], [TOP=!RPU_AA_TC! px], [RIGHT=!RPU_AA_RC! px], [BOTTOM=!RPU_AA_BC! px]" /n"
+
+set "HEADER_RPU_AA_String_RPU=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px]{#}{\n}
+set "HEADER_RPU_OUTPUT_String_RPU=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px]{#}{\n}
 cls
 %GREEN%
-echo  %HEADER1%
-echo.
+echo  !HEADER1!
 %WHITE%
+echo.
 echo                                         ====================================
 %GREEN%
 echo                                              Dolby Vision Tool INJECTOR
@@ -2512,60 +2716,28 @@ echo                                                - ACTIVE AREA EDITOR -
 echo                                         ====================================
 echo.
 echo.
-if "!RPU_FILE!"=="FALSE" ( 
-	echo  == VIDEO INPUT =========================================================================================================
-	echo.
-	%CYAN%
-	%AA_String%
-	if "!RPU_exist!!EL_exist!"=="YESNO" (
-		echo.
-		%WHITE%
-		echo  == RPU INPUT ===========================================================================================================
-		%CYAN%
-		echo.
-		%HEADER_RPU_AA_String%
-	) else (
-		echo.
-		%WHITE%
-		echo  == EL INPUT ============================================================================================================
-		%CYAN%
-		echo.
-		%HEADER_RPU_AA_String%
-	)
-) else (
+echo  == VIDEO INPUT =========================================================================================================
+echo.
+%CYAN%
+%AA_String%
+echo.
+if "!DV_DV!"=="TRUE" (
+	%WHITE%
 	echo  == RPU INPUT ===========================================================================================================
 	%CYAN%
 	echo.
-	%HEADER_RPU_AA_String_RPU%
-)
-if "!EL_exist!"=="NO" (
-	if "!RPU_FILE!"=="FALSE" (
-		echo.
-		%WHITE%
-		echo  == RPU OUTPUT ==========================================================================================================
-		%YELLOW%
-		echo.
-		%HEADER_RPU_OUTPUT_String%
-	) else (
-		echo.
-		%WHITE%
-		echo  == RPU OUTPUT ==========================================================================================================
-		%YELLOW%
-		echo.
-		%HEADER_RPU_OUTPUT_String_RPU%
-	)
-) else (
+	%HEADER_RPU_AA_String%
 	echo.
-	%WHITE%
-	echo  == EL OUTPUT ===========================================================================================================
-	%YELLOW%
-	echo.
-	%HEADER_RPU_OUTPUT_String%
 )
+%WHITE%
+echo  == RPU OUTPUT ==========================================================================================================
+%YELLOW%
+echo.
+%HEADER_RPU_OUTPUT_String%
 echo.
 %WHITE%
 echo  == EDIT ACTIVE AREA ====================================================================================================
-%CYAN%
+%HCYELLOW%
 echo.
 echo If you change the resolution of the target video you must edit the Active Area. For Example^:
 echo Source^: 3840 px x 2160 px Letterboxed ^(Active Area 3840 px x 1600 px^) ^= 280 px at Top and Bottom.
@@ -2575,23 +2747,22 @@ echo.
 %WHITE%
 echo  ========================================================================================================================
 echo.
-%RED%
+%HCRED%
 echo All Settings will be Lost if you closed the Tool^^!
 %WHITE%
 echo.
 echo  ========================================================================================================================
+%HCWHITE%
 echo.
-call :colortxt 0F "L. Set " & call :colortxt 0E "LEFT" & call :colortxt 0F " Crop value [" & call :colortxt 0E "!RPU_AA_LC!" & call :colortxt 0F " px]" /n
-call :colortxt 0F "T. Set " & call :colortxt 0E "TOP" & call :colortxt 0F " Crop value [" & call :colortxt 0E "!RPU_AA_TC!" & call :colortxt 0F " px]" /n
-call :colortxt 0F "R. Set " & call :colortxt 0E "RIGHT" & call :colortxt 0F " Crop value [" & call :colortxt 0E "!RPU_AA_RC!" & call :colortxt 0F " px]" /n
-call :colortxt 0F "B. Set " & call :colortxt 0E "BOTTOM" & call :colortxt 0F " Crop value [" & call :colortxt 0E "!RPU_AA_BC!" & call :colortxt 0F " px]" /n
+!Cecho! {%HC_WHITE%}L. Set [{%_YELLOW%}LEFT{%HC_WHITE%}] Crop value: [{%_YELLOW%}!RPU_AA_LC! px{%HC_WHITE%}]{#}{\n}
+!Cecho! {%HC_WHITE%}T. Set [{%_YELLOW%}TOP{%HC_WHITE%}] Crop value: [{%_YELLOW%}!RPU_AA_TC! px{%HC_WHITE%}]{#}{\n}
+!Cecho! {%HC_WHITE%}R. Set [{%_YELLOW%}RIGHT{%HC_WHITE%}] Crop value: [{%_YELLOW%}!RPU_AA_RC! px{%HC_WHITE%}]{#}{\n}
+!Cecho! {%HC_WHITE%}B. Set [{%_YELLOW%}BOTTOM{%HC_WHITE%}] Crop value: [{%_YELLOW%}!RPU_AA_BC! px{%HC_WHITE%}]{#}{\n}
 echo.
-%WHITE%
-echo D. DISCARD Settings and Exit
+!Cecho! {%HC_WHITE%}D. DISCARD{%HC_YELLOW%}* {%HC_WHITE%}Settings and Exit   {%HC_YELLOW%}*Set Borders to [{%HC_WHITE%}LEAVE UNTOUCHED{%HC_YELLOW%}].{#}{\n}
 echo S. SAVE Settings and Exit
 echo.
-%GREEN%
-echo Change Settings and press [S] to SAVE or [D] to DISCARD^^!
+!Cecho! {%HC_WHITE%}Change Settings and press [S] to SAVE or [D] to DISCARD{%HC_YELLOW%}*^^{%HC_WHITE%}!{#}{\n}
 CHOICE /C LTRBDS /N /M "Select a Letter L,T,R,B,[D]iscard,[S]ave"
 
 if "%ERRORLEVEL%"=="6" goto :eof
@@ -2606,37 +2777,60 @@ if "%ERRORLEVEL%"=="5" (
 
 if "%ERRORLEVEL%"=="4" (
 	echo.
-	%WHITE%
+	%HCYELLOW%
 	echo Type in the Pixels, which will be cropped on BOTTOM side.
 	echo Example: For cropping 140px on BOTTOM side type "140" and press Enter^^!
 	echo.
+	%HCWHITE%
 	set /p "RPU_AA_BC=Type in the Pixels and press [ENTER]: "
 )
 if "%ERRORLEVEL%"=="3" (
 	echo.
-	%WHITE%
+	%HCYELLOW%
 	echo Type in the Pixels, which will be cropped on RIGHT side.
 	echo Example: For cropping 140px on RIGHT side type "140" and press Enter^^!
 	echo.
+	%HCWHITE%
 	set /p "RPU_AA_RC=Type in the Pixels and press [ENTER]: "
 )
 if "%ERRORLEVEL%"=="2" (
 	echo.
-	%WHITE%
+	%HCYELLOW%
 	echo Type in the Pixels, which will be cropped on TOP side.
 	echo Example: For cropping 140px on TOP side type "140" and press Enter^^!
 	echo.
+	%HCWHITE%
 	set /p "RPU_AA_TC=Type in the Pixels and press [ENTER]: "
 )
 if "%ERRORLEVEL%"=="1" (
 	echo.
-	%WHITE%
+	%HCYELLOW%
 	echo Type in the Pixels, which will be cropped on LEFT side.
 	echo Example: For cropping 140px on LEFT side type "140" and press Enter^^!
 	echo.
+	%HCWHITE%
 	set /p "RPU_AA_LC=Type in the Pixels and press [ENTER]: "
 )
 goto :AA_AREA_BASE
+
+if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
+if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
+
+:LOGFILESTART
+if exist "!TMP_FOLDER!" (
+	echo  !HEADER1!>"!logfile!"
+	echo.>>"!logfile!"
+	echo                                         ====================================>>"!logfile!"
+	echo                                              Dolby Vision Tool INJECTOR>>"!logfile!"
+	echo                                         ====================================>>"!logfile!"
+	echo.>>"!logfile!"
+	echo.>>"!logfile!"
+	echo  == LOGFILE START =======================================================================================================>>"!logfile!"
+	echo.>>"!logfile!"
+	echo %date%  %time%>>"!logfile!"
+	echo.>>"!logfile!"
+)
+goto :eof
 
 :LOGFILEEND
 if exist "!TMP_FOLDER!" (
@@ -2660,10 +2854,10 @@ echo Please wait. Cleaning Temp Folder...
 if exist "!TMP_FOLDER!" (
 	RD /S /Q "!TMP_FOLDER!">nul
 	if "%ERRORLEVEL%"=="0" (
-		%GREEN%
+		%HCGREEN%
 		echo Deleting Temp Folder - Done.
 	) else (
-		%RED%
+		%HCRED%
 		echo Deleting Temp Folder - Error.
 	)
 )
@@ -2674,14 +2868,14 @@ echo.
 echo  == EXIT ================================================================================================================
 echo.
 if "!ERRORCOUNT!"=="0" (
-	%GREEN%
+	%HCGREEN%
 	echo All Operations successful.
-	%WHITE%
+	%HCWHITE%
 	TIMEOUT 30
 ) else (
-	%RED%
+	%HCRED%
 	echo SOME Operations failed.
-	%WHITE%
+	%HCWHITE%
 	TIMEOUT 30
 	goto :ERROR
 )
@@ -2733,60 +2927,3 @@ set TempVar=%TempVar%!PasswordChars:~%i%,1!
 if not "%Length%"=="%PasswordLength%" goto GenerateLoop
 set %1=%TempVar%
 goto :eof
-
-:colortxt
-setlocal enableDelayedExpansion
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-	
-:colorPrint Color  Str  [/n]
-setlocal
-set "s=%~2"
-call :colorPrintVar %1 s %3
-exit /b
-
-:colorPrintVar  Color  StrVar  [/n]
-if not defined DEL call :initColorPrint
-setlocal enableDelayedExpansion
-pushd .
-':
-cd \
-set "s=!%~2!"
-:: The single blank line within the following IN() clause is critical - DO NOT REMOVE
-for %%n in (^"^
-
-^") do (
-  set "s=!s:\=%%~n\%%~n!"
-  set "s=!s:/=%%~n/%%~n!"
-  set "s=!s::=%%~n:%%~n!"
-)
-for /f delims^=^ eol^= %%s in ("!s!") do (
-  if "!" equ "" setlocal disableDelayedExpansion
-  if %%s==\ (
-    findstr /a:%~1 "." "\'" nul
-    <nul set /p "=%DEL%%DEL%%DEL%"
-  ) else if %%s==/ (
-    findstr /a:%~1 "." "/.\'" nul
-    <nul set /p "=%DEL%%DEL%%DEL%%DEL%%DEL%"
-  ) else (
-    >colorPrint.txt (echo %%s\..\')
-    findstr /a:%~1 /f:colorPrint.txt "."
-    <nul set /p "=%DEL%%DEL%%DEL%%DEL%%DEL%%DEL%%DEL%"
-  )
-)
-if /i "%~3"=="/n" echo(
-popd
-exit /b
-
-
-:initColorPrint
-for /f %%A in ('"prompt $H&for %%B in (1) do rem"') do set "DEL=%%A %%A"
-<nul >"%temp%\'" set /p "=."
-subst ': "%temp%" >nul
-exit /b
-
-
-:cleanupColorPrint
-2>nul del "%temp%\'"
-2>nul del "%temp%\colorPrint.txt"
->nul subst ': /d
-exit /b
