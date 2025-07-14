@@ -281,9 +281,14 @@ if "%ERRORLEVEL%"=="10" (
 	reg add "HKCU\Software\Classes\Directory\shell\MenuDDVT" /ve /d "DDVT" /f>nul 2>&1
 	reg add "HKCU\Software\Classes\Directory\shell\MenuDDVT" /v "Icon" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\DDVT.ico\",0" /f>nul 2>&1
 	reg add "HKCU\Software\Classes\Directory\shell\MenuDDVT" /v "ExtendedSubCommandsKey" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\DDVT.ico\",0" /f>nul 2>&1
-	reg add "HKCU\Software\Classes\Directory\shell\MenuDDVT" /v "ExtendedSubCommandsKey" /t REG_SZ /d "*\Shell\MenuDDVTDir\ContextMenu" /f>nul 2>&1
+	reg add "HKCU\Software\Classes\Directory\shell\MenuDDVT" /v "ExtendedSubCommandsKey" /t REG_SZ /d "Directory\shell\MenuDDVT\ContextMenu" /f>nul 2>&1
 	reg add "HKCU\Software\Classes\Directory\shell\MenuDDVT" /v "Position" /t REG_SZ /d "Top" /f>nul 2>&1
-	
+	reg add "HKCU\Software\Classes\Directory\shell\MenuDDVT\ContextMenu\shell\04REMOVER" /ve /d "Mass-Remover" /f>nul 2>&1
+	reg add "HKCU\Software\Classes\Directory\shell\MenuDDVT\ContextMenu\shell\04REMOVER" /v "Icon" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\REMOVER.ico\",0" /f>nul 2>&1
+	reg add "HKCU\Software\Classes\Directory\shell\MenuDDVT\ContextMenu\shell\04REMOVER\command" /ve /d "\"!TOOLFOLDER!DDVT_REMOVER.cmd\" ""%%1""" /f>nul 2>&1
+	reg add "HKCU\Software\Classes\Directory\shell\MenuDDVT\ContextMenu\shell\07MKVTOMP4" /ve /d "Mass-MKV to MP4" /f>nul 2>&1
+	reg add "HKCU\Software\Classes\Directory\shell\MenuDDVT\ContextMenu\shell\07MKVTOMP4" /v "Icon" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\MKVTOMP4.ico\",0" /f>nul 2>&1
+	reg add "HKCU\Software\Classes\Directory\shell\MenuDDVT\ContextMenu\shell\07MKVTOMP4\command" /ve /d "\"!TOOLFOLDER!DDVT_MKVTOMP4.cmd\" ""%%1""" /f>nul 2>&1	
 
 	reg add "HKCU\Software\Classes\*\Shell\DDVT MEDIAINFO" /ve /d "DDVT MediaInfo" /f>nul 2>&1
 	reg add "HKCU\Software\Classes\*\Shell\DDVT MEDIAINFO" /v "Icon" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\MEDIAINFO.ico\",0" /f>nul 2>&1
@@ -294,6 +299,7 @@ if "%ERRORLEVEL%"=="10" (
 	reg add "HKCU\Software\Classes\*\Shell\DDVT QUICKINFO" /v "Position" /t REG_SZ /d "Top" /f>nul 2>&1
 	reg add "HKCU\Software\Classes\*\Shell\DDVT QUICKINFO\command" /ve /d "\"!TOOLFOLDER!DDVT_MEDIAINFO.cmd\" ""%%1\"" -MSGBOX" /f>nul 2>&1
 	if "!ERRORLEVEL!"=="1" reg add "HKCU\Software\Classes\*\Shell\DDVT QUICKINFO\command" /ve /d "\"!TOOLFOLDER!DDVT_MEDIAINFO.cmd\" ""%%1"" -MSGBOX" /f>nul 2>&1
+
 	reg add "HKLM\Software\Classes\Directory\Background\Shell\MenuDDVT" /ve /d "DDVT" /f>nul 2>&1
 	reg add "HKLM\Software\Classes\Directory\Background\Shell\MenuDDVT" /v "Icon" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\DDVT.ico\",0" /f>nul 2>&1
 	reg add "HKLM\Software\Classes\Directory\Background\Shell\MenuDDVT" /v "ExtendedSubCommandsKey" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\DDVT.ico\",0" /f>nul 2>&1
@@ -302,6 +308,7 @@ if "%ERRORLEVEL%"=="10" (
 	reg add "HKLM\Software\Classes\Directory\Background\Shell\MenuDDVT\ContextMenu\shell\01HYBRID" /ve /d "Profile 8 Hybrid" /f>nul 2>&1
 	reg add "HKLM\Software\Classes\Directory\Background\Shell\MenuDDVT\ContextMenu\shell\01HYBRID" /v "Icon" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\HYBRID.ico\",0" /f>nul 2>&1
 	reg add "HKLM\Software\Classes\Directory\Background\Shell\MenuDDVT\ContextMenu\shell\01HYBRID\command" /ve /d "\"!TOOLFOLDER!DDVT_HYBRID.cmd\" " /f>nul 2>&1
+
 	reg add "HKCR\*\Shell\MenuDDVT" /ve /d "DDVT" /f>nul 2>&1
 	reg add "HKCR\*\Shell\MenuDDVT" /v "Icon" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\DDVT.ico\",0" /f>nul 2>&1
 	reg add "HKCR\*\Shell\MenuDDVT" /v "ExtendedSubCommandsKey" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\DDVT.ico\",0" /f>nul 2>&1
@@ -319,9 +326,6 @@ if "%ERRORLEVEL%"=="10" (
 	reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\04REMOVER" /ve /d "Remover" /f>nul 2>&1
 	reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\04REMOVER" /v "Icon" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\REMOVER.ico\",0" /f>nul 2>&1
 	reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\04REMOVER\command" /ve /d "\"!TOOLFOLDER!DDVT_REMOVER.cmd\" ""%%1""" /f>nul 2>&1
-	reg add "HKCR\*\Shell\MenuDDVTDir\ContextMenu\shell\04REMOVER" /ve /d "Mass-Remover" /f>nul 2>&1
-	reg add "HKCR\*\Shell\MenuDDVTDir\ContextMenu\shell\04REMOVER" /v "Icon" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\REMOVER.ico\",0" /f>nul 2>&1
-	reg add "HKCR\*\Shell\MenuDDVTDir\ContextMenu\shell\04REMOVER\command" /ve /d "\"!TOOLFOLDER!DDVT_REMOVER.cmd\" ""%%1""" /f>nul 2>&1
 	reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\05FILEINFO" /ve /d "FileInfo" /f>nul 2>&1
 	reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\05FILEINFO" /v "Icon" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\QUICKINFO.ico\",0" /f>nul 2>&1
 	reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\05FILEINFO\command" /ve /d "\"!TOOLFOLDER!DDVT_FILEINFO.cmd\" ""%%1""" /f>nul 2>&1
@@ -332,9 +336,7 @@ if "%ERRORLEVEL%"=="10" (
 	reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\07MKVTOMP4" /ve /d "MKV to MP4" /f>nul 2>&1
 	reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\07MKVTOMP4" /v "Icon" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\MKVTOMP4.ico\",0" /f>nul 2>&1
 	reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\07MKVTOMP4\command" /ve /d "\"!TOOLFOLDER!DDVT_MKVTOMP4.cmd\" ""%%1""" /f>nul 2>&1
-	reg add "HKCR\*\Shell\MenuDDVTDir\ContextMenu\shell\07MKVTOMP4" /ve /d "Mass-MKV to MP4" /f>nul 2>&1
-	reg add "HKCR\*\Shell\MenuDDVTDir\ContextMenu\shell\07MKVTOMP4" /v "Icon" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\MKVTOMP4.ico\",0" /f>nul 2>&1
-	reg add "HKCR\*\Shell\MenuDDVTDir\ContextMenu\shell\07MKVTOMP4\command" /ve /d "\"!TOOLFOLDER!DDVT_MKVTOMP4.cmd\" ""%%1""" /f>nul 2>&1
+
 	if exist "!TOOLFOLDER!DDVT_GENERATOR.cmd" reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\99GENERATE" /ve /d "RPU Generator" /f>nul 2>&1
 	if exist "!TOOLFOLDER!DDVT_GENERATOR.cmd" reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\99GENERATE" /v "Icon" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\GENERATOR.ico\",0" /f>nul 2>&1
 	if exist "!TOOLFOLDER!DDVT_GENERATOR.cmd" reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\99GENERATE\command" /ve /d "\"!TOOLFOLDER!DDVT_GENERATOR.cmd\" ""%%1""" /f>nul 2>&1
