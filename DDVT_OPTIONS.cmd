@@ -23,10 +23,6 @@ set "FIX_SCENECUTS=YES"
 
 setlocal EnableDelayedExpansion
 
-set "NewLine=[System.Environment]::NewLine"
-set "Line1=Start the script with ADMINISTRATOR permissions to activate/deactivate the Windows SHELL EXTENSIONS. Without ADMINISTRATOR permissions you have insufficent rights changing Windows registry^!"
-START /MIN PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('!Line1!', 'DDVT OPTIONS [QfG] %VERSION%', 'Ok','Info')"
-
 ::Check for INI and Load Settings
 IF EXIST "!TOOLFOLDER!DDVT_OPTIONS.ini" (
 	FOR /F "delims=" %%A IN ('findstr /C:"TEMP Folder=" "%~dp0DDVT_OPTIONS.ini"') DO (
@@ -225,9 +221,9 @@ if "%ERRORLEVEL%"=="13" (
 	echo --------------------------
 	)>"!TOOLFOLDER!DDVT_OPTIONS.ini"
 	echo.
-	%GREEN%
+	%HCGREEN%
 	echo Settings Saved.
-	%WAIT% 1000
+	TIMEOUT 1 >nul
 )
 if "%ERRORLEVEL%"=="12" (
 	echo.
@@ -256,9 +252,19 @@ if "%ERRORLEVEL%"=="11" (
 	reg delete "HKCU\Software\Classes\*\Shell\DDVT MEDIAINFO" /f>nul 2>&1
 	reg delete "HKCU\Software\Classes\Directory\shell\05MKVTOMP4" /f>nul 2>&1
 	echo.
-	%GREEN%
-	echo Registry strings deleted.
-	%WAIT% 1000
+	reg query "HKCR\*\Shell\MenuDDVT" /v "Icon" >nul 2>&1
+	if "!ERRORLEVEL!"=="1" (
+		%HCGREEN%
+		echo Registry strings deleted.
+	) else (
+		%HCRED%
+		echo Registry strings not deleted. Permissions needed^^!
+		set "NewLine=[System.Environment]::NewLine"
+		set "Line1=REGISTRY STRINGS NOT DELETED^!"
+		set "Line2=Start the script with ADMINISTRATOR permissions to activate/deactivate the Windows SHELL EXTENSIONS. Without ADMINISTRATOR permissions you have insufficent rights changing Windows registry^!"
+		START /MIN PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('!Line1!' + !NewLine! + !NewLine! + '!Line2!', 'DDVT OPTIONS [QfG] %VERSION%', 'Ok','Error')"	
+	)
+	TIMEOUT 1 >nul
 )
 if "%ERRORLEVEL%"=="10" (
 	reg delete "HKCR\*\Shell\DDVT Demuxer" /f>nul 2>&1
@@ -333,9 +339,19 @@ if "%ERRORLEVEL%"=="10" (
 	if exist "!TOOLFOLDER!DDVT_GENERATOR.cmd" reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\99GENERATE" /v "Icon" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\GENERATOR.ico\",0" /f>nul 2>&1
 	if exist "!TOOLFOLDER!DDVT_GENERATOR.cmd" reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\99GENERATE\command" /ve /d "\"!TOOLFOLDER!DDVT_GENERATOR.cmd\" ""%%1""" /f>nul 2>&1
 	echo.
-	%GREEN%	
-	echo Registry strings set.
-	%WAIT% 1000
+	reg query "HKCR\*\Shell\MenuDDVT" /v "Icon" >nul 2>&1
+	if "!ERRORLEVEL!"=="0" (
+		%HCGREEN%
+		echo Registry strings set.
+	) else (
+		%HCRED%
+		echo Registry strings not set. Permissions needed^^!
+		set "NewLine=[System.Environment]::NewLine"
+		set "Line1=REGISTRY STRINGS NOT SET^!"
+		set "Line2=Start the script with ADMINISTRATOR permissions to activate/deactivate the Windows SHELL EXTENSIONS. Without ADMINISTRATOR permissions you have insufficent rights changing Windows registry^!"
+		START /MIN PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('!Line1!' + !NewLine! + !NewLine! + '!Line2!', 'DDVT OPTIONS [QfG] %VERSION%', 'Ok','Error')"	
+	)
+	TIMEOUT 1 >nul
 )
 if "%ERRORLEVEL%"=="9" (
 	if "%FIX_SCENECUTS%"=="YES" set "FIX_SCENECUTS=NO"
