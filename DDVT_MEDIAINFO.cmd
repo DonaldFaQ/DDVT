@@ -499,7 +499,7 @@ if "!EL_INPUT!!DVinput!"=="TRUEYES" !Cecho! {%_YELLOW%}Video             {%HC_WH
 ::DV RPU/XML INFOLINE
 if "!DVinput!!DVBIN!"=="YESYES" !Cecho! {%_YELLOW%}RPU               {%HC_WHITE%}: Reference Processing Unit Binary ({%HC_GREEN%}}Dolby Vision Profile !DVprofile!!DM!{%HC_WHITE%}){#}{\n}
 ::NO_DV
-if "!DVinput!!DVBIN!"=="NONO" !Cecho! {%_YELLOW%}Video             {%HC_WHITE%}: !CODEC_NAME!" ({%HC_GREEN%}!HDRFormat!{%HC_WHITE%}){#}{\n}
+if "!DVinput!!DVBIN!"=="NONO" !Cecho! {%_YELLOW%}Video             {%HC_WHITE%}: !CODEC_NAME! ({%HC_GREEN%}!HDRFormat!{%HC_WHITE%}){#}{\n}
 
 ::RPU STATUS MESSAGE
 if "!RPU_STRING!" NEQ "" !Cecho! {%HC_YELLOW%}                    !RPU_STRING!{#}{\n}
