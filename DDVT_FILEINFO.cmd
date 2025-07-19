@@ -1214,22 +1214,22 @@ IF "%RAW_FILE%"=="TRUE" if exist !CONTAINERSTREAM! DEL !CONTAINERSTREAM!
 :DV8CHKMENU
 :: VIDEO-INPUT = RPU-INPUT
 if "%AA_LC%%AA_TC%%AA_RC%%AA_BC%"=="%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%" (
-	set "RPU_AA_String=!Cecho! {%_CYAN%}Borders = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_CYAN%}]{#}{\n}
-	set "AA_String=!Cecho! {%_CYAN%}Borders = [LEFT=%AA_LC% px], [TOP=%AA_TC% px], [RIGHT=%AA_RC% px], [BOTTOM=%AA_BC% px] [{%HC_GREEN%}MATCH WITH RPU{%_CYAN%}]{#}{\n}
+	set "RPU_AA_String=!Cecho! {%_CYAN%}Borders = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
+	set "AA_String=!Cecho! {%_CYAN%}Borders = [LEFT=%AA_LC% px], [TOP=%AA_TC% px], [RIGHT=%AA_RC% px], [BOTTOM=%AA_BC% px] [{%HC_GREEN%}MATCH WITH RPU{%_CYAN%}]{#}{\n}"
 ) else (
-	set "RPU_AA_String=!Cecho! {%_CYAN%}Borders = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}
-	set "AA_String=!Cecho! {%_CYAN%}Borders = [LEFT=%AA_LC% px], [TOP=%AA_TC% px], [RIGHT=%AA_RC% px], [BOTTOM=%AA_BC% px] [{%HC_RED%}NOT MATCH WITH RPU{%_CYAN%}]{#}{\n}
+	set "RPU_AA_String=!Cecho! {%_CYAN%}Borders = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
+	set "AA_String=!Cecho! {%_CYAN%}Borders = [LEFT=%AA_LC% px], [TOP=%AA_TC% px], [RIGHT=%AA_RC% px], [BOTTOM=%AA_BC% px] [{%HC_RED%}NOT MATCH WITH RPU{%_CYAN%}]{#}{\n}"
 )
-IF "%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%"=="UndefinedUndefinedUndefinedUndefined" set "RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_GREY%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}
+IF "%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%"=="UndefinedUndefinedUndefinedUndefined" set "RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_GREY%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}"
 
 IF "!V0_FRAMES!"=="!RPU_FRAMES!" (
-	set "FRAMEINFO_VIDEO=!Cecho! {%_CYAN%}Frames  = [!V0_FRAMES!] [{%HC_GREEN%}MATCH WITH RPU{%_CYAN%}]{#}{\n}
-	set "FRAMEINFO_RPU=!Cecho! {%_CYAN%}Frames  = [!RPU_FRAMES!] [{%HC_GREEN%}MATCH WITH VIDEO{%_CYAN%}]{#}{\n}
-	set "FRAME_String=!Cecho! {%HC_GREEN%}VIDEO AND RPU FRAMECOUNT EQUAL!{#}{\n}
+	set "FRAMEINFO_VIDEO=!Cecho! {%_CYAN%}Frames  = [!V0_FRAMES!] [{%HC_GREEN%}MATCH WITH RPU{%_CYAN%}]{#}{\n}"
+	set "FRAMEINFO_RPU=!Cecho! {%_CYAN%}Frames  = [!RPU_FRAMES!] [{%HC_GREEN%}MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
+	set "FRAME_String=!Cecho! {%HC_GREEN%}VIDEO AND RPU FRAMECOUNT EQUAL!{#}{\n}"
 ) else (
-	set "FRAMEINFO_VIDEO=!Cecho! {%_CYAN%}Frames  = [!V0_FRAMES!] [{%HC_RED%}NOT MATCH WITH RPU{%_CYAN%}]{#}{\n}
-	set "FRAMEINFO_RPU=!Cecho! {%_CYAN%}Frames  = [!RPU_FRAMES!] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}
-	set "FRAME_String=!Cecho! {%HC_RED%}VIDEO AND RPU FRAMECOUNT NOT EQUAL!{#}{\n}
+	set "FRAMEINFO_VIDEO=!Cecho! {%_CYAN%}Frames  = [!V0_FRAMES!] [{%HC_RED%}NOT MATCH WITH RPU{%_CYAN%}]{#}{\n}"
+	set "FRAMEINFO_RPU=!Cecho! {%_CYAN%}Frames  = [!RPU_FRAMES!] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
+	set "FRAME_String=!Cecho! {%HC_RED%}VIDEO AND RPU FRAMECOUNT NOT EQUAL!{#}{\n}"
 )
 cls
 %GREEN%

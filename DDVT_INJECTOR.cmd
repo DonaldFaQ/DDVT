@@ -886,10 +886,10 @@ goto :CUSTOM_ONLY_MENU
 :RPU_MENU
 set "HEADER_FILENAME=!INPUTFILENAME!_[EDITED]"
 set "HEADER_EXT=.bin"
-set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px]{#}{\n}
-if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_GREY%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}
-set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=!RPU_AA_LC! px], [TOP=!RPU_AA_TC! px], [RIGHT=!RPU_AA_RC! px], [BOTTOM=!RPU_AA_BC! px]{#}{\n}
-if "!RPU_AA_String!"=="[LEAVE UNTOUCHED]" set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [{%HC_WHITE%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}
+set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px]{#}{\n}"
+if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_GREY%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}"
+set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=!RPU_AA_LC! px], [TOP=!RPU_AA_TC! px], [RIGHT=!RPU_AA_RC! px], [BOTTOM=!RPU_AA_BC! px]{#}{\n}"
+if "!RPU_AA_String!"=="[LEAVE UNTOUCHED]" set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [{%HC_WHITE%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}"
 
 cls
 %GREEN%
@@ -1102,51 +1102,51 @@ if "!MUXINMP4!!MP4Extract!"=="YESTRUE" set "!MUXINMKV!"=="NO" & set "HEADER_EXT=
 ::VIDEO LINE
 :: VIDEO-INPUT = RPU-INPUT
 if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%" (
-	set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_CYAN%}]{#}{\n}
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_GREEN%}MATCH WITH INPUT RPU{%_CYAN%}]{#}{\n}
+	set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_GREEN%}MATCH WITH INPUT RPU{%_CYAN%}]{#}{\n}"
 ) else (
-	set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_RED%}NOT MATCH WITH INPUT RPU{%_CYAN%}]{#}{\n}
+	set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_RED%}NOT MATCH WITH INPUT RPU{%_CYAN%}]{#}{\n}"
 )
 
 ::RPU LINE
 :: RPU-INPUT = NONE
-if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_GREY%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}
+if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_GREY%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}"
 
 ::OUTPUT_LINE
-set "HEADER_RPU_OUTPUT_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}
+set "HEADER_RPU_OUTPUT_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
 
 :: RPU-OUTPUT = VIDEO-INPUT
 if "%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%"=="%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%" (
-	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_YELLOW%}]{#}{\n}
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_GREEN%}MATCH WITH OUTPUT{%_CYAN%}]{#}{\n}
+	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_YELLOW%}]{#}{\n}"
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_GREEN%}MATCH WITH OUTPUT{%_CYAN%}]{#}{\n}"
 ) else (
-	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_YELLOW%}]{#}{\n}
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_RED%}NOT MATCH WITH OUTPUT{%_CYAN%}]{#}{\n}
+	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_YELLOW%}]{#}{\n}"
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_RED%}NOT MATCH WITH OUTPUT{%_CYAN%}]{#}{\n}"
 )
 	
 ::OUTPUT LINE
 :: VIDEO-INPUT = NONE
 if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="" (
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = [{%_YELLOW%}NOT FOUND. MUX FILE IN CONTAINER OR SET CROPPING VALUES MANUALLY{%_CYAN%}]{#}{\n}
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = [{%_YELLOW%}NOT FOUND. MUX FILE IN CONTAINER OR SET CROPPING VALUES MANUALLY{%_CYAN%}]{#}{\n}"
 	if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" (
-		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_YELLOW%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}
+		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_YELLOW%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}"
 	) else (
-		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%_YELLOW%}VIDEO BORDERS NOT FOUND{%_CYAN%}]{#}{\n}
+		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%_YELLOW%}VIDEO BORDERS NOT FOUND{%_CYAN%}]{#}{\n}"
 	)
-	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%_WHITE%}VIDEO BORDERS NOT FOUND{%_YELLOW%}]{#}{\n}
+	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%_WHITE%}VIDEO BORDERS NOT FOUND{%_YELLOW%}]{#}{\n}"
 )
 
-set "HEADER_RPU_AA_String_RPU=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px]{#}{\n}
-set "HEADER_RPU_OUTPUT_String_RPU=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px]{#}{\n}
+set "HEADER_RPU_AA_String_RPU=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px]{#}{\n}"
+set "HEADER_RPU_OUTPUT_String_RPU=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px]{#}{\n}"
 if "!RPU_AA_String!"=="[LEAVE UNTOUCHED]" (
 	if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%" (
-		set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [{%HC_GREEN%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}
+		set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [{%HC_GREEN%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}"
 	) else (
-		set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [{%HC_RED%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}
+		set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [{%HC_RED%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}"
 	)
-	if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [{%HC_WHITE%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}
-	if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="" set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [{%HC_WHITE%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}
+	if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [{%HC_WHITE%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}"
+	if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="" set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [{%HC_WHITE%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}"
 )
 cls
 %GREEN%
@@ -2666,43 +2666,43 @@ if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" (
 ::VIDEO LINE
 :: VIDEO-INPUT = RPU-INPUT
 if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%" (
-	set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_CYAN%}]{#}{\n}
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_GREEN%}MATCH WITH INPUT RPU{%_CYAN%}]{#}{\n}
+	set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_GREEN%}MATCH WITH INPUT RPU{%_CYAN%}]{#}{\n}"
 ) else (
-	set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_RED%}NOT MATCH WITH INPUT RPU{%_CYAN%}]{#}{\n}
+	set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_RED%}NOT MATCH WITH INPUT RPU{%_CYAN%}]{#}{\n}"
 )
 
 ::RPU LINE
 :: RPU-INPUT = NONE
-if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_GREY%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}
+if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_GREY%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}"
 
 ::OUTPUT_LINE
-set "HEADER_RPU_OUTPUT_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}
+set "HEADER_RPU_OUTPUT_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
 
 :: RPU-OUTPUT = VIDEO-INPUT
 if "%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%"=="%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%" (
-	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_YELLOW%}]{#}{\n}
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_GREEN%}MATCH WITH OUTPUT{%_CYAN%}]{#}{\n}
+	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_YELLOW%}]{#}{\n}"
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_GREEN%}MATCH WITH OUTPUT{%_CYAN%}]{#}{\n}"
 ) else (
-	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_YELLOW%}]{#}{\n}
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_RED%}NOT MATCH WITH OUTPUT{%_CYAN%}]{#}{\n}
+	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_YELLOW%}]{#}{\n}"
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_RED%}NOT MATCH WITH OUTPUT{%_CYAN%}]{#}{\n}"
 )
 	
 ::OUTPUT LINE
 :: VIDEO-INPUT = NONE
 if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="" (
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = [{%_YELLOW%}NOT FOUND. MUX FILE IN CONTAINER OR SET CROPPING VALUES MANUALLY{%_CYAN%}]{#}{\n}
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = [{%_YELLOW%}NOT FOUND. MUX FILE IN CONTAINER OR SET CROPPING VALUES MANUALLY{%_CYAN%}]{#}{\n}"
 	if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" (
-		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_YELLOW%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}
+		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_YELLOW%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}"
 	) else (
-		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%_YELLOW%}VIDEO BORDERS NOT FOUND{%_CYAN%}]{#}{\n}
+		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%_YELLOW%}VIDEO BORDERS NOT FOUND{%_CYAN%}]{#}{\n}"
 	)
-	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%_WHITE%}VIDEO BORDERS NOT FOUND{%_YELLOW%}]{#}{\n}
+	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%_WHITE%}VIDEO BORDERS NOT FOUND{%_YELLOW%}]{#}{\n}"
 )
 
-set "HEADER_RPU_AA_String_RPU=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px]{#}{\n}
-set "HEADER_RPU_OUTPUT_String_RPU=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px]{#}{\n}
+set "HEADER_RPU_AA_String_RPU=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px]{#}{\n}"
+set "HEADER_RPU_OUTPUT_String_RPU=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px]{#}{\n}"
 cls
 %GREEN%
 echo  !HEADER1!

@@ -1,6 +1,6 @@
 @echo off & setlocal
 mode con cols=125 lines=57
-set VERSION=0.70 (FIX#3) beta
+set VERSION=0.71 "Back to the roots"
 set HEADER1=powered by quietvoids tools                                                                  GNU License (GPL) 2021-2025
 TITLE DDVT OPTIONS [QfG] v%VERSION%
 set DESIGN=STANDARD
