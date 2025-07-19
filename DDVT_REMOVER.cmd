@@ -11,7 +11,7 @@ set PasswordChars=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 set PasswordLength=5
 call :CreatePassword Password
 
-set "Cecho=%~dp0tools\cecho_x64.exe" rem Path to cecho_x64.exe
+set "Cecho="%~dp0tools\cecho_x64.exe"" rem Path to cecho_x64.exe
 set "sfkpath=%~dp0tools\sfk.exe" rem Path to sfk.exe
 set "MP4BOXpath=%~dp0tools\mp4box.exe" rem Path to mp4box.exe
 set "MEDIAINFOpath=%~dp0tools\mediainfo.exe" rem Path to mediainfo.exe

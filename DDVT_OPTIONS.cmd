@@ -1,12 +1,12 @@
 @echo off & setlocal
 mode con cols=125 lines=57
-set VERSION=0.70 beta
+set VERSION=0.70 (FIX#3) beta
 set HEADER1=powered by quietvoids tools                                                                  GNU License (GPL) 2021-2025
 TITLE DDVT OPTIONS [QfG] v%VERSION%
 set DESIGN=STANDARD
 
 rem --- Hardcoded settings. Can be changed manually ---
-set "Cecho=%~dp0tools\cecho_x64.exe" rem Path to cecho_x64.exe
+set "Cecho="%~dp0tools\cecho_x64.exe"" rem Path to cecho_x64.exe
 set "sfkpath=%~dp0tools\sfk.exe" rem Path to sfk.exe
 
 rem --- Hardcoded settings. Cannot be changed ---
@@ -65,7 +65,6 @@ IF EXIST "!TOOLFOLDER!DDVT_OPTIONS.ini" (
 	FOR /F "delims=" %%A IN ('findstr /C:"DESIGN=" "%~dp0DDVT_OPTIONS.ini"') DO (
 		set "DESIGN=%%A"
 		set "DESIGN=!DESIGN:~7!"
-		FOR /F "usebackq" %%A IN ('"!DESIGN!"') DO set "DESIGN_STRING=%%~nA">nul 2>&1
 	)
 )
 
@@ -97,7 +96,7 @@ set "_WHITE=0F"
 
 if "!DESIGN!" NEQ "STANDARD" (
 	call "!DESIGN!"
-	FOR /F "usebackq" %%A IN ('"!DESIGN!"') DO set "DESIGN_STRING=%%~nA
+	for %%f in (!DESIGN!) do set "DESIGN_STRING=%%~nf">nul 2>&1
 ) else (
 	set "DESIGN_STRING=STANDARD"
 )
@@ -171,9 +170,9 @@ echo.
 %CYAN%
 echo TEMP FOLDER        = !TMP_FOLDER_STRING!
 echo OUTPUT FOLDER      = !TARGET_FOLDER_STRING!
-%Cecho% {%_CYAN%}MKVTOOLNIX FOLDER  = !MKVTOOLNIX_FOLDER_STRING! [!MKVTOOLNIX_STAT!{%_CYAN%}]{#}{\n}
-%Cecho% {%_CYAN%}AVISYNTH+ FOLDER   = !AVISYNTH_FOLDER! [!AVISYNTH_STAT!{%_CYAN%}]{#}{\n}
-%Cecho% {%_CYAN%}LAV Filters FOLDER = !LAVFILTERS_FOLDER! [!LAVFILTER_STAT!{%_CYAN%}]{#}{\n}
+!Cecho! {%_CYAN%}MKVTOOLNIX FOLDER  = !MKVTOOLNIX_FOLDER_STRING! [!MKVTOOLNIX_STAT!{%_CYAN%}]{#}{\n}
+!Cecho! {%_CYAN%}AVISYNTH+ FOLDER   = !AVISYNTH_FOLDER! [!AVISYNTH_STAT!{%_CYAN%}]{#}{\n}
+!Cecho! {%_CYAN%}LAV Filters FOLDER = !LAVFILTERS_FOLDER! [!LAVFILTER_STAT!{%_CYAN%}]{#}{\n}
 echo.
 %WHITE%
 echo  == OPTIONS MENU ========================================================================================================
@@ -182,17 +181,17 @@ echo.
 echo 1. Set TEMP Directory
 echo 2. Set OUTPUT Directory
 echo 3. Set MKVTOOLNIX Directory
-%Cecho% {%_CYAN%}4. Set AVISYNTH+ Directory    [{%HC_YELLOW%}Also you can install AVISYNTH+ via this switch{%_CYAN%}]{#}{\n}
-%Cecho% {%_CYAN%}5. Set LAV Filters Directory  [{%HC_YELLOW%}Also you can install LAV Filters via this switch{%_CYAN%}]{#}{\n}
-%Cecho% {%HC_WHITE%}M. MediaInfo Logfile [{%COL_MEDIAINFO_LOGFILE%}!MEDIAINFO_LOGFILE!{%HC_WHITE%}]{#}{\n}
-%Cecho% {%HC_WHITE%}C. Injector Custom Edit Support [{%COL_JSON_SUPPORT%}!JSON_SUPPORT!{%HC_WHITE%}]{#}{\n}
-%Cecho% {%HC_WHITE%}P. Injector Custom Edit Processing [{%COL_JSON_PROCESS%}!JSON_PROCESS!{%HC_WHITE%}]{#}{\n}
-%Cecho% {%HC_WHITE%}F. Fix Scenecut Flags [{%COL_FIX_SCENECUTS%}!FIX_SCENECUTS!{%HC_WHITE%}]{#}{\n}
+!Cecho! {%_CYAN%}4. Set AVISYNTH+ Directory    [{%HC_YELLOW%}Also you can install AVISYNTH+ via this switch{%_CYAN%}]{#}{\n}
+!Cecho! {%_CYAN%}5. Set LAV Filters Directory  [{%HC_YELLOW%}Also you can install LAV Filters via this switch{%_CYAN%}]{#}{\n}
+!Cecho! {%HC_WHITE%}M. MediaInfo Logfile [{%COL_MEDIAINFO_LOGFILE%}!MEDIAINFO_LOGFILE!{%HC_WHITE%}]{#}{\n}
+!Cecho! {%HC_WHITE%}C. Injector Custom Edit Support [{%COL_JSON_SUPPORT%}!JSON_SUPPORT!{%HC_WHITE%}]{#}{\n}
+!Cecho! {%HC_WHITE%}P. Injector Custom Edit Processing [{%COL_JSON_PROCESS%}!JSON_PROCESS!{%HC_WHITE%}]{#}{\n}
+!Cecho! {%HC_WHITE%}F. Fix Scenecut Flags [{%COL_FIX_SCENECUTS%}!FIX_SCENECUTS!{%HC_WHITE%}]{#}{\n}
 echo.
 echo 6. Create Shell Extensions
 echo 7. Delete Shell Extensions
 echo.
-%Cecho% {%HC_WHITE%}D. Design [{%HC_YELLOW%}!DESIGN_STRING!{%HC_WHITE%}]{#}{\n}
+!Cecho! {%HC_WHITE%}D. Design [{%HC_YELLOW%}!DESIGN_STRING!{%HC_WHITE%}]{#}{\n}
 echo.
 %HCYELLOW%
 echo S. SAVE SETTINGS
@@ -238,7 +237,8 @@ if "%ERRORLEVEL%"=="12" (
 	echo.
 	!Cecho! {%HC_WHITE%}Drag 'n' Drop {%_GREEN%}DESIGN File {%HC_WHITE%}here and press ENTER:{#}{\n}
 	%GREEN%
-	set /p "DESIGN=" || set "DESIGN=STANDARD"
+	set /p "DESIGNINPUT=" || set "DESIGN=STANDARD"
+	if "!DESIGNINPUT!" NEQ "STANDARD" for %%f in (!DESIGNINPUT!) do set "DESIGN=%%~dpnxf">nul 2>&1
 )
 if "%ERRORLEVEL%"=="11" (
 	reg delete "HKCR\*\Shell\DDVT Demuxer" /f>nul 2>&1

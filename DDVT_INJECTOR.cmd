@@ -11,7 +11,7 @@ set PasswordChars=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 set PasswordLength=5
 call :CreatePassword Password
 
-set "Cecho=%~dp0tools\cecho_x64.exe" rem Path to cecho_x64.exe
+set "Cecho="%~dp0tools\cecho_x64.exe"" rem Path to cecho_x64.exe
 set "sfkpath=%~dp0tools\sfk.exe" rem Path to sfk.exe
 set "FFMPEGpath=%~dp0tools\ffmpeg.exe" rem Path to ffmpeg.exe
 set "MP4BOXpath=%~dp0tools\mp4box.exe" rem Path to mp4box.exe
@@ -1128,9 +1128,9 @@ if "%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%"=="%AA_INPUT_LC%%AA_INPUT_TC%%A
 ::OUTPUT LINE
 :: VIDEO-INPUT = NONE
 if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="" (
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = ["  %_YELLOW% "NOT FOUND. MUX FILE IN CONTAINER OR SET CROPPING VALUES MANUALLY{%_CYAN%}]{#}{\n}
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = [{%_YELLOW%}NOT FOUND. MUX FILE IN CONTAINER OR SET CROPPING VALUES MANUALLY{%_CYAN%}]{#}{\n}
 	if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" (
-		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    =[{%_YELLOW%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}
+		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_YELLOW%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}
 	) else (
 		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%_YELLOW%}VIDEO BORDERS NOT FOUND{%_CYAN%}]{#}{\n}
 	)
@@ -2692,9 +2692,9 @@ if "%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%"=="%AA_INPUT_LC%%AA_INPUT_TC%%A
 ::OUTPUT LINE
 :: VIDEO-INPUT = NONE
 if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="" (
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = ["  %_YELLOW% "NOT FOUND. MUX FILE IN CONTAINER OR SET CROPPING VALUES MANUALLY{%_CYAN%}]{#}{\n}
+	set "AA_String=!Cecho! {%_CYAN%}Borders    = [{%_YELLOW%}NOT FOUND. MUX FILE IN CONTAINER OR SET CROPPING VALUES MANUALLY{%_CYAN%}]{#}{\n}
 	if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" (
-		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    =[{%_YELLOW%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}
+		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_YELLOW%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}
 	) else (
 		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%_YELLOW%}VIDEO BORDERS NOT FOUND{%_CYAN%}]{#}{\n}
 	)
