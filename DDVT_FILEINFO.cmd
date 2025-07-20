@@ -636,11 +636,13 @@ if exist "!TMP_FOLDER!\temp.hevc" (
 	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	echo.
 )
+goto :eof
 
 :RPU_EXTRACT
 if "!DVPLOT!!FRAME!"=="NONONE" goto :eof
 %CYAN%
 echo Please wait. Demuxing DV RPU...
+pause
 %WHITE%
 "!DO_VI_TOOLpath!" extract-rpu "!VIDEOSTREAM!" -o "!TMP_FOLDER!\RPU.bin"
 if exist "!TMP_FOLDER!\RPU.bin" (
