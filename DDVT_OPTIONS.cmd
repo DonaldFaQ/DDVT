@@ -193,7 +193,7 @@ echo 7. Delete Shell Extensions
 echo.
 !Cecho! {%HC_WHITE%}D. Design [{%HC_YELLOW%}!DESIGN_STRING!{%HC_WHITE%}]{#}{\n}
 echo.
-%HCYELLOW%
+%GREEN%
 echo S. SAVE SETTINGS
 %HCWHITE%
 echo E. Exit
@@ -222,7 +222,7 @@ if "%ERRORLEVEL%"=="13" (
 	echo.
 	%HCGREEN%
 	echo Settings Saved.
-	TIMEOUT 1 >nul
+	TIMEOUT 2 /NOBREAK >nul
 )
 if "%ERRORLEVEL%"=="12" (
 	echo.
@@ -264,7 +264,7 @@ if "%ERRORLEVEL%"=="11" (
 		set "Line2=Start the script with ADMINISTRATOR permissions to activate/deactivate the Windows SHELL EXTENSIONS. Without ADMINISTRATOR permissions you have insufficent rights changing Windows registry^!"
 		START /MIN PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('!Line1!' + !NewLine! + !NewLine! + '!Line2!', 'DDVT OPTIONS [QfG] %VERSION%', 'Ok','Error')"	
 	)
-	TIMEOUT 1 >nul
+	TIMEOUT 2 /NOBREAK >nul
 )
 if "%ERRORLEVEL%"=="10" (
 	reg delete "HKCR\*\Shell\DDVT Demuxer" /f>nul 2>&1
@@ -353,7 +353,7 @@ if "%ERRORLEVEL%"=="10" (
 		set "Line2=Start the script with ADMINISTRATOR permissions to activate/deactivate the Windows SHELL EXTENSIONS. Without ADMINISTRATOR permissions you have insufficent rights changing Windows registry^!"
 		START /MIN PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('!Line1!' + !NewLine! + !NewLine! + '!Line2!', 'DDVT OPTIONS [QfG] %VERSION%', 'Ok','Error')"	
 	)
-	TIMEOUT 1 >nul
+	TIMEOUT 2 /NOBREAK >nul
 )
 if "%ERRORLEVEL%"=="9" (
 	if "%FIX_SCENECUTS%"=="YES" set "FIX_SCENECUTS=NO"

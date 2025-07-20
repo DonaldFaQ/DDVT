@@ -34,7 +34,7 @@ set "RPU_EXIST=FALSE"
 set "RPU_STRING="
 set "TMP_FOLDER=SAME AS SOURCE"
 set "MKVTOOLNIX_FOLDER=INCLUDED"
-set "LAYERTYPE=SL"
+set "LAYERTYPE="
 set "Format=HEVC"
 set "DVinput=NO"
 set "DVBIN=NO"
@@ -98,6 +98,7 @@ if "%TMP_FOLDER%"=="SAME AS SOURCE" (
 if "!MKVTOOLNIX_FOLDER!"=="INCLUDED" set "MKVTOOLNIX_FOLDER=%~dp0tools"
 set "MKVMERGEpath=!MKVTOOLNIX_FOLDER!\mkvmerge.exe"
 
+if not exist "%Cecho%" set "MISSINGFILE=%~dp0tools\cecho_x64.exe" & goto :CORRUPTFILE
 if not exist "%sfkpath%" set "MISSINGFILE=%sfkpath%" & goto :CORRUPTFILE
 if not exist "%FFMPEGpath%" set "MISSINGFILE=%FFMPEGpath%" & goto :CORRUPTFILE
 if not exist "%FFPROBEpath%" set "MISSINGFILE=%FFPROBEpath%" & goto :CORRUPTFILE
@@ -168,7 +169,7 @@ if "!RAWFILE!"=="TRUE" (
 		set "MI_INFOVIDEO=!TMP_FOLDER!\Info.mkv"
 		set "BL_INFOVIDEO=!TMP_FOLDER!\Info.mkv"
 	)
-	if "!VIDEO_COUNT!" NEQ "1" "!FFMPEGpath!" -loglevel panic -y -i "!FILE!" -map 0:0 -c:v copy -to 1 -bsf:v hevc_metadata -f hevc "!TMP_FOLDER!\BL_Info.mkv"
+	if "!VIDEO_COUNT!" NEQ "1" "!FFMPEGpath!" -loglevel panic -y -i "!FILE!" -map 0:0 -c:v copy -to 1 -bsf:v hevc_mp4toannexb -f hevc "!TMP_FOLDER!\BL_Info.mkv"
 	if exist "!TMP_FOLDER!\BL_Info.mkv" (
 		set "BL_INFOVIDEO=!TMP_FOLDER!\BL_Info.mkv"
 	)
@@ -215,7 +216,7 @@ if not defined DVprofile (
 
 ::DUAL LAYER OPERATION
 if "!VIDEO_COUNT!" NEQ "1" (
-	set "LAYERTYPE=DL"
+	set "LAYERTYPE= DL"
 	"!FFPROBEpath!" "!FILE!" -show_streams -v 0 -of compact=p=0:nk=1 >"!TMP_FOLDER!\STREAMS.txt"
 	FOR /F "delims=" %%A IN ('findstr /C:"1920|1080" "!TMP_FOLDER!\STREAMS.txt"') DO set "STREAMINFO=%%A"
 	if exist "!TMP_FOLDER!\STREAMS.txt" del "!TMP_FOLDER!\STREAMS.txt"
@@ -230,7 +231,7 @@ if "!VIDEO_COUNT!" NEQ "1" (
 ::DEMUX RPU SAMPLE
 if "!DVinput!"=="YES" (
 	if exist "!MI_INFOVIDEO!" (
-		"!FFMPEGpath!" -loglevel panic -i "!MI_INFOVIDEO!" -c:v copy -to 1 -bsf:v hevc_metadata -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" - >nul 2>&1
+		"!FFMPEGpath!" -loglevel panic -i "!MI_INFOVIDEO!" -c:v copy -to 1 -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" - >nul 2>&1
 		if exist "!TMP_FOLDER!\RPU.bin" (
 			FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU.bin"') DO set "RPUSIZE=%%~zA"
 			if "!RPUSIZE!" NEQ "0" (
@@ -248,7 +249,7 @@ if "!DVinput!"=="YES" (
 		)
 	)
 	if "!RPU_EXIST!"=="FALSE" (
-		"!FFMPEGpath!" -loglevel panic -i "!FILE!" !DT! -c:v copy -to 1 -bsf:v hevc_metadata -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" - >nul 2>&1
+		"!FFMPEGpath!" -loglevel panic -i "!FILE!" !DT! -c:v copy -to 1 -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" - >nul 2>&1
 		if exist "!TMP_FOLDER!\RPU.bin" (
 			FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU.bin"') DO set "RPUSIZE=%%~zA"
 			if "!RPUSIZE!" NEQ "0" (
@@ -491,7 +492,7 @@ if defined DURATION (
 )
 echo.
 ::DV P7 INFOLINE
-if "!EL_INPUT!!DVinput!!DVP7!!DVBIN!"=="FALSEYESYESNO" !Cecho! {%_YELLOW%}Video             {%HC_WHITE%}: Base Layer ({%HC_GREEN%}!HDRFormat!{%HC_WHITE%}) + Enhanced Layer ({%HC_GREEN%}Dolby Vision Profile 7{%HC_WHITE%}) [!subprofile!{%HC_WHITE%}]{#}{\n}
+if "!EL_INPUT!!DVinput!!DVP7!!DVBIN!"=="FALSEYESYESNO" !Cecho! {%_YELLOW%}Video             {%HC_WHITE%}: Base Layer ({%HC_GREEN%}!HDRFormat!{%HC_WHITE%}) + Enhanced Layer ({%HC_GREEN%}Dolby Vision Profile 7!LAYERTYPE! !subprofile!{%HC_WHITE%}) + RPU ({%HC_GREEN%}!DM:~2!{%HC_WHITE%}){#}{\n}
 ::DV P5/P8 INFOLINE
 if "!EL_INPUT!!DVinput!!DVP7!!DVBIN!"=="FALSEYESNONO" !Cecho! {%_YELLOW%}Video             {%HC_WHITE%}: Base Layer ({%HC_GREEN%}!HDRFormat!{%HC_WHITE%}) + RPU ({%HC_GREEN%}Dolby Vision Profile !DVprofile!!DM!{%HC_WHITE%}){#}{\n}
 ::EL INFOLINE
@@ -579,7 +580,7 @@ goto :eof
 :OUTPUT_msgBOX
 if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
 set "NewLine=[System.Environment]::NewLine"
-if "!EL_INPUT!!DVinput!!DVP7!!DVBIN!"=="FALSEYESYESNO" set "Line1=BL ^(!HDRFormat!^) ^+ EL ^(Dolby Vision Profile 7 ^[!subprofile!^] !LAYERTYPE!^) ^+ RPU ^(!DM:~2!^)"
+if "!EL_INPUT!!DVinput!!DVP7!!DVBIN!"=="FALSEYESYESNO" set "Line1=BL ^(!HDRFormat!^) ^+ EL ^(Dolby Vision Profile 7!LAYERTYPE!^ !subprofile!^) ^+ RPU ^(!DM:~2!^)"
 if "!EL_INPUT!!DVinput!!DVP7!!DVBIN!"=="FALSEYESNONO" set "Line1=BL ^(!HDRFormat!^) ^+ RPU ^(Dolby Vision Profile !DVprofile!!DM!^)"
 if "!EL_INPUT!!DVinput!"=="TRUEYES" set "Line1=EL ^(Dolby Vision Profile 7 ^[!subprofile!^]^) ^+ RPU ^(!DM:~2!^)                              EL NEEDS MUXING INTO HDR10 BL TO WORK CORRECTLY"
 if "!DVinput!!DVBIN!"=="YESYES" set "Line1=RPU ^(Dolby Vision Profile !DVprofile!!DM!^)"
@@ -594,7 +595,6 @@ START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName Present
 exit
 
 :OUTPUT_LOGFILE
-if "!DL!"=="TRUE" set "LAYERTYPE=DL"
 if defined L5_FOUND (
 	set "L5_STRING=Left: !RPU_INPUT_AA_LC! px, Top: !RPU_INPUT_AA_TC! px, Right: !RPU_INPUT_AA_RC! px, Bottom: !RPU_INPUT_AA_BC! px"
 ) else (
@@ -624,7 +624,7 @@ if defined DURATION (
 )
 echo.>>"!TMP_FOLDER!\logfile.txt"
 ::DV P7 INFOLINE
-if "!DVinput!!DVP7!!DVBIN!"=="YESYESNO" echo Video             ^: Base Layer ^(!HDRFormat!^) ^+ Enhanced Layer ^(Dolby Vision Profile 7 ^[!subprofile!^] !LAYERTYPE!^) ^+ RPU ^(!DM:~2!^)>>"!TMP_FOLDER!\logfile.txt"
+if "!DVinput!!DVP7!!DVBIN!"=="YESYESNO" echo Video             ^: Base Layer ^(!HDRFormat!^) ^+ Enhanced Layer ^(Dolby Vision Profile 7!LAYERTYPE! ^[!subprofile!^]^) ^+ RPU ^(!DM:~2!^)>>"!TMP_FOLDER!\logfile.txt"
 ::DV P5/P8 INFOLINE
 if "!DVinput!!DVP7!!DVBIN!"=="YESNONO" echo Video             ^: Base Layer ^(!HDRFormat!^) ^+ RPU ^(Dolby Vision Profile !DVprofile!!DM!^)>>"!TMP_FOLDER!\logfile.txt"
 ::EL INFOLINE

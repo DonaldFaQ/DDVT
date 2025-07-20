@@ -1,7 +1,15 @@
+-v0.71 "Back to the roots"
+*FIXED - Problems with =/() symbols in tool dirname.
+*REWORKED - Demuxer script (more options and better stability with Dual Layer files).
+*COMEBACK - Support for mkvextract/mp4box for demuxing (slower speed but lesser PPS errors).
+ (No switch in options, you can force faster FFMPEG demuxing in the scripts itselfs).
+*Major Bugfixes.
+(3rd Party Apps from v0.70 works fine!).
+
 -v0.70
 *COMPLETE OVERHAUL.
-*Added Theme support.
-*Reworked all scripts.
+*ADDED Theme support.
+*REWORKED all scripts.
 *Major Bugfixes.
 *UPDATED mkvtoolnix to v 93.0.0.0.
 (Do not forget to Download the new 3rd Party Apps!).

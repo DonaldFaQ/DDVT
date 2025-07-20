@@ -48,6 +48,9 @@ set "PLOTTYPE=MAX"
 set "FIX_SCENECUTS=YES"
 :: Set frame 0 scenecut flag in RPU to true. Also can be set in OPTIONS and overwrite this settings.
 :: YES / NO
+set "FORCE_FFMPEG_DEMUXING=NO"
+:: Use FFMPEG as default demuxing engine instead of MKVExtract/Mp4Box.
+:: YES / NO
 
 rem --- Hardcoded settings. Cannot be changed ---
 set "TESTMODE=OFF"
@@ -142,11 +145,14 @@ if "%TMP_FOLDER%"=="SAME AS SOURCE" (
 )
 if "!MKVTOOLNIX_FOLDER!"=="INCLUDED" set "MKVTOOLNIX_FOLDER=%~dp0tools"
 set "MKVMERGEpath=!MKVTOOLNIX_FOLDER!\mkvmerge.exe"
+set "MKVEXTRACTpath=!MKVTOOLNIX_FOLDER!\mkvextract.exe"
 
+if not exist "%Cecho%" set "MISSINGFILE=%~dp0tools\cecho_x64.exe" & goto :CORRUPTFILE
 if not exist "%sfkpath%" set "MISSINGFILE=%sfkpath%" & goto :CORRUPTFILE
 if not exist "%FFMPEGpath%" set "MISSINGFILE=%FFMPEGpath%" & goto :CORRUPTFILE
 if not exist "%FFPROBEpath%" set "MISSINGFILE=%FFPROBEpath%" & goto :CORRUPTFILE
 if not exist "%MKVMERGEpath%" set "MISSINGFILE=%MKVMERGEpath%" & goto :CORRUPTFILE
+if not exist "%MKVEXTRACTpath%" set "MISSINGFILE=%MKVEXTRACTpath%" & goto :CORRUPTFILE
 if not exist "%MADVRpath%" set "MISSINGFILE=%MADVRpath%" & goto :CORRUPTFILE
 if not exist "%JQpath%" set "MISSINGFILE=%JQpath%" & goto :CORRUPTFILE
 if not exist "%IMAGEMAGICKpath%" set "MISSINGFILE=%IMAGEMAGICKpath%" & goto :CORRUPTFILE
@@ -236,7 +242,7 @@ if "!RPU_FILE!!HDR10P_FILE!"=="FALSEFALSE" (
 		set "DT=-map 0:1"
 		"!FFMPEGpath!" -loglevel panic -i "!INFOSTREAM!" -map 0:0 -c:v copy -to 1 "!TMP_FOLDER!\BL.mkv">nul 2>&1
 	)
-	if "!DVinput!"=="YES" "!FFMPEGpath!" -loglevel panic -i "!INFOSTREAM!" !DT! -c:v copy -to 1 -bsf:v hevc_metadata -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" - >nul 2>&1
+	if "!DVinput!"=="YES" "!FFMPEGpath!" -loglevel panic -i "!INFOSTREAM!" !DT! -c:v copy -to 1 -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" - >nul 2>&1
 	FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU.bin"') DO set "RPUSIZE=%%~zA">nul 2>&1
 	if "!RPUSIZE!" NEQ "0" (
 		if "!DVinput!"=="YES" "!DO_VI_TOOLpath!" info -s "!TMP_FOLDER!\RPU.bin">"!TMP_FOLDER!\RPUINFO.txt"
@@ -465,7 +471,7 @@ if "!RPU_FILE!!HDR_HDR!!HDR_DV!"=="FALSEFALSEFALSE" (
 )
 
 if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
-TIMEOUT 3 /NOBREAK>nul
+TIMEOUT 2 /NOBREAK>nul
 if /i "%~2"=="-CHECK" goto :DV8CHK
 
 :START
@@ -526,11 +532,15 @@ if "!HDR_HDR10P!"=="TRUE" (
 )
 if "!RPU_FILE!"=="FALSE" echo 6. Create MediaInfo File          : [!MEDIAINFOFILE!]
 echo.
-if "!HDR_DV_Profile!"=="8" !Cecho! {%HC_WHITE%}C. CHECK RPU CROPPING VALUES{%HC_YELLOW%}*{%HC_WHITE%}     : [!BC_INFO!{%HC_WHITE%}]   {%HC_YELLOW%}*Check and Fix wrong cropped Releases{#}{\n}
-echo.
+if "!HDR_DV_Profile!"=="8" (
+	!Cecho! {%HC_WHITE%}C. CHECK RPU CROPPING VALUES{%HC_YELLOW%}*{%HC_WHITE%}     : [!BC_INFO!{%HC_WHITE%}]   {%HC_YELLOW%}*Check and Fix wrong cropped Releases{#}{\n}
+	echo.
+)
+%GREEN%
 echo S. START
+%HCWHITE%
 echo.
-echo Change Settings and press [S] to start^^!
+!Cecho! {%HC_WHITE%}Change Settings and press [{%_GREEN%}S{%HC_WHITE%}] to Start^^!{#}{\n}
 CHOICE /C 123456CS /N /M "Select a Letter 1,2,3,4,5,6,C,[S]tart"
 
 if "%ERRORLEVEL%"=="8" goto :OPERATION
@@ -581,6 +591,9 @@ echo                                              Dolby Vision Tool FILEINFO
 echo                                         ====================================
 echo.
 echo.
+%WHITE%
+echo  == OPERATION ===========================================================================================================
+echo.
 set "VIDEOSTREAM=!INPUTFILE!"
 if "!RPU_FILE!!RAW_FILE!"=="FALSEFALSE" call :DEMUX
 if "!VBITRATEPLOT!"=="YES" call :BITRATE_PLOTTING
@@ -595,32 +608,40 @@ goto :EXIT
 
 :DEMUX
 if "!DVPLOT!!HDR10PPLOT!!MEDIAINFOFILE!!FRAME!"=="NONONONONE" goto :eof
-%WHITE%
-echo  == DEMUXING ============================================================================================================
-echo.
 %HCYELLOW%
 echo ATTENTION^^! You need a lot of HDD Space for this operation.
 echo.
+%CYAN%
+echo Please wait. Extracting Video Layer...
 %WHITE%
-"!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -c:v copy -bsf:v hevc_metadata -f hevc "!TMP_FOLDER!\temp.hevc"
+if "!FORCE_FFMPEG_DEMUXING!!MKVExtract!"=="NOTRUE" "!MKVEXTRACTpath!" "!INPUTFILE!" tracks --ui-language en  0:"!TMP_FOLDER!\temp.hevc"
+if "!FORCE_FFMPEG_DEMUXING!!MP4Extract!"=="NOTRUE" "!MP4BOXpath!" -raw 1 "!INPUTFILE!" -out "!TMP_FOLDER!\temp.hevc"
+if not exist "!TMP_FOLDER!\temp.hevc" "!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -c:v copy -bsf:v hevc_mp4toannexb -f hevc "!TMP_FOLDER!\temp.hevc"
 if exist "!TMP_FOLDER!\temp.hevc" (
-	set "VIDEOSTREAM=!TMP_FOLDER!\temp.hevc"
-	%HCGREEN%
-	echo Done.
-	echo.
+	for %%f in ("!TMP_FOLDER!\temp.hevc") do set "CHECKSIZE=%%~zf" >nul 2>&1
+	if "!CHECKSIZE!" NEQ "0" (
+		%HCGREEN%
+		set "VIDEOSTREAM=!TMP_FOLDER!\temp.hevc"
+		echo Done.
+		echo.
+	) else (
+		%HCRED%
+		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+		echo Error.
+		echo.
+	)
 ) else (
 	%HCRED%
 	echo Error.
 	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	echo.
 )
-goto :eof
 
 :RPU_EXTRACT
 if "!DVPLOT!!FRAME!"=="NONONE" goto :eof
+%CYAN%
+echo Please wait. Demuxing DV RPU...
 %WHITE%
-echo  == EXTRACTING RPU ======================================================================================================
-echo.
 "!DO_VI_TOOLpath!" extract-rpu "!VIDEOSTREAM!" -o "!TMP_FOLDER!\RPU.bin"
 if exist "!TMP_FOLDER!\RPU.bin" (
 	set "RPUFILE=!TMP_FOLDER!\RPU.bin"
@@ -636,9 +657,9 @@ if exist "!TMP_FOLDER!\RPU.bin" (
 goto :eof
 	
 :HDR10P_EXTRACT
+%CYAN%
+echo Please wait. Demuxing HDR10+ SEI...
 %WHITE%
-echo  == EXTRACTING HDR10+ SEI ===============================================================================================
-echo.
 "!HDR10P_TOOLpath!" extract "!VIDEOSTREAM!" -o "!TMP_FOLDER!\HDR10Plus.json"
 if exist "!TMP_FOLDER!\HDR10Plus.json" (
 	set "HDR10PFILE=!TMP_FOLDER!\HDR10Plus.json"
@@ -654,9 +675,9 @@ if exist "!TMP_FOLDER!\HDR10Plus.json" (
 goto :eof
 
 :BITRATE_PLOTTING
+%CYAN%
+echo Please wait. Plotting Video Bitrate...
 %WHITE%
-echo  == PLOTTING VIDEO BITRATE ==============================================================================================
-echo.
 copy "!FFPROBEpath!" "!INPUTFILEPATH!" >nul
 attrib +h "!INPUTFILEPATH!\ffprobe.exe" >nul
 %CYAN%
@@ -682,9 +703,9 @@ goto :eof
 
 :HDR10_PLOTPNG
 :: Credits for this function goes to R3S3t9999. Original tool from R3S3t9999 here: https://github.com/R3S3t9999/DoVi_Scripts
+%CYAN%
+echo Please wait. Plotting HDR10...
 %WHITE%
-echo  == PLOTTING HDR10 ======================================================================================================
-echo.
 set "WORKFILE=!INPUTFILE!"
 if "!RAW_FILE!"=="TRUE" (
 	%CYAN%
@@ -784,15 +805,12 @@ if exist "!INPUTFILEPATH!!INPUTFILENAME!_[!PHDR! Plot].png" (
 goto :eof
 
 :DV_PLOTPNG
-%WHITE%
 set "PFilename="
 if "!PLOTTYPE!"=="ORIGINAL" set "PFilename=!INPUTFILENAME!!INPUTFILEEXT!"
-If "!DVPlot!"=="L1 ONLY" echo  == PLOTTING RPU L1 METADATA ============================================================================================
-If "!DVPlot!!RPU_CMV!"=="ALLCM v2.9" echo  == PLOTTING RPU L1, L2 METADATA ========================================================================================
-if "!DVPlot!!RPU_CMV!"=="ALLCM v4.0" echo  == PLOTTING RPU L1, L2, L8 METADATA ====================================================================================
-echo.
 %CYAN%
-echo Processing. Please wait...
+If "!DVPlot!"=="L1 ONLY" echo Please wait. Plotting DV RPU L1 Metadata...
+If "!DVPlot!!RPU_CMV!"=="ALLCM v2.9" echo Please wait. Plotting DV RPU L1, L2 Metadata...
+if "!DVPlot!!RPU_CMV!"=="ALLCM v4.0" echo Please wait. Plotting DV RPU L1, L2, L8 Metadata...
 %WHITE%
 "!DO_VI_TOOLpath!" plot "!RPUFILE!" -t "!PFilename!" -o "!TMP_FOLDER!\!INPUTFILENAME!L1.png">nul
 
@@ -901,9 +919,9 @@ if exist "!INPUTFILEPATH!!INPUTFILENAME!_[DV L1 Plot].png" (
 goto :eof
 
 :HDR10Plus_PLOTPNG
+%CYAN%
+echo Please wait. Plotting HDR10+ SEI...
 %WHITE%
-echo  == PLOTTING HDR10+ METADATA ============================================================================================
-echo.
 pushd "%~dp1"
 "!HDR10P_TOOLpath!" plot "!HDR10PFILE!" -t "" -o "!TMP_FOLDER!\!INPUTFILENAME!.png"
 popd
@@ -921,9 +939,9 @@ if exist "!INPUTFILEPATH!!INPUTFILENAME!_[HDR10+ Plot].png" (
 goto :eof
 
 :C_MEDIAINFO
+%CYAN%
+echo Please wait. Creating MediaInfo...
 %WHITE%
-echo  == CREATE MEDIAINFO FILE ===============================================================================================
-echo.
 "!MEDIAINFOpath!" --output=TXT "!INPUTFILENAME!!INPUTFILEEXT!">"!INPUTFILEPATH!!INPUTFILENAME!_[MediaInfo].txt"
 if exist "!INPUTFILEPATH!!INPUTFILENAME!_[MediaInfo].txt" (
 	echo Creating txt File...
@@ -1015,8 +1033,9 @@ if "!Frame!"=="6" set "Frame=06"
 if "!Frame!"=="7" set "Frame=07"
 if "!Frame!"=="8" set "Frame=08"
 if "!Frame!"=="9" set "Frame=09"
-echo  == WRITE DV FRAME INFOS ================================================================================================
-echo.
+%CYAN%
+echo Please wait. Writing DV Frame Infos...
+%WHITE%
 if "!Frame!"=="ALL" (
 	%WHITE%
 	"!DO_VI_TOOLpath!" export -i "!RPUFILE!" -o "!TMP_FOLDER!\info.json"
@@ -1072,6 +1091,7 @@ goto :eof
 
 :DV8CHK
 if /i "%~2!HDR_DV!"=="-CHECKFALSE" goto :SC_NODV
+if "!HDR_DV_Profile!" NEQ "8" goto :SC_NODV
 if /i "!INPUTFILEEXT!"==".bin" goto :FALSEINPUTCHECK
 mode con cols=125 lines=50
 if exist "%~dp0DDVT_OPTIONS.ini" (
@@ -1093,31 +1113,26 @@ set RPU_AA_BC=Undefined
 set "CONTAINERSTREAM=!INPUTFILE!"
 cls
 echo.
+cls
+%GREEN%
+echo  !HEADER1!
+echo.
+%WHITE%
+echo                                         ====================================
+%GREEN%
+echo                                             Dolby Vision Tool SYNC CHECK
+%WHITE%
+echo                                         ====================================
+echo.
+echo.
+%WHITE%
+echo  == CHECKING RELEASE ====================================================================================================
+echo.
 %WHITE%
 if "%RAW_FILE%"=="FALSE" (
-	echo  == DEMUXING ============================================================================================================
-	echo.
-	%HCYELLOW%
-	echo ATTENTION^^! You need a lot of HDD Space for this operation.
-	echo.
-	%CYAN%
-	echo Please wait. Extracting Video Layer...
-	%WHITE%
-	"!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -c:v copy -bsf:v hevc_metadata -f hevc "!TMP_FOLDER!\temp.hevc"
-	set "VIDEOSTREAM=!TMP_FOLDER!\temp.hevc"
-	if exist "!TMP_FOLDER!\temp.hevc" (
-		%HCGREEN%
-		echo Done.
-		echo.
-	) else (
-		%HCRED%
-		echo Error.
-		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
-		echo.
-	)
+	set "CONTAINERSTREAM=!INPUTFILE!"
+	call :DEMUX
 ) else (
-	echo  == MUXING ==============================================================================================================
-	echo.
 	%HCYELLOW%
 	echo ATTENTION^^! You need a lot of HDD Space for this operation.
 	echo.
@@ -1125,9 +1140,10 @@ if "%RAW_FILE%"=="FALSE" (
 	echo Please wait. Muxing Videostream into Container...
 	%HCYELLOW% 
 	echo Don't close the "Muxing into MKV Container" cmd window.
-	start /WAIT /MIN "Muxing into MKV Container" "!MKVMERGEpath!" --ui-language en --output ^"!TMP_FOLDER!\temp.mkv^" ^"^(^" ^"!INPUTFILE!^" ^"^)^" --language 0:und --compression 0:none ^"^(^" ^"!CONTAINERSTREAM!^" ^"^)^"
+	start /WAIT /MIN "Muxing into MKV Container" "!MKVMERGEpath!" --ui-language de --priority higher --output ^"!TMP_FOLDER!\temp.mkv^" --language 0:und --compression 0:none ^"^(^" ^"!INPUTFILE!^" ^"^)^" --stop-after-video-ends
 	if exist "!TMP_FOLDER!\temp.mkv" (
 		set "CONTAINERSTREAM=!TMP_FOLDER!\temp.mkv"
+		set "VIDEOSTREAM=!INPUTFILE!"
 		%HCGREEN%
 		echo Done.
 		echo.
@@ -1285,17 +1301,19 @@ echo.
 IF "%AA_LC%%AA_TC%%AA_RC%%AA_BC%"=="%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%" (
 	%HCWHITE%
 	echo S. SAVE and FIX Release
-	%HCYELLOW%
+	%GREEN%
 	echo E. EXIT and do nothing [RECOMMENDED]
+	echo.
+	!Cecho! {%HC_WHITE%}Change Settings and press [S] to FIX or [{%_GREEN%}E{%HC_WHITE%}] to {%_GREEN%}EXIT{%HC_WHITE%}!{#}{\n}
 ) else (
-	%HCYELLOW%
+	%GREEN%
 	echo S. SAVE and FIX Release [RECOMMENDED]
 	%HCWHITE%
 	echo E. EXIT and do nothing
+	echo.
+	!Cecho! {%HC_WHITE%}Change Settings and press [{%_GREEN%}S{%HC_WHITE%}] to {%_GREEN%}FIX{%HC_WHITE%} or [E] to EXIT!{#}{\n}
 )
 %HCWHITE%
-echo.
-echo Change Settings and press [S] to FIX or [E] to EXIT^^!
 CHOICE /C LTRBSE /N /M "Select a Letter L,T,R,B,[S]ave,[E]xit"
 
 if "%ERRORLEVEL%"=="6" goto DV8CHKEND
@@ -1525,6 +1543,7 @@ goto :eof
 if exist "!RPUFILE!" (
 	%CYAN%
 	echo Fixing Scenecuts...
+	%WHITE%
 	(
 	echo {
 	echo	"scene_cuts": {
@@ -1718,7 +1737,7 @@ exit
 if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
 set "NewLine=[System.Environment]::NewLine"
 set "Line1=Unsupported Input File.
-set "Line2=Only Files with Dolby Vision Content supported.
+set "Line2=Only Files with Dolby Vision Profile 8 supported.
 setlocal DisableDelayedExpansion
 START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT FileInfo [QfG] v%VERSION%', 'Ok','Info')"
 exit

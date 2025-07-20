@@ -2,7 +2,6 @@
 mode con cols=125 lines=35
 set "VERSION=--N.A.-- INCORRECTLY INSTALLED"
 set "HEADER1=File "%~dp0DDVT_OPTIONS.cmd" missing! Script works not correctly!"
-FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"DESIGN=" "%~dp0DDVT_OPTIONS.cmd"') DO set "DESIGN=%%A"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"HEADER1=" "%~dp0DDVT_OPTIONS.cmd"') DO set "HEADER1=%%A"
 TITLE DDVT P8 Hybrid Script [QfG] v%VERSION%
@@ -29,6 +28,9 @@ set "MUXINMP4=YES"
 :: YES / NO - Muxing video stream into MP4 container if source was MP4 container.
 set "FIX_SCENECUTS=YES"
 :: Set frame 0 scenecut flag in RPU to true. Also can be set in OPTIONS and overwrite this settings.
+:: YES / NO
+set "FORCE_FFMPEG_DEMUXING=NO"
+:: Use FFMPEG as default demuxing engine instead of MKVExtract/Mp4Box.
 :: YES / NO
 
 rem --- Hardcoded settings. Cannot be changed ---
@@ -137,10 +139,13 @@ if "!DESIGN!" NEQ "STANDARD" call "!DESIGN!"
 
 if "!MKVTOOLNIX_FOLDER!"=="INCLUDED" set "MKVTOOLNIX_FOLDER=%~dp0tools"
 set "MKVMERGEpath=!MKVTOOLNIX_FOLDER!\mkvmerge.exe"
+set "MKVEXTRACTpath=!MKVTOOLNIX_FOLDER!\mkvextract.exe"
 
+if not exist "%Cecho%" set "MISSINGFILE=%~dp0tools\cecho_x64.exe" & goto :CORRUPTFILE
 if not exist "%sfkpath%" set "MISSINGFILE=%sfkpath%" & goto :CORRUPTFILE
 if not exist "%FFMPEGpath%" set "MISSINGFILE=%FFMPEGpath%" & goto :CORRUPTFILE
 if not exist "%MKVMERGEpath%" set "MISSINGFILE=%MKVMERGEpath%" & goto :CORRUPTFILE
+if not exist "%MKVEXTRACTpath%" set "MISSINGFILE=%MKVEXTRACTpath%" & goto :CORRUPTFILE
 if not exist "%MP4BOXpath%" set "MISSINGFILE=%MP4BOXpath%" & goto :CORRUPTFILE
 if not exist "%MEDIAINFOpath%" set "MISSINGFILE=%MEDIAINFOpath%" & goto :CORRUPTFILE
 if not exist "%DO_VI_TOOLpath%" set "MISSINGFILE=%DO_VI_TOOLpath%" & goto :CORRUPTFILE
@@ -168,7 +173,7 @@ echo [Info] If you will convert only HDR10+ Metadata to DV P8, drag 'n' drop her
 echo        with ENTER. Also you can remove HDR10+ Metadata from stream.
 echo.
 %WHITE%
-!Cecho! {%_WHITE%}Drag 'n' Drop" {%_GREEN%}HDR / HDR10+ {%_WHITE%}file here and press ENTER:{#}{\n}
+!Cecho! {%_WHITE%}Drag 'n' Drop {%_GREEN%}HDR / HDR10+ {%_WHITE%}file here and press ENTER:{#}{\n}
 %GREEN%
 if "%~1" NEQ "" set "HDR_File="%~dpnx1""
 set /p "HDR_File=%~dpnx1"
@@ -208,12 +213,12 @@ if "!HDR_File_support!"=="FALSE" (
 	%YELLOW%
 	if "!HDR_File!"=="" (
 		echo No HDR10 / HDR10+ file choosen. HDR10 file must be set.
-		TIMEOUT 3 /NOBREAK >nul
+		TIMEOUT 2 /NOBREAK >nul
 		goto :PREPARE_HDR
 	) else (
 		echo.
 		echo File not Supported^^! Only MP4^/MKV files supported.
-		TIMEOUT 3 /NOBREAK >nul
+		TIMEOUT 2 /NOBREAK >nul
 		goto :PREPARE_HDR
 	)
 )
@@ -222,7 +227,7 @@ if "!VIDEO_COUNT!" NEQ "1" (
 	%HCYELLOW%
 	echo.
 	echo Only Single Layer files supported.
-	TIMEOUT 3 /NOBREAK >nul
+	TIMEOUT 2 /NOBREAK >nul
 	goto :PREPARE_HDR
 )
 
@@ -230,7 +235,7 @@ if "!HDR_INPUT_OK!"=="NO" (
 	%HCYELLOW%
 	echo.
 	echo !HDR_HDR_info!!HDR_DV_profile! file choosen. Not supported as HDR / HDR10+ FILE.
-	TIMEOUT 3 /NOBREAK >nul
+	TIMEOUT 2 /NOBREAK >nul
 	goto :PREPARE_HDR
 )
 
@@ -267,7 +272,7 @@ echo [Info] If you choose a HDR10+ file, you can make DV P8 RPU with this Metada
 echo        into HDR file or remove existing HDR10+ Metadata from HDR file.
 echo.
 %WHITE%
-!Cecho! {%_WHITE%}Drag 'n' Drop" {%_GREEN%}DV / HDR10+ {%_WHITE%}file here and press ENTER:{#}{\n}
+!Cecho! {%_WHITE%}Drag 'n' Drop {%_GREEN%}DV / HDR10+ {%_WHITE%}file here and press ENTER:{#}{\n}
 %GREEN%
 set /p "DV_File="
 for %%f in (!DV_File!) do set "DV_Filename=%%~nf"
@@ -309,7 +314,7 @@ if "!DV_File_support!"=="FALSE" (
 	) else (
 		echo.
 		echo File not Supported^^! Only MP4^/MKV files supported.
-		TIMEOUT 3 /NOBREAK >nul
+		TIMEOUT 2 /NOBREAK >nul
 		goto :PREPARE_DV
 	)
 )
@@ -318,7 +323,7 @@ if "!VIDEO_COUNT!" NEQ "1" (
 	%HCYELLOW%
 	echo.
 	echo Only Single Layer files supported.
-	TIMEOUT 3 /NOBREAK >nul
+	TIMEOUT 2 /NOBREAK >nul
 	goto :PREPARE_DV
 )
 
@@ -326,7 +331,7 @@ if "!DV_INPUT_OK!"=="NO" (
 	%HCYELLOW%
 	echo.
 	echo !DV_HDR_info!!DV_DV_profile! file choosen. Not supported as DV / HDR10+ FILE.
-	TIMEOUT 3 /NOBREAK >nul
+	TIMEOUT 2 /NOBREAK >nul
 	goto :PREPARE_DV
 )
 
@@ -385,7 +390,7 @@ FOR /F "delims=" %%A IN ('findstr /C:".05" "!TMP_FOLDER!\Info.txt"') DO set "HDR
 FOR /F "delims=" %%A IN ('findstr /C:".04" "!TMP_FOLDER!\Info.txt"') DO set "HDR_DVInput=YES" & set "HDR_DVprofile=4"
 FOR /F "delims=" %%A IN ('findstr /C:".03" "!TMP_FOLDER!\Info.txt"') DO set "HDR_DVInput=YES" & set "HDR_DVprofile=3"
 
-if "!HDR_DVInput!"=="YES" "!FFMPEGpath!" -loglevel panic -i "!INFOSTREAM!" -c:v copy -to 1 -bsf:v hevc_metadata -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" - >nul 2>&1
+if "!HDR_DVInput!"=="YES" "!FFMPEGpath!" -loglevel panic -i "!INFOSTREAM!" -c:v copy -to 1 -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" - >nul 2>&1
 if exist "!TMP_FOLDER!\RPU.bin" set "RPUFILE=!TMP_FOLDER!\RPU.bin"
 
 ::BEGIN MEDIAINFO
@@ -538,7 +543,7 @@ if "!RAW_FILE_HDR!"=="FALSE" (
 	)
 )
 
-TIMEOUT 3 /NOBREAK>nul
+TIMEOUT 2 /NOBREAK>nul
 goto :eof
 
 :DV_CHECK
@@ -584,7 +589,7 @@ FOR /F "delims=" %%A IN ('findstr /C:".05" "!TMP_FOLDER!\Info.txt"') DO set "DV_
 FOR /F "delims=" %%A IN ('findstr /C:".04" "!TMP_FOLDER!\Info.txt"') DO set "DV_DVInput=YES" & set "DV_DVprofile=4"
 FOR /F "delims=" %%A IN ('findstr /C:".03" "!TMP_FOLDER!\Info.txt"') DO set "DV_DVInput=YES" & set "DV_DVprofile=3"
 
-if "!DV_DVInput!"=="YES" "!FFMPEGpath!" -loglevel panic -i "!INFOSTREAM!" -c:v copy -to 1 -bsf:v hevc_metadata -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" - >nul 2>&1
+if "!DV_DVInput!"=="YES" "!FFMPEGpath!" -loglevel panic -i "!INFOSTREAM!" -c:v copy -to 1 -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" - >nul 2>&1
 if exist "!TMP_FOLDER!\RPU.bin" set "RPUFILE=!TMP_FOLDER!\RPU.bin"
 
 ::BEGIN MEDIAINFO
@@ -707,7 +712,7 @@ if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="" (
 	set "RPU_AA_BC=%RPU_INPUT_AA_BC%"
 )
 
-TIMEOUT 3 /NOBREAK>nul
+TIMEOUT 2 /NOBREAK>nul
 goto :eof
 
 :START
@@ -793,6 +798,13 @@ if "!RPU_AA_String!"=="[LEAVE UNTOUCHED]" (
 	if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [{%HC_WHITE%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}"
 	if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="" set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [{%HC_WHITE%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}"
 )
+set "OUTPUT_RPU_CMV=!DV_RPU_CMV!"
+if "!OUTPUT_RPU_CMV!"=="" set "OUTPUT_RPU_CMV=!HDR_RPU_CMV!"
+if "!OUTPUT_RPU_CMV!"=="" set "OUTPUT_RPU_CMV=CM v2.9"
+set "OUTPUT_L9MDP=!DV_L9MDP!"
+if "!OUTPUT_L9MDP!"=="" set "OUTPUT_L9MDP=!HDR_L9MDP!"
+if "!OUTPUT_L9MDP!"=="" set "OUTPUT_L9MDP=N/A"
+
 cls
 %GREEN%
 echo  !HEADER1!
@@ -857,6 +869,7 @@ if "!MUXINMKV!"=="YES" (
 )
 echo Video Info = [Resolution = !RESOLUTION_HDR!] [Codec = !CODEC_NAME_HDR!] [Frames = !FRAMES_HDR!] [FPS = !FPS_string!]
 echo HDR Info   = [!OUTPUT_Info!]
+!Cecho! {%_YELLOW%}RPU Info   = [Dolby Vision Profile 8] [DM = !OUTPUT_RPU_CMV!] [MDCP = !FR_CHCK_MDCP!!OUTPUT_L9MDP!{%_YELLOW%}]{#}{\n}
 %HEADER_RPU_OUTPUT_String%
 echo.
 %WHITE%
@@ -869,14 +882,28 @@ echo 2. Change FPS           : [!CHGFPS!]
 if "!DV_HDR10P!!DV_DV!"=="TRUETRUE" !Cecho! {%HC_WHITE%}3. Convert HDR10+ to DV : [!CHGHDR_HDR10P!]{%_YELLOW%}*   *Choose {%HC_WHITE%}[YES]{%_YELLOW%} for injecting converted HDR10+ Metadata instead RPU.{#}{\n}
 if "!HDR_HDR10P!"=="TRUE" echo 4. Remove HDR10+        : [!REMHDR_HDR10P!]
 if "!DV_HDR10P!!HDR_HDR10P!"=="TRUEFALSE" echo 4. Also inject HDR10+   : [!INJ_HDR10P!]
-if "%MKVExtract_HDR%"=="TRUE" echo 5. MUX STREAM IN MKV    : [!MUXINMKV!]
-if "%MP4Extract_HDR%"=="TRUE" echo 5. MUX STREAM IN MP4    : [!MUXINMP4!]
+if "%MKVExtract_HDR%"=="TRUE" echo 5. Mux Stream in MKV    : [!MUXINMKV!]
+if "%MP4Extract_HDR%"=="TRUE" echo 5. Mux Stream in MP4    : [!MUXINMP4!]
 echo.
 !Cecho! {%HC_WHITE%}E. EDIT ACTIVE AREA{%HC_YELLOW%}*   *Setting Crop Values. DISCARD set Borders to [{%HC_WHITE%}LEAVE UNTOUCHED{%HC_YELLOW%}].{#}{\n}
 echo.
+%GREEN%
 echo S. START
+if "!HDR_DV!!DV_DV!!DV_HDR10P!"=="TRUEFALSEFALSE" (
+	%HCYELLOW%
+	echo.
+	!Cecho! {%HC_YELLOW%}HDR input file already have {%HC_GREEN%}DV Profile !HDR_DV_Profile! {%HC_YELLOW%}included and no {%_GREEN%}DV / HDR10+ INPUT {%HC_YELLOW%}set.{#}{\n}
+	!Cecho! {%HC_YELLOW%}If you click {%_GREEN%}S. START {%HC_YELLOW%}the DV Profile !HDR_DV_Profile! will changed to {%HC_GREEN%}DV Profile 8{%HC_YELLOW%}.{#}{\n}
+)
+if "!HDR_HDR10P!!HDR_DV!!DV_DV!!DV_HDR10P!"=="TRUEFALSEFALSEFALSE" (
+	%HCYELLOW%
+	echo.
+	!Cecho! {%HC_YELLOW%}HDR input file already have {%HC_GREEN%}HDR10+ SEI {%HC_YELLOW%}included and no {%_GREEN%}DV / HDR10+ INPUT {%HC_YELLOW%}set.{#}{\n}
+	!Cecho! {%HC_YELLOW%}If you click {%_GREEN%}S. START {%HC_YELLOW%}the HDR10+ SEI will changed to {%HC_GREEN%}DV Profile 8{%HC_YELLOW%}.{#}{\n}
+)
+%HCWHITE%
 echo.
-echo Change Settings and press [S] to start processing^^!
+!Cecho! {%HC_WHITE%}Change Settings and press [{%_GREEN%}S{%HC_WHITE%}] to start Processing^^!{#}{\n}
 CHOICE /C 12345ES /N /M "Select a Letter"
 
 if "%ERRORLEVEL%"=="7" goto OPERATION
@@ -930,18 +957,7 @@ goto START
 
 :OPERATION
 if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
-rem -------- LOGFILE ------------
-echo  !HEADER1!>"!logfile!"
-echo.>>"!logfile!"
-echo                                         ====================================>>"!logfile!"
-echo                                          Dolby Vision Tool P8 Hybrid Script>>"!logfile!"
-echo                                         ====================================>>"!logfile!"
-echo.>>"!logfile!"
-echo.>>"!logfile!"
-echo  == LOGFILE START =======================================================================================================>>"!logfile!"
-echo.>>"!logfile!"
-echo %date%  %time%>>"!logfile!"
-echo.>>"!logfile!"
+call :LOGFILESTART
 mode con cols=125 lines=65
 cls
 %GREEN%
@@ -976,17 +992,25 @@ call :LOGFILEEND
 goto :EXIT
 
 :HDR_EXTRACT
+set "CONVERTswitch=0"
+if "!HDR_DVprofile!"=="5" set "CONVERTswitch=3"
+if "!HDR_DVprofile!"=="7" set "CONVERTswitch=2"
+if "!HDR_HDR_info!"=="HLG" set "CONVERTswitch=4"
+if "!HDR_HDR10P!!HDR_DV!!DV_DV!!DV_HDR10P!"=="TRUEFALSEFALSEFALSE" set "CHGHDR_HDR10P=YES"
+
+echo.
+%HCYELLOW%
+echo ATTENTION^^! You need a lot of HDD Space for this operation.
 echo.
 %CYAN%
 echo Please wait. Extracting Video Layer...
 echo [Extracting Video Layer]>>"!logfile!"
-%HCYELLOW%
-echo ATTENTION^^! You need a lot of HDD Space for this operation.
-echo.
 %WHITE%
-"!FFMPEGpath!" -loglevel panic -stats -i "!HDR_File!" -c:v copy -bsf:v hevc_metadata -f hevc "!TMP_FOLDER!\HDR.hevc"
+if "!FORCE_FFMPEG_DEMUXING!!MKVExtract_HDR!"=="NOTRUE" "!MKVEXTRACTpath!" "!HDR_File!" tracks --ui-language en  0:"!TMP_FOLDER!\HDR.hevc"
+if "!FORCE_FFMPEG_DEMUXING!!MP4Extract_HDR!"=="NOTRUE" "!MP4BOXpath!" -raw 1 "!HDR_File!" -out "!TMP_FOLDER!\HDR.hevc"
+if not exist "!TMP_FOLDER!\HDR.hevc" "!FFMPEGpath!" -loglevel panic -stats -i "!HDR_File!" -c:v copy -bsf:v hevc_mp4toannexb -f hevc "!TMP_FOLDER!\HDR.hevc"
 if exist "!TMP_FOLDER!\HDR.hevc" (
-	FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\HDR.hevc"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+	for %%f in ("!TMP_FOLDER!\HDR.hevc") do set "CHECKSIZE=%%~zf" >nul 2>&1
 	if "!CHECKSIZE!" NEQ "0" (
 		set "HDR_VIDEOSTREAM=!TMP_FOLDER!\HDR.hevc"
 		%HCGREEN%
@@ -1011,16 +1035,16 @@ if exist "!TMP_FOLDER!\HDR.hevc" (
 	echo.>>"!logfile!"
 )
 
-if "!HDR_HDR10P!!CHGHDR_HDR10P!"=="TRUEYES" (
+if "!HDR_HDR10P!!HDR_DV!!DV_DV!!DV_HDR10P!"=="TRUEFALSEFALSEFALSE" (
 	%CYAN%
 	echo Please wait. Extracting HDR10+ SEI...
 	echo [Extracting HDR10+ SEI]>>"!logfile!"
 	%WHITE%
 	"!HDR10P_TOOLpath!" extract "!HDR_VIDEOSTREAM!" -o "!TMP_FOLDER!\HDR_HDR10Plus.json"
 	if exist "!TMP_FOLDER!\HDR_HDR10Plus.json" (
-		FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\HDR_HDR10Plus.json"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+		for %%f in ("!TMP_FOLDER!\HDR_HDR10Plus.json") do set "CHECKSIZE=%%~zf" >nul 2>&1
 		if "!CHECKSIZE!" NEQ "0" (
-			set "HDR_HDR10PFILE=!TMP_FOLDER!\HDR_HDR10Plus.json"
+			set "HDR10PFILE=!TMP_FOLDER!\HDR_HDR10Plus.json"
 			%HCGREEN%
 			echo Done.
 			echo.
@@ -1043,11 +1067,46 @@ if "!HDR_HDR10P!!CHGHDR_HDR10P!"=="TRUEYES" (
 		echo.>>"!logfile!"
 	)
 )
+
+if "!HDR_DV!!DV_DV!!DV_HDR10P!"=="TRUEFALSEFALSE" (
+	%CYAN%
+	echo Please wait. Extracting HDR Stream DV RPU...
+	echo [Extracting HDR Stream DV RPU]>>"!logfile!"
+	%WHITE%
+	"!DO_VI_TOOLpath!" -m !CONVERTswitch! extract-rpu "!HDR_VIDEOSTREAM!" -o "!TMP_FOLDER!\RPU.bin"
+	if exist "!TMP_FOLDER!\RPU.bin" (
+		for %%f in ("!TMP_FOLDER!\RPU.bin") do set "CHECKSIZE=%%~zf" >nul 2>&1
+		if "!CHECKSIZE!" NEQ "0" (
+			set "RPUFILE=!TMP_FOLDER!\RPU.bin"
+			%HCGREEN%
+			echo Done.
+			echo.
+			echo Done.>>"!logfile!"
+			echo.>>"!logfile!"
+		) else (
+			%HCRED%
+			echo Error.
+			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+			echo.
+			echo Error.>>"!logfile!"
+			echo.>>"!logfile!"
+		)
+	) else (
+		%HCRED%
+		set /a "ERRORCOUNT=!ERRORCOUNT!+1"		
+		echo Error.
+		echo.
+		echo Error.>>"!logfile!"
+		echo.>>"!logfile!"
+	)
+)
+
 goto :eof
 
 :DV_EXTRACT
-set "CONVERTswitch=2"
+set "CONVERTswitch=0"
 if "!DV_DVprofile!"=="5" set "CONVERTswitch=3"
+if "!DV_DVprofile!"=="7" set "CONVERTswitch=2"
 if "!HDR_HDR_info!"=="HLG" set "CONVERTswitch=4"
 
 if "!DV_DV!"=="TRUE" (
@@ -1057,7 +1116,7 @@ if "!DV_DV!"=="TRUE" (
 	%WHITE%
 	"!FFMPEGpath!" -loglevel panic -stats -i "!INFOSTREAM!" -c:v copy -bsf:v hevc_metadata -f hevc - | "!DO_VI_TOOLpath!" -m !CONVERTswitch! extract-rpu -o "!TMP_FOLDER!\RPU.bin" -
 	if exist "!TMP_FOLDER!\RPU.bin" (
-		FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU.bin"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+		for %%f in ("!TMP_FOLDER!\RPU.bin") do set "CHECKSIZE=%%~zf" >nul 2>&1
 		if "!CHECKSIZE!" NEQ "0" (
 			set "RPUFILE=!TMP_FOLDER!\RPU.bin"
 			%HCGREEN%
@@ -1089,11 +1148,11 @@ if "!DV_HDR10P!"=="TRUE" (
 		echo Please wait. Extracting HDR10+ SEI...
 		echo [Extracting HDR10+ SEI]>>"!logfile!"
 		%WHITE%
-		"!FFMPEGpath!" -loglevel panic -stats -i "!DV_File!" -c:v copy -bsf:v hevc_metadata -f hevc - | "!HDR10P_TOOLpath!" extract -o "!TMP_FOLDER!\DV_HDR10Plus.json" -
+		"!FFMPEGpath!" -loglevel panic -stats -i "!DV_File!" -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!HDR10P_TOOLpath!" extract -o "!TMP_FOLDER!\DV_HDR10Plus.json" -
 		if exist "!TMP_FOLDER!\DV_HDR10Plus.json" (
-			FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\DV_HDR10Plus.json"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+			for %%f in ("!TMP_FOLDER!\DV_HDR10Plus.json") do set "CHECKSIZE=%%~zf" >nul 2>&1
 			if "!CHECKSIZE!" NEQ "0" (
-				set "DV_HDR10PFILE=!TMP_FOLDER!\DV_HDR10Plus.json"
+				set "HDR10PFILE=!TMP_FOLDER!\DV_HDR10Plus.json"
 				%HCGREEN%
 				echo Done.
 				echo.
@@ -1135,7 +1194,7 @@ if "%ERRORLEVEL%"=="0" (
 	"!PYTHONpath!" "!HDR10PDELAYSCRIPTpath!" -i "!HDR10PFILE!" -d !DELAY! -o "!TMP_FOLDER!\HDR10PlusDELAYED.json">>"!logfile!"
 )
 if exist "!TMP_FOLDER!\HDR10PlusDELAYED.json" (
-	FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\HDR10PlusDELAYED.json"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+	for %%f in ("!TMP_FOLDER!\HDR10PlusDELAYED.json") do set "CHECKSIZE=%%~zf" >nul 2>&1
 	if "!CHECKSIZE!" NEQ "0" (
 		set "HDR10PFILE=!TMP_FOLDER!\HDR10PlusDELAYED.json"
 		%HCGREEN%
@@ -1169,7 +1228,7 @@ echo [Injecting the HDR10+ SEI into stream]>>"!logfile!"
 %WHITE%
 "!HDR10P_TOOLpath!" inject -i "!HDR_VIDEOSTREAM!" -j "!HDR10PFILE!" -o "!TMP_FOLDER!\HDR10P_INJ.hevc">>"!logfile!"
 if exist "!TMP_FOLDER!\HDR10P_INJ.hevc" (
-	FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\HDR10P_INJ.hevc"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+	for %%f in ("!TMP_FOLDER!\HDR10P_INJ.hevc") do set "CHECKSIZE=%%~zf" >nul 2>&1
 	if "!CHECKSIZE!" NEQ "0" (
 		if exist "!HDR_VIDEOSTREAM!" del "!HDR_VIDEOSTREAM!">nul
 		set "HDR_VIDEOSTREAM=!TMP_FOLDER!\HDR10P_INJ.hevc"
@@ -1198,8 +1257,8 @@ goto :eof
 
 :CONVERT_HDR10P
 %CYAN%
-echo Please wait. Prefetching HDR10+ file for RPU convertion...
-echo [Prefetching HDR10+ file for RPU convertion]>>"!logfile!"
+echo Please wait. Prefetching HDR10+ file for DV RPU convertion...
+echo [Prefetching HDR10+ file for DV RPU convertion]>>"!logfile!"
 (
 echo {
 echo	"cm_version": "!CM_VERSION!",
@@ -1228,12 +1287,12 @@ if exist "!TMP_FOLDER!\Extra.json" (
 )
 
 %CYAN%
-echo Please wait. Generating RPU from HDR10+ file...
-echo [Generating RPU from HDR10+ file]>>"!logfile!"
+echo Please wait. Generating DV RPU from HDR10+ file...
+echo [Generating DV RPU from HDR10+ file]>>"!logfile!"
 %WHITE%
 "!DO_VI_TOOLpath!" generate -j "!TMP_FOLDER!\Extra.json" --hdr10plus-json "!HDR10PFILE!" -o "!TMP_FOLDER!\HDR10PCONVDV.bin">>"!logfile!"
 if exist "!TMP_FOLDER!\HDR10PCONVDV.bin" (
-	FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\HDR10PCONVDV.bin"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+	for %%f in ("!TMP_FOLDER!\HDR10PCONVDV.bin") do set "CHECKSIZE=%%~zf" >nul 2>&1
 	if "!CHECKSIZE!" NEQ "0" (
 		set "RPUFILE=!TMP_FOLDER!\HDR10PCONVDV.bin"
 		%HCGREEN%
@@ -1284,7 +1343,7 @@ echo }
 )>"!TMP_FOLDER!\EDIT.json"
 "!DO_VI_TOOLpath!" editor -i "!RPUFILE!" -j "!TMP_FOLDER!\EDIT.json" -o "!TMP_FOLDER!\RPU-CROPPED.bin">>"!logfile!"
 if exist "!TMP_FOLDER!\RPU-CROPPED.bin" (
-	FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU-CROPPED.bin"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+	for %%f in ("!TMP_FOLDER!\RPU-CROPPED.bin") do set "CHECKSIZE=%%~zf" >nul 2>&1
 	if "!CHECKSIZE!" NEQ "0" (
 		set "RPUFILE=!TMP_FOLDER!\RPU-CROPPED.bin"
 		set "CROP_RPU=TRUE"
@@ -1316,8 +1375,8 @@ if "!DELAY!"=="0" goto :eof
 %CYAN%
 echo "!DELAY!" | find "-">nul 2>&1
 if "%ERRORLEVEL%"=="0" (
-	echo Please wait. Applying RPU !DELAY! Frames negative Delay...
-	echo [Applying RPU !DELAY! Frames negative Delay]>>"!logfile!"
+	echo Please wait. Applying DV RPU !DELAY! Frames negative Delay...
+	echo [Applying DV RPU !DELAY! Frames negative Delay]>>"!logfile!"
 	%WHITE%
 	set /A DELAY=!DELAY!+1
 	(
@@ -1346,7 +1405,7 @@ if "%ERRORLEVEL%"=="0" (
 )
 "!DO_VI_TOOLpath!" editor -i "!RPUFILE!" -j "!TMP_FOLDER!\EDIT.json" -o "!TMP_FOLDER!\RPU-DELAYED.bin">>"!logfile!"
 if exist "!TMP_FOLDER!\RPU-DELAYED.bin" (
-	FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU-DELAYED.bin"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+	for %%f in ("!TMP_FOLDER!\RPU-DELAYED.bin") do set "CHECKSIZE=%%~zf" >nul 2>&1
 	if "!CHECKSIZE!" NEQ "0" (
 		del "!TMP_FOLDER!\EDIT.json"
 		set "RPUFILE=!TMP_FOLDER!\RPU-DELAYED.bin"
@@ -1388,7 +1447,7 @@ if exist "!RPUFILE!" (
 	)>"!TMP_FOLDER!\Edit.json"
 	"!DO_VI_TOOLpath!" editor -i "!RPUFILE!" -j "!TMP_FOLDER!\EDIT.json" -o "!TMP_FOLDER!\RPU-SCFIXED.bin">>"!logfile!"
 	if exist "!TMP_FOLDER!\RPU-SCFIXED.bin" (
-		FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU-SCFIXED.bin"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+		for %%f in ("!TMP_FOLDER!\RPU-SCFIXED.bin") do set "CHECKSIZE=%%~zf" >nul 2>&1
 		if "!CHECKSIZE!" NEQ "0" (
 			del "!TMP_FOLDER!\EDIT.json"
 			set "RPUFILE=!TMP_FOLDER!\RPU-SCFIXED.bin"
@@ -1428,7 +1487,7 @@ echo [Changing HDR Stream FPS to !CHGFPS!]>>"!logfile!"
 %WHITE%
 "!FFMPEGpath!" -y -i "!HDR_VIDEOSTREAM!" -loglevel panic -stats -an -sn -dn -c copy -bsf:v hevc_metadata=tick_rate=!FPS!:num_ticks_poc_diff_one=1 "!TMP_FOLDER!\HDR_FPSCHANGED.!CODEC!"
 if exist "!TMP_FOLDER!\HDR_FPSCHANGED.!CODEC!" (
-	FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\HDR_FPSCHANGED.!CODEC!"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+	for %%f in ("!TMP_FOLDER!\HDR_FPSCHANGED.!CODEC!") do set "CHECKSIZE=%%~zf" >nul 2>&1
 	if "!CHECKSIZE!" NEQ "0" (
 		del "!TMP_FOLDER!\HDR.!CODEC!"
 		set "HDR_VIDEOSTREAM=!TMP_FOLDER!\HDR_FPSCHANGED.!CODEC!"
@@ -1458,12 +1517,12 @@ goto :eof
 :DV_INJECT
 if "%REMHDR_HDR10P%"=="YES" set "REM_HDR10PString=--drop-hdr10plus "
 %CYAN%
-echo Please wait. Injecting DV Metadata Binary into stream...
-echo [Injecting DV Metadata Binary into stream]>>"!logfile!"
+echo Please wait. Injecting DV RPU into stream...
+echo [Injecting DV RPU into stream]>>"!logfile!"
 %WHITE%
 "!DO_VI_TOOLpath!" !REM_HDR10PString!inject-rpu "!HDR_VIDEOSTREAM!" --rpu-in "!RPUFILE!" -o "!TMP_FOLDER!\HDR_DV_INJ.hevc">>"!logfile!"
 if exist "!TMP_FOLDER!\HDR_DV_INJ.hevc" (
-	FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\HDR_DV_INJ.hevc"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+	for %%f in ("!TMP_FOLDER!\HDR_DV_INJ.hevc") do set "CHECKSIZE=%%~zf" >nul 2>&1
 	if "!CHECKSIZE!" NEQ "0" (
 		if exist "!HDR_VIDEOSTREAM!" del "!HDR_VIDEOSTREAM!">nul
 		set "HDR_VIDEOSTREAM=!TMP_FOLDER!\HDR_DV_INJ.hevc"
@@ -1508,7 +1567,7 @@ if "!MKVExtract_HDR!!MUXINMKV!"=="TRUEYES" (
 	echo Don't close "Muxing !HDR_Filename!_[!NAMESTRING!] into MKV" cmd window.
 	start /WAIT /MIN "Muxing !HDR_Filename! into MKV" "!MKVMERGEpath!" --ui-language en --priority higher --output ^"!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!].mkv^" --stop-after-video-ends --no-video ^"^(^" ^"!HDR_File!^" ^"^)^" --language 0:und --compression 0:none !duration! ^"^(^" ^"!HDR_VIDEOSTREAM!^" ^"^)^" --track-order 1:0
 	if exist "!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!]!MUXEXT!" (
-		FOR /F "usebackq" %%A IN ('"!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!]!MUXEXT!"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+		for %%f in ("!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!]!MUXEXT!") do set "CHECKSIZE=%%~zf" >nul 2>&1
 		if "!CHECKSIZE!" NEQ "0" (
 			%HCGREEN%
 			echo Done.
@@ -1557,7 +1616,7 @@ if "!MP4Extract_HDR!!MUXINMP4!"=="TRUEYES" (
 	"!MP4BOXpath!" -add "!TMP_FOLDER!\HDR_DV_INJ.hevc:ID=1:fps=!FRAMERATE_HDR!:name=" "!TMP_FOLDER!\temp.mp4" -out "!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!]!MUXEXT!"
 	echo [Finalising MP4 File]>>"!logfile!"
 	if exist "!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!]!MUXEXT!" (
-		FOR /F "usebackq" %%A IN ('"!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!]!MUXEXT!"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+		for %%f in ("!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!]!MUXEXT!") do set "CHECKSIZE=%%~zf" >nul 2>&1
 		if "!CHECKSIZE!" NEQ "0" (
 			%HCGREEN%
 			echo Done.
@@ -1589,7 +1648,7 @@ if "!MUXINMKV!!MUXINMP4!"=="NONO" (
 	echo [Move Videostream into Target Folder]>>"!logfile!"
 	move /Y "!HDR_VIDEOSTREAM!" "!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!]!MUXEXT!" >nul
 	if exist "!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!]!MUXEXT!" (
-		FOR /F "usebackq" %%A IN ('"!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!]!MUXEXT!"') DO set "CHECKSIZE=%%~zA">nul 2>&1
+		for %%f in ("!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!]!MUXEXT!") do set "CHECKSIZE=%%~zf" >nul 2>&1
 		if "!CHECKSIZE!" NEQ "0" (
 			%HCGREEN%
 			echo Done.
@@ -1729,19 +1788,32 @@ echo.
 !Cecho! {%HC_WHITE%}R. Set [{%HC_YELLOW%}RIGHT{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_RC! px{%HC_WHITE%}]{#}{\n}
 !Cecho! {%HC_WHITE%}B. Set [{%HC_YELLOW%}BOTTOM{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_BC! px{%HC_WHITE%}]{#}{\n}
 echo.
-!Cecho! {%HC_WHITE%}D. DISCARD{%HC_YELLOW%}* {%HC_WHITE%}Settings and Exit   {%HC_YELLOW%}*Set Borders to [{%HC_WHITE%}LEAVE UNTOUCHED{%HC_YELLOW%}].{#}{\n}
+%GREEN%
+!Cecho! {%_GREEN%}D. DISCARD{%HC_YELLOW%}* {%_GREEN%}Settings and Exit   {%HC_YELLOW%}*Set Borders to [{%HC_WHITE%}LEAVE UNTOUCHED{%HC_YELLOW%}].{#}{\n}
 echo S. SAVE Settings and Exit
 echo.
-!Cecho! {%HC_WHITE%}Change Settings and press [S] to SAVE or [D] to DISCARD{%HC_YELLOW%}*^^{%HC_WHITE%}!{#}{\n}
+!Cecho! {%HC_WHITE%}Change Settings and press [{%_GREEN%}S{%HC_WHITE%}] to SAVE or [{%_GREEN%}D{%HC_WHITE%}] to DISCARD{%HC_YELLOW%}*^^{%HC_WHITE%}!{#}{\n}
+%HCWHITE%
 CHOICE /C LTRBDS /N /M "Select a Letter L,T,R,B,[D]iscard,[S]ave"
 
-if "%ERRORLEVEL%"=="6" goto :eof
+if "%ERRORLEVEL%"=="6" (
+	echo.
+	%HCGREEN%
+	echo Settings Saved.
+	TIMEOUT 2 /NOBREAK >nul
+	goto :eof
+)
 if "%ERRORLEVEL%"=="5" (
 	set "RPU_AA_String=[LEAVE UNTOUCHED]"
 	set "RPU_AA_LC=%RPU_INPUT_AA_LC%"
 	set "RPU_AA_TC=%RPU_INPUT_AA_TC%"
 	set "RPU_AA_RC=%RPU_INPUT_AA_RC%"
 	set "RPU_AA_BC=%RPU_INPUT_AA_BC%"
+	echo.
+	%HCYELLOW%
+	echo Settings Discarded.
+	!Cecho! {%HC_YELLOW%}Borders set to [{%HC_WHITE%}LEAVE UNTOUCHED{%HC_YELLOW%}].{#}{\n}
+	TIMEOUT 2 /NOBREAK >nul
 	goto :eof
 )
 
@@ -1782,6 +1854,23 @@ if "%ERRORLEVEL%"=="1" (
 	set /p "RPU_AA_LC=Type in the Pixels and press [ENTER]: "
 )
 goto :AA_AREA_BASE
+
+:LOGFILESTART
+if exist "!TMP_FOLDER!" (
+	echo  DDVT P8 Hybrid Script [QfG] v%VERSION%>"!logfile!"
+	echo.>>"!logfile!"
+	echo.>>"!logfile!"
+	echo                                         ====================================>>"!logfile!"
+	echo                                          Dolby Vision Tool P8 Hybrid Script>>"!logfile!"
+	echo                                         ====================================>>"!logfile!"
+	echo.>>"!logfile!"
+	echo.>>"!logfile!"
+	echo  == LOGFILE START =======================================================================================================>>"!logfile!"
+	echo.>>"!logfile!"
+	echo %date%  %time%>>"!logfile!"
+	echo.>>"!logfile!"
+)
+goto :eof
 
 :LOGFILEEND
 if exist "!TMP_FOLDER!" (

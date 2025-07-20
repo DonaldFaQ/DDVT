@@ -24,6 +24,9 @@ set "REM_HDR10P=YES
 :: YES / NO - Remove HDR10+ Metadata from file.
 set "REM_DV=NO
 :: YES / NO - Remove DV Metadata from file.
+set "FORCE_FFMPEG_DEMUXING=NO"
+:: Use FFMPEG as default demuxing engine instead of MKVExtract/Mp4Box.
+:: YES / NO
 
 rem --- Hardcoded settings. Cannot be changed ---
 set "INPUTFILE=%~dpnx1"
@@ -96,8 +99,10 @@ if "!TARGET_FOLDER!"=="SAME AS SOURCE" (
 )
 if "!MKVTOOLNIX_FOLDER!"=="INCLUDED" set "MKVTOOLNIX_FOLDER=%~dp0tools"
 set "MKVMERGEpath=!MKVTOOLNIX_FOLDER!\mkvmerge.exe"
+set "MKVEXTRACTpath=!MKVTOOLNIX_FOLDER!\mkvextract.exe"
 set "logfile=%TMP_FOLDER%\!INPUTFILENAME!.log"
 
+if not exist "%Cecho%" set "MISSINGFILE=%~dp0tools\cecho_x64.exe" & goto :CORRUPTFILE
 if not exist "%sfkpath%" set "MISSINGFILE=%sfkpath%" & goto :CORRUPTFILE
 if not exist "%FFMPEGpath%" set "MISSINGFILE=%FFMPEGpath%" & goto :CORRUPTFILE
 if not exist "%MKVMERGEpath%" set "MISSINGFILE=%MKVMERGEpath%" & goto :CORRUPTFILE
@@ -305,10 +310,11 @@ if "!HDR10P!!DV!"=="TRUETRUE" set "HDR_Info=HDR10, !HDRFormat!, Dolby Vision Pro
 echo.
 echo Analysing complete.
 if "!DIRFOUND!"=="TRUE" goto :eof
-TIMEOUT 3 /NOBREAK>nul
+TIMEOUT 2 /NOBREAK>nul
 goto :START
 
 :START
+if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
 if "!DV!!HDR10P!"=="FALSEFALSE" goto :NOTHINGTODO
 set "LOG_FILENAME=DDVT Remover ^(!INPUTFILENAME!!INPUTFILEEXT!^)"
 set "NAMESTRING="
@@ -357,9 +363,11 @@ echo.
 if "%HDR10P%"=="TRUE" echo 1. Remove HDR10+               : [%REM_HDR10P%]
 if "%DV%"=="TRUE" echo 2. Remove Dolby Vision         : [%REM_DV%]
 echo.
+%GREEN%
 echo S. START
+%HCWHITE%
 echo.
-echo Change Settings and press [S] to start Extracting^^!
+!Cecho! {%HC_WHITE%}Change Settings and press [{%_GREEN%}S{%HC_WHITE%}] to start Removing^^!{#}{\n}
 if "%HDR10P%"=="TRUE" if "%DV%"=="TRUE" CHOICE /C 12S /N /M "Select a Letter 1,2,[S]tart"
 if "%HDR10P%"=="TRUE" if "%DV%"=="FALSE" CHOICE /C 12S /N /M "Select a Letter 1,[S]tart"
 if "%HDR10P%"=="FALSE" if "%DV%"=="TRUE" CHOICE /C 12S /N /M "Select a Letter 2,[S]tart"
@@ -393,7 +401,7 @@ echo.
 %CYAN%
 !Cecho! {%_CYAN%}Status     = [!MSTATUS!{%_CYAN%}]{#}{\n}
 !Cecho! {%_CYAN%}Folder     = [{%HC_WHITE%}!SOURCE_FOLDER!{%_CYAN%}]{#}{\n}
-!Cecho! {%_CYAN%}Info       = [FILES PROCESS/SUM: {!PFILECOUNTC!}!PFILECOUNT!{%_CYAN%}/!SOURCEFILES!] [DONE: {!DONECOUNTC!}!DONECOUNT!{%_CYAN%}] [ERROR^(S^): {!ERRORCOUNTC!}!ERRORCOUNT_END!{%_CYAN%}] [SKIPPED: {!SKIPCOUNTC!}!SKIPCOUNT!{%_CYAN%}]{#}{\n}
+!Cecho! {%_CYAN%}Info       = [FILES PROCESSED/SUM: {!PFILECOUNTC!}!PFILECOUNT!{%_CYAN%}/!SOURCEFILES!] [DONE: {!DONECOUNTC!}!DONECOUNT!{%_CYAN%}] [ERROR^(S^): {!ERRORCOUNTC!}!ERRORCOUNT_END!{%_CYAN%}] [SKIPPED: {!SKIPCOUNTC!}!SKIPCOUNT!{%_CYAN%}]{#}{\n}
 )
 echo.
 %WHITE%
@@ -403,9 +411,11 @@ echo.
 echo 1. Remove HDR10+               : [%REM_HDR10P%]
 echo 2. Remove Dolby Vision         : [%REM_DV%]
 echo.
+%GREEN%
 echo S. START
+%HCWHITE%
 echo.
-echo Change Settings and press [S] to start Extracting^^!
+!Cecho! {%HC_WHITE%}Change Settings and press [{%_GREEN%}S{%HC_WHITE%}] to start Removing^^!{#}{\n}
 CHOICE /C 12S /N /M "Select a Letter 1,2,[S]tart"
 
 if "!ERRORLEVEL!"=="3" goto :MBEGIN
@@ -428,19 +438,7 @@ if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
 set "LOG_FILENAME=DDVT Remover (Folder=%~n1)"
 set "MSTATUS={0F}WORKING"
-rem -------- LOGFILE ------------
-echo  !HEADER1!>"!logfile!"
-echo.>>"!logfile!"
-echo                                         ====================================>>"!logfile!"
-echo                                              Dolby Vision Tool REMOVER>>"!logfile!"
-echo                                         ====================================>>"!logfile!"
-echo.>>"!logfile!"
-echo.>>"!logfile!"
-echo.>>"!logfile!"
-echo  == LOGFILE START =======================================================================================================>>"!logfile!"
-echo.>>"!logfile!"
-echo %date%  %time%>>"!logfile!"
-echo.>>"!logfile!"
+call :LOGFILESTART
 for %%A in ("!SOURCE_FOLDER!\*.*") do (
 	set /A "PFILECOUNT=!PFILECOUNT!+1"
 	if "!ERRORCOUNT!" NEQ "0" (
@@ -483,7 +481,7 @@ for %%A in ("!SOURCE_FOLDER!\*.*") do (
 	!Cecho! {%_CYAN%}Status     = [!MSTATUS!{%_CYAN%}]{#}{\n}
 	!Cecho! {%_CYAN%}Folder     = [{%HC_WHITE%}!SOURCE_FOLDER!{%_CYAN%}]{#}{\n}
 	!Cecho! {%_CYAN%}Filename   = [{%HC_WHITE%}!INPUTFILENAME!!INPUTFILEEXT!{%_CYAN%}]{#}{\n}
-	!Cecho! {%_CYAN%}Info       = [FILES PROCESS/SUM: {!PFILECOUNTC!}!PFILECOUNT!{%_CYAN%}/!SOURCEFILES!] [DONE: {!DONECOUNTC!}!DONECOUNT!{%_CYAN%}] [ERROR^(S^): {!ERRORCOUNTC!}!ERRORCOUNT!{%_CYAN%}] [SKIPPED: {!SKIPCOUNTC!}!SKIPCOUNT!{%_CYAN%}]{#}{\n}
+	!Cecho! {%_CYAN%}Info       = [FILE PROCESS/SUM: {!PFILECOUNTC!}!PFILECOUNT!{%_CYAN%}/!SOURCEFILES!] [DONE: {!DONECOUNTC!}!DONECOUNT!{%_CYAN%}] [ERROR^(S^): {!ERRORCOUNTC!}!ERRORCOUNT!{%_CYAN%}] [SKIPPED: {!SKIPCOUNTC!}!SKIPCOUNT!{%_CYAN%}]{#}{\n}
 	echo.
 	%WHITE%
 	echo  == ANALYSING ===========================================================================================================
@@ -510,6 +508,7 @@ for %%A in ("!SOURCE_FOLDER!\*.*") do (
 	if "!HDR10P!!REM_HDR10P!"=="TRUEYES" set "MSKIP=FALSE"
 	if "!DV!!REM_DV!"=="TRUEYES" set "MSKIP=FALSE"
 	if "!MSKIP!"=="FALSE" call :MOPERATION
+	set "ERRORCOUNT_END=!ERRORCOUNT!"
 	if "!MSKIP!"=="FALSE" (
 		if "!ERRORCOUNT_START!"=="!ERRORCOUNT_END!" set /A DONECOUNT=!DONECOUNT!+1 & echo [DONE] [!INPUTFILENAME!!INPUTFILEEXT!] -^> [!INPUTFILENAME!!NAMESTRING!!INPUTFILEEXT!]>>"!logfile!"
 		if "!ERRORCOUNT_START!" NEQ "!ERRORCOUNT_END!" echo [ERROR] [!INPUTFILENAME!!INPUTFILEEXT!]>>"!logfile!"
@@ -535,7 +534,7 @@ echo.
 %CYAN%
 !Cecho! {%_CYAN%}Status     = [!MSTATUS!{%_CYAN%}]{#}{\n}
 !Cecho! {%_CYAN%}Folder     = [{%HC_WHITE%}!SOURCE_FOLDER!{%_CYAN%}]{#}{\n}
-!Cecho! {%_CYAN%}Info       = [FILES PROCESS/SUM: {%_CYAN%}!PFILECOUNT!{%_CYAN%}/!SOURCEFILES!] [DONE: {!DONECOUNTC!}!DONECOUNT!{%_CYAN%}] [ERROR^(S^): {!ERRORCOUNTC!}!ERRORCOUNT!{%_CYAN%}] [SKIPPED: {!SKIPCOUNTC!}!SKIPCOUNT!{%_CYAN%}]{#}{\n}
+!Cecho! {%_CYAN%}Info       = [FILES PROCESSED/SUM: {%_CYAN%}!PFILECOUNT!{%_CYAN%}/!SOURCEFILES!] [DONE: {!DONECOUNTC!}!DONECOUNT!{%_CYAN%}] [ERROR^(S^): {!ERRORCOUNTC!}!ERRORCOUNT!{%_CYAN%}] [SKIPPED: {!SKIPCOUNTC!}!SKIPCOUNT!{%_CYAN%}]{#}{\n}
 echo.
 %WHITE%
 echo  ========================================================================================================================
@@ -546,19 +545,7 @@ echo.
 %HCYELLOW%
 echo Open logfile for detailed Infos.
 echo.
-echo.>>"!logfile!"
-echo  == INFO ================================================================================================================>>"!logfile!"
-echo.>>"!logfile!"
-echo Settings^:>>"!logfile!"
-echo.>>"!logfile!"
-echo Remove HDR10+               : [%REM_HDR10P%]>>"!logfile!"
-echo Remove Dolby Vision         : [%REM_DV%]>>"!logfile!"
-echo.>>"!logfile!"
-echo [PROCESSED FILES^: !PFILECOUNT!] [DONE^: !DONECOUNT!/!PFILECOUNT!] [SKIPPED^: !SKIPCOUNT!/!PFILECOUNT!] [ERROR^(S^)^: !ERRORCOUNT!/!PFILECOUNT!]>>"!logfile!"
-echo.>>"!logfile!"
-echo %date%  %time%>>"!logfile!"
-echo.>>"!logfile!"
-echo  == LOGFILE END =========================================================================================================>>"!logfile!"
+call :LOGFILEENDM
 goto :EXIT
 
 :MOPERATION
@@ -592,17 +579,7 @@ goto :EXIT
 mode con cols=125 lines=65
 if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 if not exist "!TARGET_FOLDER!" MD "!TARGET_FOLDER!">nul
-echo.>>"!logfile!"
-echo                                         ====================================>>"!logfile!"
-echo                                              Dolby Vision Tool REMOVER>>"!logfile!"
-echo                                         ====================================>>"!logfile!"
-echo.>>"!logfile!"
-echo.>>"!logfile!"
-echo.>>"!logfile!"
-echo  == LOGFILE START =======================================================================================================>>"!logfile!"
-echo.>>"!logfile!"
-echo %date%  %time%>>"!logfile!"
-echo.>>"!logfile!"
+call :LOGFILESTART
 cls
 %GREEN%
 echo  !HEADER1!
@@ -650,21 +627,12 @@ if "%RAW_FILE%"=="FALSE" (
 	call :POSTRAW
 )
 
+set "ERRORCOUNT_END=!ERRORCOUNT!"
+
 if "!ERRORCOUNT!"=="0" echo [DONE] [!INPUTFILENAME!!INPUTFILEEXT!] -^> [!INPUTFILENAME!!NAMESTRING!!INPUTFILEEXT!]>>"!logfile!"
 if "!ERRORCOUNT!" NEQ "0" echo [ERROR] [!INPUTFILENAME!!INPUTFILEEXT!]>>"!logfile!"
 
-
-echo.>>"!logfile!"
-echo  == INFO ================================================================================================================>>"!logfile!"
-echo.>>"!logfile!"
-echo Settings^:>>"!logfile!"
-echo.>>"!logfile!"
-echo Remove HDR10+               : [%REM_HDR10P%]>>"!logfile!"
-echo Remove Dolby Vision         : [%REM_DV%]>>"!logfile!"
-echo.>>"!logfile!"
-echo %date%  %time%>>"!logfile!"
-echo.>>"!logfile!"
-echo  == LOGFILE END =========================================================================================================>>"!logfile!"
+call :LOGFILEEND
 goto :EXIT
 
 :NODEMUX
@@ -699,12 +667,22 @@ echo.
 %CYAN%
 echo Please wait. Extracting Video Layer...
 %WHITE%
-"!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -c:v copy -bsf:v hevc_metadata -f hevc "!TMP_FOLDER!\temp.hevc"
+if "!FORCE_FFMPEG_DEMUXING!!MKVExtract!"=="NOTRUE" "!MKVEXTRACTpath!" "!INPUTFILE!" tracks --ui-language en  0:"!TMP_FOLDER!\temp.hevc"
+if "!FORCE_FFMPEG_DEMUXING!!MP4Extract!"=="NOTRUE" "!MP4BOXpath!" -raw 1 "!INPUTFILE!" -out "!TMP_FOLDER!\temp.hevc"
+if not exist "!TMP_FOLDER!\temp.hevc" "!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -c:v copy -bsf:v hevc_mp4toannexb -f hevc "!TMP_FOLDER!\temp.hevc"
 if exist "!TMP_FOLDER!\temp.hevc" (
-	%HCGREEN%
-	echo Done.
-	set "VIDEOSTREAM=!TMP_FOLDER!\temp.hevc"
-	echo.
+	for %%f in ("!TMP_FOLDER!\temp.hevc") do set "CHECKSIZE=%%~zf" >nul 2>&1
+	if "!CHECKSIZE!" NEQ "0" (
+		set "VIDEOSTREAM=!TMP_FOLDER!\temp.hevc"
+		%HCGREEN%
+		echo Done.
+		echo.
+	) else (
+		%HCRED%
+		echo Error.
+		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+		echo.
+	)
 ) else (
 	%HCRED%
 	echo Error.
@@ -725,11 +703,19 @@ if "%REM_HDR10P%"=="YES" if "%HDR10P%"=="TRUE" (
 	PUSHD "!TMP_FOLDER!"
 	"%HDR10Plus_TOOLpath%" remove "!VIDEOSTREAM!" -o "!TMP_FOLDER!\BL_NOHDR10P.hevc"
 	POPD
-	if "!ERRORLEVEL!"=="0" (
-		%HCGREEN%
-		echo Done.
-		set "VIDEOSTREAM=!TMP_FOLDER!\BL_NOHDR10P.hevc"
-		echo.
+	if exist "!TMP_FOLDER!\BL_NOHDR10P.hevc" (
+		for %%f in ("!TMP_FOLDER!\BL_NOHDR10P.hevc") do set "CHECKSIZE=%%~zf" >nul 2>&1
+		if "!CHECKSIZE!" NEQ "0" (
+			set "VIDEOSTREAM=!TMP_FOLDER!\BL_NOHDR10P.hevc"
+			%HCGREEN%
+			echo Done.
+			echo.
+		) else (
+			%HCRED%
+			echo Error.
+			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+			echo.
+		)
 	) else (
 		%HCRED%
 		echo Error.
@@ -750,11 +736,19 @@ echo Please wait. Removing Dolby Vision Metadata...
 PUSHD "!TMP_FOLDER!"
 "%DO_VI_TOOLpath%" demux "!VIDEOSTREAM!"
 POPD
-if "!ERRORLEVEL!"=="0" (
-	%HCGREEN%
-	set "VIDEOSTREAM=!TMP_FOLDER!\BL.hevc"
-	echo Done.
-	echo.
+if exist "!TMP_FOLDER!\BL.hevc" (
+	for %%f in ("!TMP_FOLDER!\BL.hevc") do set "CHECKSIZE=%%~zf" >nul 2>&1
+	if "!CHECKSIZE!" NEQ "0" (
+		set "VIDEOSTREAM=!TMP_FOLDER!\BL.hevc"
+		%HCGREEN%
+		echo Done.
+		echo.
+	) else (
+		%HCRED%
+		echo Error.
+		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+		echo.
+	)
 ) else (
 	%HCRED%
 	echo Error.
@@ -768,16 +762,23 @@ goto :eof
 echo Please wait. Moving RAW Stream to Target Folder...
 move "!VIDEOSTREAM!" "!TARGET_FOLDER!\!INPUTFILENAME!!NAMESTRING!.hevc">nul
 if exist "!TARGET_FOLDER!\!INPUTFILENAME!!NAMESTRING!.hevc" (
-	%HCGREEN%
-	echo Done.
-	echo.
+	for %%f in ("!TARGET_FOLDER!\!INPUTFILENAME!!NAMESTRING!.hevc") do set "CHECKSIZE=%%~zf" >nul 2>&1
+	if "!CHECKSIZE!" NEQ "0" (
+		%HCGREEN%
+		echo Done.
+		echo.
+	) else (
+		%HCRED%
+		echo Error.
+		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+		echo.
+	)
 ) else (
 	%HCRED%
 	echo Error.
 	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	echo.
 )
-set "ERRORCOUNT_END=!ERRORCOUNT!"
 goto :eof
 
 :MUX
@@ -799,12 +800,20 @@ if "!MKVExtract!"=="TRUE" (
 	echo Don't close the "Muxing !INPUTFILENAME! into MKV" cmd window.
 	start /WAIT /MIN "Muxing !INPUTFILENAME! into MKV" "!MKVMERGEpath!" --ui-language en --priority higher --output ^"!TARGET_FOLDER!\!INPUTFILENAME!!NAMESTRING!.mkv^" --stop-after-video-ends --no-video ^"^(^" ^"!INPUTFILE!^" ^"^)^" --language 0:und --compression 0:none !duration! ^"^(^" ^"!VIDEOSTREAM!^" ^"^)^" --track-order 1:0
 	if exist "!TARGET_FOLDER!\!INPUTFILENAME!!NAMESTRING!.mkv" (
-		%HCGREEN%
-		echo Done.
-		echo.
+		for %%f in ("!TARGET_FOLDER!\!INPUTFILENAME!!NAMESTRING!.mkv") do set "CHECKSIZE=%%~zf" >nul 2>&1
+		if "!CHECKSIZE!" NEQ "0" (
+			%HCGREEN%
+			echo Done.
+			echo.
+		) else (
+			%HCRED%
+			echo Error
+			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+			echo.
+		)
 	) else (
 		%HCRED%
-		echo Error.
+		echo Error
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 		echo.
 	)
@@ -816,19 +825,26 @@ if "!MP4Extract!"=="TRUE" (
 	%WHITE%
 	"!MP4BOXpath!" -rem 1 "!INPUTFILE!" -out "!TMP_FOLDER!\temp.mp4"
 	"!MP4BOXpath!" -add "!VIDEOSTREAM!:ID=1:fps=!FRAMERATE!:name=" "!TMP_FOLDER!\temp.mp4" -out "!TARGET_FOLDER!\!INPUTFILENAME!!NAMESTRING!.mp4"
-	if exist "!TMP_FOLDER!\temp.mp4" del "!TMP_FOLDER!\temp.mp4"
-	if "!ERRORLEVEL!"=="0" (
-		%HCGREEN%
-		echo Done.
-		echo.
+	if exist "!TARGET_FOLDER!\!INPUTFILENAME!!NAMESTRING!.mp4" (
+		if exist "!TMP_FOLDER!\temp.mp4" del "!TMP_FOLDER!\temp.mp4"
+		for %%f in ("!TARGET_FOLDER!\!INPUTFILENAME!!NAMESTRING!.mp4") do set "CHECKSIZE=%%~zf" >nul 2>&1
+		if "!CHECKSIZE!" NEQ "0" (
+			%HCGREEN%
+			echo Done.
+			echo.
+		) else (
+			%HCRED%
+			echo Error 1.
+			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+			echo.
+		)
 	) else (
 		%HCRED%
-		echo Error.
+		echo Error 2.
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 		echo.
 	)
 )
-set "ERRORCOUNT_END=!ERRORCOUNT!"
 goto :eof
 
 :EXIT
@@ -867,6 +883,51 @@ if "!ERRORCOUNT!"=="0" (
 	goto :ERROR
 )
 exit
+
+:LOGFILESTART
+echo  DDVT Remover [QfG] v%VERSION%>"!logfile!"
+echo.>>"!logfile!"
+echo.>>"!logfile!"
+echo                                         ====================================>>"!logfile!"
+echo                                              Dolby Vision Tool REMOVER>>"!logfile!"
+echo                                         ====================================>>"!logfile!"
+echo.>>"!logfile!"
+echo.>>"!logfile!"
+echo  == LOGFILE START =======================================================================================================>>"!logfile!"
+echo.>>"!logfile!"
+echo %date%  %time%>>"!logfile!"
+echo.>>"!logfile!"
+goto :eof
+
+:LOGFILEEND
+echo.>>"!logfile!"
+echo  == INFO ================================================================================================================>>"!logfile!"
+echo.>>"!logfile!"
+echo Settings^:>>"!logfile!"
+echo.>>"!logfile!"
+echo Remove HDR10+               : [%REM_HDR10P%]>>"!logfile!"
+echo Remove Dolby Vision         : [%REM_DV%]>>"!logfile!"
+echo.>>"!logfile!"
+echo %date%  %time%>>"!logfile!"
+echo.>>"!logfile!"
+echo  == LOGFILE END =========================================================================================================>>"!logfile!"
+goto :eof
+
+:LOGFILEENDM
+echo.>>"!logfile!"
+echo  == INFO ================================================================================================================>>"!logfile!"
+echo.>>"!logfile!"
+echo Settings^:>>"!logfile!"
+echo.>>"!logfile!"
+echo Remove HDR10+               : [%REM_HDR10P%]>>"!logfile!"
+echo Remove Dolby Vision         : [%REM_DV%]>>"!logfile!"
+echo.>>"!logfile!"
+echo [PROCESSED FILES^: !PFILECOUNT!] [DONE^: !DONECOUNT!/!PFILECOUNT!] [SKIPPED^: !SKIPCOUNT!/!PFILECOUNT!] [ERROR^(S^)^: !ERRORCOUNT!/!PFILECOUNT!]>>"!logfile!"
+echo.>>"!logfile!"
+echo %date%  %time%>>"!logfile!"
+echo.>>"!logfile!"
+echo  == LOGFILE END =========================================================================================================>>"!logfile!"
+goto :eof
 
 :CORRUPTFILE
 if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
