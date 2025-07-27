@@ -4,14 +4,14 @@ set "VERSION=--N.A.-- INCORRECTLY INSTALLED"
 set "HEADER1=File "%~dp0DDVT_OPTIONS.cmd" missing! Script works not correctly!"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"HEADER1=" "%~dp0DDVT_OPTIONS.cmd"') DO set "HEADER1=%%A"
-TITLE DDVT FileInfo [QfG] v%VERSION%
+TITLE DDVT FileInfo v%VERSION%
 set DESIGN=STANDARD
 
 set PasswordChars=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 set PasswordLength=5
 call :CreatePassword Password
 
-set "Cecho="%~dp0tools\cecho_x64.exe"" rem Path to cecho_x64.exe
+set "Cecho=%~dp0tools\cecho_x64.exe" rem Path to cecho_x64.exe
 set "sfkpath=%~dp0tools\sfk.exe" rem Path to sfk.exe
 set "FFMPEGpath=%~dp0tools\ffmpeg.exe" rem Path to ffmpeg.exe
 set "FFPROBEpath=%~dp0tools\ffprobe.exe" rem Path to ffprobe.exe
@@ -25,7 +25,6 @@ set "PYTHONSCRIPTpath=%~dp0tools\Python\Scripts" rem Path to PYTHON SCRIPTS
 set "DO_VI_TOOLpath=%~dp0tools\dovi_tool.exe" rem Path to dovi_tool.exe
 set "DO_VI_TOOLNFpath=%~dp0tools\dovi_tool_no_floor.exe" rem Path to dovi_tool_no_floor.exe
 set "HDR10P_TOOLpath=%~dp0tools\hdr10plus_tool.exe" rem Path to hdr10plus_tool.exe
-set "HDR10PFILE=%~dp1HDR10Plus.json"
 
 set "AVISYNTH_FOLDER=%ProgramFiles(x86)%\AviSynth+"
 set "LAVFILTERS_FOLDER=%ProgramFiles(x86)%\LAV Filters"
@@ -62,9 +61,9 @@ set "TMP_FOLDER=SAME AS SOURCE"
 set "MKVTOOLNIX_FOLDER=INCLUDED"
 set "MP4Extract=FALSE"
 set "MKVExtract=FALSE"
-set "HDR_HDR=FALSE"
-set "HDR_HDR10P=FALSE"
-set "HDR_DV=FALSE"
+set "HDR=FALSE"
+set "HDR10P=FALSE"
+set "DV=FALSE"
 set "RAW_FILE=FALSE"
 set "RPU_FILE=FALSE"
 set "HDR10P_FILE=FALSE"
@@ -138,11 +137,7 @@ set "_WHITE=0F"
 if "!DESIGN!" NEQ "STANDARD" call "!DESIGN!"
 
 if not exist "!LAVFILTERS_FOLDER!\x64\LAVSplitter.ax" set HDR10PLOT=NO
-if "%TMP_FOLDER%"=="SAME AS SOURCE" (
-	set "TMP_FOLDER=%~dp1DDVT_%Password%_TMP"
-) else (
-	set "TMP_FOLDER=!TMP_FOLDER!\DDVT_%Password%_TMP"
-)
+
 if "!MKVTOOLNIX_FOLDER!"=="INCLUDED" set "MKVTOOLNIX_FOLDER=%~dp0tools"
 set "MKVMERGEpath=!MKVTOOLNIX_FOLDER!\mkvmerge.exe"
 set "MKVEXTRACTpath=!MKVTOOLNIX_FOLDER!\mkvextract.exe"
@@ -163,14 +158,53 @@ if not exist "%DO_VI_TOOLpath%" set "MISSINGFILE=%DO_VI_TOOLpath%" & goto :CORRU
 if not exist "%DO_VI_TOOLNFpath%" set "MISSINGFILE=%DO_VI_TOOLNFpath%" & goto :CORRUPTFILE
 if not exist "%HDR10P_TOOLpath%" set "MISSINGFILE=%HDR10P_TOOLpath%" & goto :CORRUPTFILE
 
-if /i "%~x1"==".mkv" set "MKVExtract=TRUE" & goto :CHECK
-if /i "%~x1"==".mp4" set "MP4Extract=TRUE" & goto :CHECK
-if /i "%~x1"==".h265" set "RAW_FILE=TRUE" & goto :CHECK
-if /i "%~x1"==".hevc" set "RAW_FILE=TRUE" & goto :CHECK
-if /i "%~x1"==".bin" set "RPU_FILE=TRUE" & set "RPUFILE=%~1" & goto :CHECK
-if /i "%~x1"==".json" set "HDR10P_FILE=TRUE" & set "HDR10PFILE=%~1" & goto :CHECK
+if /i "!INPUTFILEEXT!"=="" CALL :INSERT_INPUT
 
-if not "!INPUTFILE!"=="" goto :FALSEINPUT
+if "%TMP_FOLDER%"=="SAME AS SOURCE" (
+	set "TMP_FOLDER=!INPUTFILEPATH!DDVT_%Password%_TMP"
+) else (
+	set "TMP_FOLDER=!TMP_FOLDER!\DDVT_%Password%_TMP"
+)
+
+if /i "!INPUTFILEEXT!"==".mkv" set "MKVExtract=TRUE" & goto :CHECK
+if /i "!INPUTFILEEXT!"==".mp4" set "MP4Extract=TRUE" & goto :CHECK
+if /i "!INPUTFILEEXT!"==".m2ts" set "M2TS_FILE=TRUE" & goto :CHECK
+if /i "!INPUTFILEEXT!"==".h265" set "RAW_FILE=TRUE" & goto :CHECK
+if /i "!INPUTFILEEXT!"==".hevc" set "RAW_FILE=TRUE" & goto :CHECK
+if /i "!INPUTFILEEXT!"==".bin" set "RPU_FILE=TRUE" & set "RPUFILE=!INPUTFILE!" & goto :CHECK
+if /i "!INPUTFILEEXT!"==".json" set "HDR10P_FILE=TRUE" & set "HDR10PFILE=!INPUTFILE!" & goto :CHECK
+goto :FALSEINPUT
+
+:INSERT_INPUT
+cls
+%GREEN%
+echo  !HEADER1!
+%WHITE%
+echo.
+echo                                         ====================================
+%GREEN%
+echo                                              Dolby Vision Tool DEMUXER
+%WHITE%
+echo                                         ====================================
+echo.
+echo.
+echo  == INSERT FILE HERE ====================================================================================================
+%HCYELLOW%
+echo.
+echo [Info] Insert one file with following extensions:
+echo        .bin ^| .mp4 ^| .m2ts ^| .mkv ^| .json ^| .h265 ^| .hevc
+echo.
+%WHITE%
+"!Cecho!" {%_WHITE%}Drag 'n' Drop {%_GREEN%}FILE {%_WHITE%}here and press ENTER:{#}{\n}
+%GREEN%
+set /p "INPUTFILE=%~1" || if "!INPUTFILE!"=="" goto :INSERT_INPUT
+
+for %%f in (!INPUTFILE!) do set "INPUTFILENAME=%%~nf"
+for %%f in (!INPUTFILE!) do set "INPUTFILEEXT=%%~xf"
+for %%f in (!INPUTFILE!) do set "INPUTFILEPATH=%%~dpf"
+for %%f in (!INPUTFILE!) do set "INPUTFILE=%%~dpnxf"
+
+goto :eof
 
 :CHECK
 CLS
@@ -184,175 +218,219 @@ echo                                              Dolby Vision Tool FILEINFO
 %WHITE%
 echo                                         ====================================
 echo.
-%WHITE%
 echo.
 echo  == CHECK INPUT FILE ====================================================================================================
-if "%~1"=="" (
-	%HCYELLOW%
-	echo.
-	echo No Input File. Use DDVT_FRAMEINFO.cmd "YourFilename.mkv/mp4/hevc/h265/bin"
-	%WHITE%
-	echo.
-	goto :EXIT
-)
-FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=General;%%VideoCount%% "!INPUTFILE!""') do set "VIDEO_COUNT=%%A"
-if "!RPU_FILE!!HDR10P_FILE!"=="FALSEFALSE" (
-	if "!VIDEO_COUNT!" NEQ "1" (
-		%HCYELLOW%
-		echo.
-		echo No Support for Dual Layer Container^^!
-		%WHITE%
-		echo.
-		goto :EXIT
-	)
-)
 if not exist "!TMP_FOLDER!" md "!TMP_FOLDER!"
 echo.
 %CYAN%
 if "!RPU_FILE!!HDR10P_FILE!"=="FALSEFALSE" (
 	echo Analysing File. Please wait...
 	echo.
-	set "INPUTSTREAM=!INPUTFILE!"
+	::SET BL EL STREAMINDEX
+	call :ANALYSESTREAMS
 	set "INFOSTREAM=!INPUTFILE!"
 	FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=General;%%VideoCount%% "!INFOSTREAM!""') do set "VIDEO_COUNT=%%A"
-	if "!RAW_FILE!!VIDEO_COUNT!"=="TRUE1" (
+	if "!RAW_FILE!"=="TRUE" (
+		"!MKVMERGEpath!" --ui-language en --priority higher --output ^"!TMP_FOLDER!\Info.mkv^" --language 0:und --compression 0:none ^"^(^" ^"!INPUTFILE!^" ^"^)^" --split parts:00:00:00-00:00:01 -q
+		if exist "!TMP_FOLDER!\Info.mkv" set "INFOSTREAM=!TMP_FOLDER!\Info.mkv"
+	)
+	if "!M2TS_FILE!"=="TRUE" (
 		"!MKVMERGEpath!" --ui-language en --priority higher --output ^"!TMP_FOLDER!\Info.mkv^" --language 0:und --compression 0:none ^"^(^" ^"!INPUTFILE!^" ^"^)^" --split parts:00:00:00-00:00:01 -q
 		if exist "!TMP_FOLDER!\Info.mkv" set "INFOSTREAM=!TMP_FOLDER!\Info.mkv"
 	)
 	::SET HDR FORMAT
-	"!MEDIAINFOpath!" --output=Video;%%HDR_Format_String%% "!INFOSTREAM!">"!TMP_FOLDER!\Info.txt"
-	FOR /F "delims=" %%A IN ('findstr /C:"Dolby Vision" "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES"
-	FOR /F "delims=" %%A IN ('findstr /C:"HDR10" "!TMP_FOLDER!\Info.txt"') DO set "HDRFormat=HDR10"
-	FOR /F "delims=" %%A IN ('findstr /C:"HDR10+" "!TMP_FOLDER!\Info.txt"') DO set "HDRFormat=HDR10+"
-	FOR /F "delims=" %%A IN ('findstr /C:"dvhe.05" "!TMP_FOLDER!\Info.txt"') DO set "HDRFormat=IPT-PQ-C2"
-	FOR /F "delims=" %%A IN ('findstr /C:"HLG" "!TMP_FOLDER!\Info.txt"') DO set "HDRFormat=HLG"
+	if exist "!TMP_FOLDER!\Info.mkv" (
+		"!MEDIAINFOpath!" --output=Video;%%HDR_Format_String%% "!INFOSTREAM!">"!TMP_FOLDER!\Info.txt"
+		FOR /F "delims=" %%A IN ('findstr /C:"Dolby Vision" "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES"
+		FOR /F "delims=" %%A IN ('findstr /C:"HDR10" "!TMP_FOLDER!\Info.txt"') DO set "HDRFormat=HDR10"
+		FOR /F "delims=" %%A IN ('findstr /C:"HDR10+" "!TMP_FOLDER!\Info.txt"') DO set "HDRFormat=HDR10+"
+		FOR /F "delims=" %%A IN ('findstr /C:"dvhe.05" "!TMP_FOLDER!\Info.txt"') DO set "HDRFormat=IPT-PQ-C2"
+		FOR /F "delims=" %%A IN ('findstr /C:"HLG" "!TMP_FOLDER!\Info.txt"') DO set "HDRFormat=HLG"
+	)
+	if not defined HDRFormat (
+		"!MEDIAINFOpath!" --output=Video;%%HDR_Format_String%% "!INPUTFILE!">"!TMP_FOLDER!\Info.txt"
+		FOR /F "delims=" %%A IN ('findstr /C:"Dolby Vision" "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES"
+		FOR /F "delims=" %%A IN ('findstr /C:"HDR10" "!TMP_FOLDER!\Info.txt"') DO set "HDRFormat=HDR10"
+		FOR /F "delims=" %%A IN ('findstr /C:"HDR10+" "!TMP_FOLDER!\Info.txt"') DO set "HDRFormat=HDR10+"
+		FOR /F "delims=" %%A IN ('findstr /C:"dvhe.05" "!TMP_FOLDER!\Info.txt"') DO set "HDRFormat=IPT-PQ-C2"
+		FOR /F "delims=" %%A IN ('findstr /C:"HLG" "!TMP_FOLDER!\Info.txt"') DO set "HDRFormat=HLG"
+	)
+	if not defined HDRFormat set "HDRFormat=SDR"
+	set "PHDR=!HDRFormat!"
+	if "!HDRFormat!"=="HDR10+" set "PHDR=HDR"
 
 	::SET DV FORMAT
-	"!MEDIAINFOpath!" --output=Video;%%HDR_Format_Profile%% "!INFOSTREAM!">"!TMP_FOLDER!\Info.txt"
-	FOR /F "delims=" %%A IN ('findstr /C:".08" "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=8"
-	FOR /F "delims=" %%A IN ('findstr /C:".07" "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=7"
-	FOR /F "delims=" %%A IN ('findstr /C:".06" "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=6"
-	FOR /F "delims=" %%A IN ('findstr /C:".05" "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=5"
-	FOR /F "delims=" %%A IN ('findstr /C:".04" "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=4"
-	FOR /F "delims=" %%A IN ('findstr /C:".03" "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=3"
-
-	::DUAL LAYER OPERATION
-	if "!VIDEO_COUNT!"=="2" (
-		set "LAYERTYPE= DL"
-		set "DT=-map 0:1"
-		"!FFMPEGpath!" -loglevel panic -i "!INFOSTREAM!" -map 0:0 -c:v copy -to 1 "!TMP_FOLDER!\BL.mkv">nul 2>&1
+	if exist "!TMP_FOLDER!\Info.mkv" (
+		"!MEDIAINFOpath!" --output=Video;%%HDR_Format_Profile%% "!INFOSTREAM!">"!TMP_FOLDER!\Info.txt">nul
+		FOR /F "delims=" %%A IN ('findstr /C:".08." "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=8"
+		FOR /F "delims=" %%A IN ('findstr /C:".07." "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=7"
+		FOR /F "delims=" %%A IN ('findstr /C:".06." "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=6"
+		FOR /F "delims=" %%A IN ('findstr /C:".05." "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=5"
+		FOR /F "delims=" %%A IN ('findstr /C:".04." "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=4"
+		FOR /F "delims=" %%A IN ('findstr /C:".03." "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=3"
 	)
-	if "!DVinput!"=="YES" "!FFMPEGpath!" -loglevel panic -i "!INFOSTREAM!" !DT! -c:v copy -to 1 -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" - >nul 2>&1
-	FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU.bin"') DO set "RPUSIZE=%%~zA">nul 2>&1
-	if "!RPUSIZE!" NEQ "0" (
-		if "!DVinput!"=="YES" "!DO_VI_TOOLpath!" info -s "!TMP_FOLDER!\RPU.bin">"!TMP_FOLDER!\RPUINFO.txt"
-			if exist "!TMP_FOLDER!\RPUINFO.txt" (
-			set "HDR_DV=TRUE"
-			FOR /F "delims=" %%A IN ('findstr /C:"Profile:" "!TMP_FOLDER!\RPUINFO.txt"') DO set "RPU_PROFILE=%%A"
-			if defined RPU_PROFILE (
-				for /F "tokens=2 delims=:/ " %%A in ("!RPU_PROFILE!") do set "RPU_DVP=%%A"
-				if "!RPU_DVP!"=="7" for /F "tokens=3 delims=:/ " %%A in ("!RPU_PROFILE!") do set "RPU_DVSP= %%A"
+	if not defined DVprofile (
+		"!MEDIAINFOpath!" --output=Video;%%HDR_Format_Profile%% "!INPUTFILE!">"!TMP_FOLDER!\Info.txt">nul
+		FOR /F "delims=" %%A IN ('findstr /C:".08." "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=8"
+		FOR /F "delims=" %%A IN ('findstr /C:".07." "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=7"
+		FOR /F "delims=" %%A IN ('findstr /C:".06." "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=6"
+		FOR /F "delims=" %%A IN ('findstr /C:".05." "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=5"
+		FOR /F "delims=" %%A IN ('findstr /C:".04." "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=4"
+		FOR /F "delims=" %%A IN ('findstr /C:".03." "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=3"
+	)
+
+	::DEMUX RPU SAMPLE
+	if "!DVinput!"=="YES" (
+		if exist "!INFOSTREAM!" (
+			"!FFMPEGpath!" -loglevel panic -i "!INFOSTREAM!" -c:v copy -to 1 -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" - >nul 2>&1
+			if exist "!TMP_FOLDER!\RPU.bin" (
+				FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU.bin"') DO set "RPUSIZE=%%~zA"
+				if "!RPUSIZE!" NEQ "0" (
+					set "RPU_EXIST=TRUE"
+				) else (
+					if exist "!TMP_FOLDER!\RPU.bin" del "!TMP_FOLDER!\RPU.bin" >nul
+					set "RPU_EXIST=FALSE"
+				)
 			) else (
-				set "RPU_DVP=N/A"
+				set "RPU_EXIST=FALSE"
 			)
-			FOR /F "delims=" %%A IN ('findstr /C:"DM version" "!TMP_FOLDER!\RPUINFO.txt"') DO set "RPU_CMV=%%A"
-			if defined RPU_CMV (
-				for /F "tokens=3 delims=:/()" %%A in ("!RPU_CMV!") do set "RPU_CMV=%%A"
+		)
+		if "!RPU_EXIST!"=="FALSE" (
+			"!FFMPEGpath!" -loglevel panic -i "!INPUTFILE!" -map 0:!EL_INDEX! -c:v copy -to 1 -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" - >nul 2>&1
+			if exist "!TMP_FOLDER!\RPU.bin" (
+				FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU.bin"') DO set "RPUSIZE=%%~zA"
+				if "!RPUSIZE!" NEQ "0" (
+					set "RPU_EXIST=TRUE"
+				)
 			) else (
-				set "RPU_CMV=N/A"
-			)
-			FOR /F "delims=" %%A IN ('findstr /C:"Frames" "!TMP_FOLDER!\RPUINFO.txt"') DO set "RPU_FRAMES=%%A"
-			if defined RPU_FRAMES (
-				for /F "tokens=2 delims=:/() " %%A in ("!RPU_FRAMES!") do set "RPU_FRAMES=%%A"
-			) else (
-				set "RPU_FRAMES=N/A"
-			)
-			FOR /F "tokens=2 delims=:" %%A IN ('findstr /C:"L2 trims" "!TMP_FOLDER!\RPUINFO.txt"') DO set "L2_TRIMS=%%A"
-			if defined L2_TRIMS (
-				set "L2_TRIMS=!L2_TRIMS:~1!"
-				echo "!L2_TRIMS!" | find "100 nits">nul 2>&1
-				if "!ERRORLEVEL!"=="0" set "L2100=TRUE"
-				echo "!L2_TRIMS!" | find "300 nits">nul 2>&1
-				if "!ERRORLEVEL!"=="0" set "L2300=TRUE"
-				echo "!L2_TRIMS!" | find "600 nits">nul 2>&1
-				if "!ERRORLEVEL!"=="0" set "L2600=TRUE"
-				echo "!L2_TRIMS!" | find "1000 nits">nul 2>&1
-				if "!ERRORLEVEL!"=="0" set "L21000=TRUE"
-				echo "!L2_TRIMS!" | find "2000 nits">nul 2>&1
-				if "!ERRORLEVEL!"=="0" set "L22000=TRUE"
-				echo "!L2_TRIMS!" | find "4000 nits">nul 2>&1
-				if "!ERRORLEVEL!"=="0" set "L24000=TRUE"
-			) else (
-				set "L2_TRIMS=No L2 entries in RPU."
+				"!FFMPEGpath!" -loglevel panic -i "!INFOSTREAM!" -c:v copy -to 1 -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" - >nul 2>&1
+				if exist "!TMP_FOLDER!\RPU.bin" (
+					FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU.bin"') DO set "RPUSIZE=%%~zA"
+					if "!RPUSIZE!" NEQ "0" (
+						set "RPU_EXIST=TRUE"
+					) else (
+						set "RPU_EXIST=FALSE"
+					)
+				) else (
+					set "RPU_EXIST=FALSE"
+				)
 			)
 		)
 	)
-	
-	if exist "!TMP_FOLDER!\BL.mkv" set "INFOSTREAM=!TMP_FOLDER!\BL.mkv"
+	if "!RPU_EXIST!"=="TRUE" (
+		%HCGREEN%
+		"!DO_VI_TOOLpath!" info -i "!TMP_FOLDER!\RPU.bin" -s>"!TMP_FOLDER!\RPUINFO.txt"
+		FOR /F "delims=" %%A IN ('findstr /C:"Profile:" "!TMP_FOLDER!\RPUINFO.txt"') DO set "RPU_PROFILE=%%A"
+		if defined RPU_PROFILE (
+			for /F "tokens=2 delims=:/ " %%A in ("!RPU_PROFILE!") do set "RPU_DVP=%%A"
+			if "!RPU_DVP!"=="7" for /F "tokens=3 delims=:/ " %%A in ("!RPU_PROFILE!") do set "RPU_DVSP= %%A"
+		) else (
+			set "RPU_DVP=N/A"
+		)
+		FOR /F "delims=" %%A IN ('findstr /C:"DM version" "!TMP_FOLDER!\RPUINFO.txt"') DO set "RPU_CMV=%%A"
+		if defined RPU_CMV (
+			for /F "tokens=3 delims=:/()" %%A in ("!RPU_CMV!") do set "RPU_CMV=%%A"
+		) else (
+			set "RPU_CMV=N/A"
+		)
+		FOR /F "delims=" %%A IN ('findstr /C:"Frames" "!TMP_FOLDER!\RPUINFO.txt"') DO set "RPU_FRAMES=%%A"
+		if defined RPU_FRAMES (
+			for /F "tokens=2 delims=:/() " %%A in ("!RPU_FRAMES!") do set "RPU_FRAMES=%%A"
+		) else (
+			set "RPU_FRAMES=N/A"
+		)
+		FOR /F "tokens=2 delims=:" %%A IN ('findstr /C:"L2 trims" "!TMP_FOLDER!\RPUINFO.txt"') DO set "L2_TRIMS=%%A"
+		if defined L2_TRIMS (
+			set "L2_TRIMS=!L2_TRIMS:~1!"
+			echo "!L2_TRIMS!" | find "100 nits">nul 2>&1
+			if "!ERRORLEVEL!"=="0" set "L2100=TRUE"
+			echo "!L2_TRIMS!" | find "300 nits">nul 2>&1
+			if "!ERRORLEVEL!"=="0" set "L2300=TRUE"
+			echo "!L2_TRIMS!" | find "600 nits">nul 2>&1
+			if "!ERRORLEVEL!"=="0" set "L2600=TRUE"
+			echo "!L2_TRIMS!" | find "1000 nits">nul 2>&1
+			if "!ERRORLEVEL!"=="0" set "L21000=TRUE"
+			echo "!L2_TRIMS!" | find "2000 nits">nul 2>&1
+			if "!ERRORLEVEL!"=="0" set "L22000=TRUE"
+			echo "!L2_TRIMS!" | find "4000 nits">nul 2>&1
+			if "!ERRORLEVEL!"=="0" set "L24000=TRUE"
+		) else (
+			set "L2_TRIMS=No L2 entries in RPU."
+		)
+	)
 
 	::BEGIN MEDIAINFO
-	FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%Width%%x%%Height%% "!INFOSTREAM!""') do set "RESOLUTION=%%A"
-	FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%Format%%^-%%BitDepth%%Bit^-%%ColorSpace%%^-%%ChromaSubsampling%% "!INFOSTREAM!""') do set "CODEC_NAME=%%A"
-	FOR /F "tokens=1,2 delims= " %%A in ('""!MEDIAINFOpath!" --output=Video;%%FrameRate_String%% "!INPUTSTREAM!""') do (
-		set "FRAMERATE=%%A"
-		set "FRAMERATE_ORIG=%%A"
-	)
-	::MAXCll and MAXFall
 	FOR /F "tokens=1 delims= " %%A in ('""!MEDIAINFOpath!" --output=Video;%%MaxCLL%% "!INFOSTREAM!""') do set "MaxCLL=%%A"
 	if not defined MaxCLL set "MaxCLL=0"
 	FOR /F "tokens=1 delims= " %%A in ('""!MEDIAINFOpath!" --output=Video;%%MaxFALL%% "!INFOSTREAM!""') do set "MaxFALL=%%A"
 	if not defined MaxFALL set "MaxFALL=0"
-	::HDR METADATA
-	FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%MasteringDisplay_ColorPrimaries%% "!INFOSTREAM!""') do set "MDCP=%%A"
-	if not defined MDCP set "MDCP=N/A"
 	FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%MasteringDisplay_Luminance%% "!INFOSTREAM!""') do set "Luminance=%%A"
 	if not defined Luminance (
-		set "MinDML=50"
+		set "MinDML=1"
 		set "MaxDML=1000"
+		set "Luminance=N/A"
 	) else (
-		for /F "tokens=2" %%A in ("!Luminance!") do set MinDML=%%A
+		for /F "tokens=2" %%A in ("!Luminance!") do set "MinDML=%%A"
 		for /F "tokens=* delims=0." %%A in ("!MinDML!") do set "MinDML=%%A"
-		for /F "tokens=5" %%A in ("!Luminance!") do set MaxDML=%%A
+		for /F "tokens=5" %%A in ("!Luminance!") do set "MaxDML=%%A"
 	)
-	FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%FrameCount%% "!INPUTSTREAM!""') do set "FRAMES=%%A"
-	if "!VIDEO_COUNT!"=="2" set "FRAMES=N/A DL"
+	FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%MasteringDisplay_ColorPrimaries%% "!INFOSTREAM!""') do set "MDCP=%%A"
+	if not defined MDCP (set "MDCP=") else (set "MDCP= ^(!MDCP!^)")
+	::CODEC NAME
+	FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%Format%%^-%%BitDepth%%Bit^-%%ColorSpace%%^-%%ChromaSubsampling%% "!INFOSTREAM!""') do set "CODEC_NAME=%%A"
+	if not defined CODEC_NAME set "CODEC_NAME=N/A"
+	::FRAMERATE
+	FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%FrameRate/String%% "!INPUTFILE!""') do set "FRAMERATE=%%A"
+	for /F "tokens=1-2 delims=FPS " %%A in ("!FRAMERATE!") do set "FRAMERATE=%%A"
+	::RESOLUTION
+	FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;"%%Width%%x x %%Height%%x" "!INPUTFILE!""') do set "RESOLUTION=%%A"
+	for /F "tokens=1-4 delims=x " %%A in ("!RESOLUTION!") do (
+		if "!DVprofile!%%A%%B"=="719201080" set "ELFILE=TRUE"
+		set "RESOLUTION=%%Ax%%B"
+	)
+	::FRAMES
+	FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%FrameCount%% "!INPUTFILE!""') do set "FRAMES=%%A"
 	if "!HDRFormat!"=="HDR10" (
-		set "HDR_HDR=TRUE"
-		set "PHDR=HDR10"
+		set "HDR=TRUE"
 		%HCGREEN%
 		echo HDR10 found.
 	)
 	if "!HDRFormat!"=="HLG" (
-		set "HDR_HDR=TRUE"
-		set "PHDR=HLG"		
+		set "HDR=TRUE"
 		%HCGREEN%
 		echo HLG found.
 	)
 	if "!HDRFormat!"=="HDR10+" (
-		set "HDR_HDR=TRUE"
-		set "HDR_HDR10P=TRUE"
-		set "PHDR=HDR10"
+		set "HDR=TRUE"
+		set "HDR10P=TRUE"
 		%HCGREEN%
 		echo HDR10+ SEI found.
 	)
 	if "!DVprofile!"=="8" (
-		set "HDR_HDR=TRUE"
-		set "HDR_DV=TRUE"
-		set "HDR_DV_Profile=8"
+		set "HDR=TRUE"
+		set "DV=TRUE"
+		set "DV_Profile=8"
+		set "CONVERT=NO"
 		%HCGREEN%
 		echo Dolby Vision Profile 8 found.
 	)
 	if "!DVprofile!"=="7" (
-		set "HDR_HDR=TRUE"
-		set "HDR_DV=TRUE"
-		set "HDR_DV_Profile=7"
+		set "HDR=TRUE"
+		set "DV=TRUE"
+		set "DV_Profile=7"
 		if "!RESOLUTION!"=="1920x1080" set "ELFILE=TRUE"
-		if exist "!TMP_FOLDER!\RPUINFO.txt" (
-			FOR /F "delims=" %%A IN ('findstr /C:"Profile:" "!TMP_FOLDER!\RPUINFO.txt"') DO set "subprofile=%%A"
-			if defined subprofile (
-				for /F "tokens=3 delims=:/ " %%A in ("!subprofile!") do set "subprofile= %%A"
-			) else (
-				set "subprofile="
+		if exist "!TMP_FOLDER!\RPU.bin" (
+			FOR /F "usebackq" %%A IN ('!TMP_FOLDER!\RPU.bin') DO set "RPUSIZE=%%~zA">nul 2>&1
+			if "!RPUSIZE!" NEQ "0" (
+				"!DO_VI_TOOLpath!" info -s "!TMP_FOLDER!\RPU.bin">"!TMP_FOLDER!\RPUINFO.txt"
+				if exist "!TMP_FOLDER!\RPUINFO.txt" (
+					FOR /F "delims=" %%A IN ('findstr /C:"Profile:" "!TMP_FOLDER!\RPUINFO.txt"') DO set "subprofile=%%A"
+					if defined subprofile (
+						for /F "tokens=3 delims=:/ " %%A in ("!subprofile!") do set "subprofile= %%A"
+					) else (
+						set "subprofile="
+					)
+				)
 			)
 		)
 		%HCGREEN%
@@ -361,19 +439,19 @@ if "!RPU_FILE!!HDR10P_FILE!"=="FALSEFALSE" (
 		) else (
 			echo Dolby Vision Profile 7!subprofile!!LAYERTYPE! found.
 		)
-		set "HDR_DV_Profile=7!subprofile!!LAYERTYPE!"
+		set "DV_Profile=7!subprofile!!LAYERTYPE!"
 	)
 	if "!DVprofile!"=="5" (
-		set "HDR_HDR=FALSE"
-		set "HDR_DV=TRUE"
-		set "HDR_DV_Profile=5"
+		set "HDR=FALSE"
+		set "DV=TRUE"
+		set "DV_Profile=5"
 		%HCGREEN%
 		echo Dolby Vision Profile 5 found.
 	)
 	if "!DVprofile!"=="4" (
-		set "HDR_HDR=TRUE"
-		set "HDR_DV=TRUE"
-		set "HDR_DV_Profile=4"
+		set "HDR=TRUE"
+		set "DV=TRUE"
+		set "DV_Profile=4"
 		%HCGREEN%
 		echo Dolby Vision Profile 4 found.
 	)
@@ -381,11 +459,11 @@ if "!RPU_FILE!!HDR10P_FILE!"=="FALSEFALSE" (
 	if exist "!TMP_FOLDER!\Info.mkv" del "!TMP_FOLDER!\Info.mkv">nul
 	if exist "!TMP_FOLDER!\BL.mkv" del "!TMP_FOLDER!\BL.mkv">nul
 	if exist "!TMP_FOLDER!\RPU.bin" del "!TMP_FOLDER!\RPU.bin">nul
-	if "!HDR_HDR!"=="TRUE" set "HDR_Info=!HDRFormat!"
-	if "!HDR_HDR10P!"=="TRUE" set "HDR_Info=HDR10, !HDRFormat!"
-	if "!HDR_DV!"=="TRUE" set "HDR_Info=Dolby Vision Profile !DV_Profile!"	
-	if "!HDR_HDR!!HDR_DV!"=="TRUETRUE" set "HDR_Info=!HDRFormat!, Dolby Vision Profile !HDR_DV_Profile!"
-	if "!HDR_HDR10P!!HDR_DV!"=="TRUETRUE" set "HDR_Info=HDR10, !HDRFormat!, Dolby Vision Profile !HDR_DV_Profile!"
+	if "!HDR!"=="TRUE" set "HDR_Info=!HDRFormat!"
+	if "!HDR10P!"=="TRUE" set "HDR_Info=HDR10, !HDRFormat!"
+	if "!DV!"=="TRUE" set "HDR_Info=Dolby Vision Profile !DV_Profile!"	
+	if "!HDR!!DV!"=="TRUETRUE" set "HDR_Info=!HDRFormat!, Dolby Vision Profile !DV_Profile!"
+	if "!HDR10P!!DV!"=="TRUETRUE" set "HDR_Info=HDR10, !HDRFormat!, Dolby Vision Profile !DV_Profile!"
 
 	if exist "!TMP_FOLDER!\Info.txt" del "!TMP_FOLDER!\Info.txt">nul
 	if exist "!TMP_FOLDER!\Info.mkv" del "!TMP_FOLDER!\Info.mkv">nul
@@ -397,7 +475,7 @@ if "!RPU_FILE!!HDR10P_FILE!"=="FALSEFALSE" (
 		"!DO_VI_TOOLpath!" info -i "!RPUFILE!" -s>"!TMP_FOLDER!\RPUINFO.txt"
 		if exist "!TMP_FOLDER!\RPUINFO.txt" (
 			%HCGREEN%
-			set "HDR_DV=TRUE"
+			set "DV=TRUE"
 			FOR /F "delims=" %%A IN ('findstr /C:"Profile:" "!TMP_FOLDER!\RPUINFO.txt"') DO set "RPU_PROFILE=%%A"
 			if defined RPU_PROFILE (
 				for /F "tokens=2 delims=:/ " %%A in ("!RPU_PROFILE!") do set "RPU_DVP=%%A"
@@ -453,7 +531,7 @@ if "!RPU_FILE!!HDR10P_FILE!"=="FALSEFALSE" (
 	)
 )
 
-if "!RPU_FILE!!HDR_HDR!!HDR_DV!"=="FALSEFALSEFALSE" (
+if "!RPU_FILE!!HDR!!DV!"=="FALSEFALSEFALSE" (
 	echo.
 	%HCYELLOW%
 	echo No HDR / DV found in videostream.
@@ -475,10 +553,10 @@ TIMEOUT 2 /NOBREAK>nul
 if /i "%~2"=="-CHECK" goto :DV8CHK
 
 :START
-if "!HDR_HDR!"=="FALSE" set "HDR10PLOT=NO"
-if "!HDR_DV!"=="FALSE" set "DVPLOT=NO
-if "!HDR_DV!"=="FALSE" set "FRAME=NONE
-if "!HDR_HDR10P!"=="FALSE" set "HDR10PPLOT=NO
+if "!HDR!"=="FALSE" set "HDR10PLOT=NO"
+if "!DV!"=="FALSE" set "DVPLOT=NO
+if "!DV!"=="FALSE" set "FRAME=NONE
+if "!HDR10P!"=="FALSE" set "HDR10PPLOT=NO
 if "!RPU_FILE!"=="TRUE" set "MEDIAINFOFILE=NO
 if "!RPU_FILE!"=="TRUE" set "HDR10PPLOT=NO
 if "!RPU_FILE!"=="TRUE" set "VBITRATEPLOT=NO
@@ -520,31 +598,31 @@ echo  == MENU ==================================================================
 echo.
 %HCWHITE%
 if "!RPU_FILE!!RAW_FILE!"=="FALSEFALSE" echo 1. Video Bitrate Plotting         : [!VBITRATEPLOT!]
-if "!HDR_DV!"=="TRUE" (
+if "!DV!"=="TRUE" (
 	echo 2. DV L1 PNG Plotting             : [!DVPLOT!]
 	echo 3. DV Frameinfo                   : [Frame^(s^)^: !FRAME!]
 )
-if "!HDR_HDR!"=="TRUE" (
-	echo 4. HDR10 PNG Plotting             : [!HDR10PLOT!]
+if "!HDR!"=="TRUE" (
+	echo 4. HDR PNG Plotting               : [!HDR10PLOT!]
 )
-if "!HDR_HDR10P!"=="TRUE" (
+if "!HDR10P!"=="TRUE" (
 	echo 5. HDR10+ Metadata PNG Plotting   : [!HDR10PPLOT!]
 )
 if "!RPU_FILE!"=="FALSE" echo 6. Create MediaInfo File          : [!MEDIAINFOFILE!]
 echo.
-if "!HDR_DV_Profile!"=="8" (
-	!Cecho! {%HC_WHITE%}C. CHECK RPU CROPPING VALUES{%HC_YELLOW%}*{%HC_WHITE%}     : [!BC_INFO!{%HC_WHITE%}]   {%HC_YELLOW%}*Check and Fix wrong cropped Releases{#}{\n}
+if "!DV_Profile!"=="8" (
+	"!Cecho!" {%HC_WHITE%}C. CHECK RPU CROPPING VALUES{%HC_YELLOW%}*{%HC_WHITE%}     : [!BC_INFO!{%HC_WHITE%}]   {%HC_YELLOW%}*Check and Fix wrong cropped Releases{#}{\n}
 	echo.
 )
 %GREEN%
 echo S. START
 %HCWHITE%
 echo.
-!Cecho! {%HC_WHITE%}Change Settings and press [{%_GREEN%}S{%HC_WHITE%}] to Start^^!{#}{\n}
+"!Cecho!" {%HC_WHITE%}Change Settings and press [{%_GREEN%}S{%HC_WHITE%}] to Start^^!{#}{\n}
 CHOICE /C 123456CS /N /M "Select a Letter 1,2,3,4,5,6,C,[S]tart"
 
 if "%ERRORLEVEL%"=="8" goto :OPERATION
-if "!HDR_DV_Profile!%ERRORLEVEL%"=="87" call :DV8CHK
+if "!DV_Profile!%ERRORLEVEL%"=="87" call :DV8CHK
 if "%ERRORLEVEL%"=="6" (
 	if "%MEDIAINFOFILE%"=="NO" set "MEDIAINFOFILE=YES"
 	if "%MEDIAINFOFILE%"=="YES" set "MEDIAINFOFILE=NO"
@@ -598,43 +676,102 @@ set "VIDEOSTREAM=!INPUTFILE!"
 if "!RPU_FILE!!RAW_FILE!"=="FALSEFALSE" call :DEMUX
 if "!VBITRATEPLOT!"=="YES" call :BITRATE_PLOTTING
 if "!HDR10PLOT!"=="YES" call :HDR10_PLOTPNG
-if "!RPU_FILE!!HDR_DV!"=="FALSETRUE" call :RPU_EXTRACT
+if "!RPU_FILE!!DV!"=="FALSETRUE" call :RPU_EXTRACT
 if "!DVPLOT!" NEQ "NO" call :DV_PLOTPNG
 if "!FRAME!" NEQ "NONE" call :WRITE_DV_FRAMEINFO
-if "!HDR_HDR10P!!HDR10PPLOT!"=="TRUEYES" call :HDR10P_EXTRACT
+if "!HDR10P!!HDR10PPLOT!"=="TRUEYES" call :HDR10P_EXTRACT
 if "!HDR10PPLOT!"=="YES" call :HDR10Plus_PLOTPNG
 if "!MEDIAINFOFILE!"=="YES" call :C_MEDIAINFO
 goto :EXIT
 
 :DEMUX
-if "!DVPLOT!!HDR10PPLOT!!MEDIAINFOFILE!!FRAME!"=="NONONONONE" goto :eof
+if "!DVPLOT!!VBITRATEPLOT!!HDR10PLOT!!HDR10PPLOT!!MEDIAINFOFILE!!FRAME!"=="NONONONONONONE" goto :eof
+if "!VBITRATEPLOT!!HDR10PLOT!!HDR10PPLOT!"=="NONONO" goto :eof
 %HCYELLOW%
 echo ATTENTION^^! You need a lot of HDD Space for this operation.
 echo.
-%CYAN%
-echo Please wait. Extracting Video Layer...
-%WHITE%
-if "!FORCE_FFMPEG_DEMUXING!!MKVExtract!"=="NOTRUE" "!MKVEXTRACTpath!" "!INPUTFILE!" tracks --ui-language en  0:"!TMP_FOLDER!\temp.hevc"
-if "!FORCE_FFMPEG_DEMUXING!!MP4Extract!"=="NOTRUE" "!MP4BOXpath!" -raw 1 "!INPUTFILE!" -out "!TMP_FOLDER!\temp.hevc"
-if not exist "!TMP_FOLDER!\temp.hevc" "!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -c:v copy -bsf:v hevc_mp4toannexb -f hevc "!TMP_FOLDER!\temp.hevc"
-if exist "!TMP_FOLDER!\temp.hevc" (
-	for %%f in ("!TMP_FOLDER!\temp.hevc") do set "CHECKSIZE=%%~zf" >nul 2>&1
-	if "!CHECKSIZE!" NEQ "0" (
-		%HCGREEN%
-		set "VIDEOSTREAM=!TMP_FOLDER!\temp.hevc"
-		echo Done.
-		echo.
-	) else (
-		%HCRED%
-		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
-		echo Error.
-		echo.
+if "!VIDEO_COUNT!" NEQ "1" (
+	if "!VBITRATEPLOT!!HDR10PLOT!!HDR10PPLOT!" NEQ "NONONO" (
+		%CYAN%
+		echo Please wait. Extracting BL...
+		%WHITE%
+		if "!FORCE_FFMPEG_DEMUXING!!MKVExtract!"=="NOTRUE" "!MKVEXTRACTpath!" "!INPUTFILE!" tracks --ui-language en  !BL_INDEX!:"!TMP_FOLDER!\BL.hevc"
+		if "!FORCE_FFMPEG_DEMUXING!!MP4Extract!"=="NOTRUE" "!MP4BOXpath!" -raw !BL_INDEX! "!INPUTFILE!" -out "!TMP_FOLDER!\BL.hevc"
+		if not exist "!TMP_FOLDER!\temp.hevc" "!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -map 0:!BL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc "!TMP_FOLDER!\BL.hevc"
+		if exist "!TMP_FOLDER!\BL.hevc" (
+			for %%f in ("!TMP_FOLDER!\BL.hevc") do set "CHECKSIZE=%%~zf" >nul 2>&1
+			if "!CHECKSIZE!" NEQ "0" (
+				%HCGREEN%
+				set "BLSTREAM=!TMP_FOLDER!\BL.hevc"
+				echo Done.
+				echo.
+			) else (
+				%HCRED%
+				set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+				echo Error.
+				echo.
+			)
+		) else (
+			%HCRED%
+			echo Error.
+			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+			echo.
+		)
+	)
+	if "!DVPLOT!!FRAME!" NEQ "NONONE" (
+		%CYAN%
+		echo Please wait. Extracting EL...
+		%WHITE%
+		if "!FORCE_FFMPEG_DEMUXING!!MKVExtract!"=="NOTRUE" "!MKVEXTRACTpath!" "!INPUTFILE!" tracks --ui-language en  !EL_INDEX!:"!TMP_FOLDER!\EL.hevc"
+		if "!FORCE_FFMPEG_DEMUXING!!MP4Extract!"=="NOTRUE" "!MP4BOXpath!" -raw !EL_INDEX! "!INPUTFILE!" -out "!TMP_FOLDER!\EL.hevc"
+		if not exist "!TMP_FOLDER!\temp.hevc" "!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -map 0:!EL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc "!TMP_FOLDER!\EL.hevc"
+		if exist "!TMP_FOLDER!\EL.hevc" (
+			for %%f in ("!TMP_FOLDER!\EL.hevc") do set "CHECKSIZE=%%~zf" >nul 2>&1
+			if "!CHECKSIZE!" NEQ "0" (
+				%HCGREEN%
+				set "ELSTREAM=!TMP_FOLDER!\EL.hevc"
+				echo Done.
+				echo.
+			) else (
+				%HCRED%
+				set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+				echo Error.
+				echo.
+			)
+		) else (
+			%HCRED%
+			echo Error.
+			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+			echo.
+		)
 	)
 ) else (
-	%HCRED%
-	echo Error.
-	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
-	echo.
+	%CYAN%
+	echo Please wait. Extracting Video Layer...
+	%WHITE%
+	if "!FORCE_FFMPEG_DEMUXING!!MKVExtract!"=="NOTRUE" "!MKVEXTRACTpath!" "!INPUTFILE!" tracks --ui-language en  !BL_INDEX!:"!TMP_FOLDER!\temp.hevc"
+	if "!FORCE_FFMPEG_DEMUXING!!MP4Extract!"=="NOTRUE" "!MP4BOXpath!" -raw !BL_INDEX! "!INPUTFILE!" -out "!TMP_FOLDER!\temp.hevc"
+	if not exist "!TMP_FOLDER!\temp.hevc" "!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -map 0:!BL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc "!TMP_FOLDER!\temp.hevc"
+	if exist "!TMP_FOLDER!\temp.hevc" (
+		for %%f in ("!TMP_FOLDER!\temp.hevc") do set "CHECKSIZE=%%~zf" >nul 2>&1
+		if "!CHECKSIZE!" NEQ "0" (
+			%HCGREEN%
+			set "BLSTREAM=!TMP_FOLDER!\temp.hevc"
+			set "ELSTREAM=!TMP_FOLDER!\temp.hevc"
+			echo Done.
+			echo.
+		) else (
+			%HCRED%
+			set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+			echo Error.
+			echo.
+		)
+	) else (
+		%HCRED%
+		echo Error.
+		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+		echo.
+	)
 )
 goto :eof
 
@@ -643,7 +780,11 @@ if "!DVPLOT!!FRAME!"=="NONONE" goto :eof
 %CYAN%
 echo Please wait. Demuxing DV RPU...
 %WHITE%
-"!DO_VI_TOOLpath!" extract-rpu "!VIDEOSTREAM!" -o "!TMP_FOLDER!\RPU.bin"
+if exist "!ELSTREAM!" (
+	"!DO_VI_TOOLpath!" extract-rpu "!ELSTREAM!" -o "!TMP_FOLDER!\RPU.bin"
+) else (
+	"!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -map 0:!EL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" -
+)
 if exist "!TMP_FOLDER!\RPU.bin" (
 	set "RPUFILE=!TMP_FOLDER!\RPU.bin"
 	%HCGREEN%
@@ -656,12 +797,16 @@ if exist "!TMP_FOLDER!\RPU.bin" (
 	echo.
 )
 goto :eof
-	
+
 :HDR10P_EXTRACT
 %CYAN%
 echo Please wait. Demuxing HDR10+ SEI...
 %WHITE%
-"!HDR10P_TOOLpath!" extract "!VIDEOSTREAM!" -o "!TMP_FOLDER!\HDR10Plus.json"
+if exist "!BLSTREAM!" (
+	"!HDR10P_TOOLpath!" extract "!BLSTREAM!" -o "!TMP_FOLDER!\HDR10Plus.json"
+) else (
+	"!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -map 0:!BL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!HDR10P_TOOLpath!" extract "!BLSTREAM!" -o "!TMP_FOLDER!\HDR10Plus.json" -
+)
 if exist "!TMP_FOLDER!\HDR10Plus.json" (
 	set "HDR10PFILE=!TMP_FOLDER!\HDR10Plus.json"
 	%HCGREEN%
@@ -681,8 +826,6 @@ echo Please wait. Plotting Video Bitrate...
 %WHITE%
 copy "!FFPROBEpath!" "!INPUTFILEPATH!" >nul
 attrib +h "!INPUTFILEPATH!\ffprobe.exe" >nul
-%CYAN%
-echo Processing. Please wait...
 %WHITE%
 "!PYTHONpath!" "!PYTHONSCRIPTpath!\plotbitrate.py" -o "!TMP_FOLDER!\!INPUTFILENAME!.png" -f png "!INPUTFILEPATH!!INPUTFILENAME!!INPUTFILEEXT!"
 if exist "!TMP_FOLDER!\!INPUTFILENAME!.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,100" -fill black -font Arial-Bold -pointsize 30 -gravity Center -annotate -0-532 "!INPUTFILENAME!!INPUTFILEEXT!" -font Arial -pointsize 25 -annotate -0-498 "(Video Bitrate Plot)" "!INPUTFILEPATH!!INPUTFILENAME!_[Video Bitrate Plot].png"
@@ -705,7 +848,7 @@ goto :eof
 :HDR10_PLOTPNG
 :: Credits for this function goes to R3S3t9999. Original tool from R3S3t9999 here: https://github.com/R3S3t9999/DoVi_Scripts
 %CYAN%
-echo Please wait. Plotting HDR10...
+echo Please wait. Plotting !PHDR!...
 %WHITE%
 set "WORKFILE=!INPUTFILE!"
 if "!RAW_FILE!"=="TRUE" (
@@ -722,8 +865,34 @@ if "!RAW_FILE!"=="TRUE" (
 		echo.
 	)
 )
-%CYAN%
-echo Processing. Please wait...
+if "!VIDEO_COUNT!" NEQ "1" (
+	%CYAN%
+	echo Please wait. Muxing Videostream into MKV Container...
+	echo.
+	%HCYELLOW%
+	if exist "!BLSTREAM!" (
+		echo Don't close the "Muxing !INPUTFILENAME! into MKV" cmd window.
+		start /WAIT /MIN "Muxing !INPUTFILENAME! into MKV" "!MKVMERGEpath!" --ui-language en --priority higher --output ^"!TMP_FOLDER!\VIDEOSTREAM.mkv^" --language 0:und --compression 0:none ^"^(^" ^"!BLSTREAM!^" ^"^)^"
+		if exist "!TMP_FOLDER!\VIDEOSTREAM.mkv" (
+			set "WORKFILE=!TMP_FOLDER!\VIDEOSTREAM.mkv"
+			%HCGREEN%
+			echo Done.
+			echo.
+		)
+	) else (
+		%CYAN%
+		echo Please wait. Muxing Videostream into MKV Container...
+		echo.
+		%HCYELLOW%
+		"!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -map 0:!BL_INDEX! -c:v copy "!TMP_FOLDER!\VIDEOSTREAM.mkv"
+		if exist "!TMP_FOLDER!\VIDEOSTREAM.mkv" (
+			set "WORKFILE=!TMP_FOLDER!\VIDEOSTREAM.mkv"
+			%HCGREEN%
+			echo Done.
+			echo.
+		)		
+	)
+)
 %WHITE%
 if not exist "!WORKFILE!.measurements" "!MADVRpath!" "!WORKFILE!"
 if exist "!WORKFILE!.measurements" (
@@ -747,7 +916,7 @@ echo        "max_content_light_level": 0,
 echo        "max_frame_average_light_level": 0
 echo    }
 echo }
-) > "%~dp0temp.json"
+)>"%~dp0temp.json"
 
 %WHITE%
 "!DO_VI_TOOLNFpath!" generate -j "%~dp0temp.json" --madvr-file "!MFILE!" -o "!TMP_FOLDER!\HDRRPU.bin" >nul
@@ -776,13 +945,13 @@ if "!HDRRPU_EXIST!"=="TRUE" (
 	if defined RPUMDL (
 		FOR /F "tokens=4 delims=:/ " %%A in ("!RPUMDL!") do set "RPUMinDML=%%A"
 		FOR /F "tokens=5 delims=:/ " %%A in ("!RPUMDL!") do set "RPUMaxDML=%%A"
-		set "RPULuminance=min^: !RPUMinDML! cd^/m2^, max^: !RPUMaxDML! cd^/m2"
+		set "RPULuminance=min: !RPUMinDML! cd/m2, max: !RPUMaxDML! cd/m2"
 	)
 )
 
 set "MDL=-annotate +120+130 "Mastering display luminance^: !RPULuminance! ^(!L9MDP!^)""
-if "!HDR_HDR10P!"=="TRUE" set "HDR10PINFO= ^| HDR10^+"
-if "!DVinput!"=="YES" set "DVINFO= ^| Dolby Vision Profile^: !HDR_DV_Profile!"
+if "!HDR10P!"=="TRUE" set "HDR10PINFO= | HDR10+"
+if "!DVinput!"=="YES" set "DVINFO= | Dolby Vision Profile^: !DV_Profile!"
 set "HDRINFO=-annotate +120+5 "Video: !PHDR!!HDR10PINFO!!DVINFO! ^(!RESOLUTION!^)""
 
 if "!PLOTTYPE!"=="MAX" (
@@ -866,11 +1035,11 @@ if "!PLOTTYPE!" NEQ "ORIGINAL" (
 			set "L5_STRING_TXT=No border entries in RPU."
 		)
 	)
-	set "RPUINFO=-annotate +120+5 "RPU: Dolby Vision Profile^: !HDR_DV_Profile!, DM Version^: !DM!""
+	set "RPUINFO=-annotate +120+5 "RPU: Dolby Vision Profile: !DV_Profile!, DM Version: !DM!""
 	set "FRAMEINFO=-annotate +120+30 "Frames: !RPU_FRAMES!, Scenecuts: !RPU_SHOTCOUNT!""
 	if defined RPUMD set L1=-annotate +120+55 "L1 !RPUMD!"
-	if defined L2_TRIMS set "L2=-annotate +120+80 "L2 trims^: !L2_TRIMS!""
-	set "L5=-annotate +120+105 "L5 Active area^: !L5_STRING_TXT!""
+	if defined L2_TRIMS set "L2=-annotate +120+80 "L2 trims: !L2_TRIMS!""
+	set "L5=-annotate +120+105 "L5 Active area: !L5_STRING_TXT!""
 	if defined L6M set "L6=-annotate +120+130 "!L6M!!L9MDP!""
 
 	if "!PLOTTYPE!"=="MAX" (
@@ -923,10 +1092,64 @@ goto :eof
 %CYAN%
 echo Please wait. Plotting HDR10+ SEI...
 %WHITE%
-pushd "%~dp1"
+pushd "!INPUTFILEPATH!"
+if exist "!BLSTREAM!" (
+	"!HDR10P_TOOLpath!" extract "!BLSTREAM!" -o "!TMP_FOLDER!\HDR10Plus.json"
+) else (
+	"!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -map 0:!BL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!HDR10P_TOOLpath!" extract "!BLSTREAM!" -o "!TMP_FOLDER!\HDR10Plus.json" -
+)
+if exist "!TMP_FOLDER!\HDR10Plus.json" (
+	(
+	echo {
+	echo	"cm_version": "V29",
+	echo 	"length": !FRAMES!,
+	echo 	"level6": {
+	echo	 	"max_display_mastering_luminance": !MaxDML!,
+	echo	 	"min_display_mastering_luminance": !MinDML!,
+	echo	 	"max_content_light_level": !MaxCLL!,
+	echo	 	"max_frame_average_light_level": !MaxFall! 
+	echo 	}
+	echo }
+	)>"!TMP_FOLDER!\Extra.json"
+	"!DO_VI_TOOLpath!" generate -j "!TMP_FOLDER!\Extra.json" --hdr10plus-json "!TMP_FOLDER!\HDR10Plus.json" -o "!TMP_FOLDER!\HDR10Plus.bin">nul
+	if exist "!TMP_FOLDER!\HDR10Plus.bin" (
+		if "!TESTMODE!"=="OFF" if exist "!WORKFILE!.measurements" del "!WORKFILE!.measurements">nul
+		set "HDRRPU=!TMP_FOLDER!\HDR10Plus.bin"
+		set "HDRRPU_EXIST=TRUE"
+	) else (
+		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+	)
+	set "L9MDP=!MDCP!"
+	if "!HDRRPU_EXIST!"=="TRUE" (
+		"!DO_VI_TOOLpath!" export -i "!HDRRPU!" -o "!TMP_FOLDER!\plot.json">nul
+		"!DO_VI_TOOLpath!" info --input "!HDRRPU!" -f 1 > "!TMP_FOLDER!\temp.hdrrpu.json"
+		"!DO_VI_TOOLpath!" info -s "!HDRRPU!" > "!TMP_FOLDER!\HDRRPUINFO.txt"
+		FOR /F "tokens=2 delims=: " %%A IN ('findstr /C:"Frames" "!TMP_FOLDER!\HDRRPUINFO.txt"') DO set "RPU_FRAMES=%%A"
+		FOR /F "tokens=3 delims=: " %%A IN ('findstr /C:"shot count" "!TMP_FOLDER!\HDRRPUINFO.txt"') DO set "RPU_SHOTCOUNT=%%A"
+		FOR /F "delims=" %%A IN ('findstr /C:"RPU mastering display:" "!TMP_FOLDER!\HDRRPUINFO.txt"') DO set "RPUMDL=%%A"
+		if defined RPUMDL (
+			FOR /F "tokens=4 delims=:/ " %%A in ("!RPUMDL!") do set "RPUMinDML=%%A"
+			FOR /F "tokens=5 delims=:/ " %%A in ("!RPUMDL!") do set "RPUMaxDML=%%A"
+			set "RPULuminance=min: !RPUMinDML! cd/m2, max: !RPUMaxDML! cd/m2"
+		)
+	)
+)
+
+set "MDL=-annotate +120+130 "Mastering display luminance: !RPULuminance!!L9MDP!""
+if "!HDR10P!"=="TRUE" set "HDR10PINFO= | HDR10+"
+if "!DVinput!"=="YES" set "DVINFO= | Dolby Vision Profile: !DV_Profile!"
+set "HDRINFO=-annotate +120+5 "Video: !PHDR!!HDR10PINFO!!DVINFO! ^(!RESOLUTION!^)""
+
+if "!PLOTTYPE!"=="MAX" (
+	set "titlepos=-135"
+	call :ENHPLOTS
+) else (
+	set "titlepos=-0"
+)
+
 "!HDR10P_TOOLpath!" plot "!HDR10PFILE!" -t "" -o "!TMP_FOLDER!\!INPUTFILENAME!.png"
 popd
-if exist "!TMP_FOLDER!\!INPUTFILENAME!.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!.png" -quality 100 -fill black -font Arial-Bold -pointsize 25 -gravity Center -annotate -0-552 "!INPUTFILENAME!!INPUTFILEEXT!" -font Arial -pointsize 25 -annotate -0-518 "(HDR10+ SEI Plot)" "!INPUTFILEPATH!!INPUTFILENAME!_[HDR10+ Plot].png"
+if exist "!TMP_FOLDER!\!INPUTFILENAME!.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,150" -gravity NorthWest -pointsize 20 -fill black -font Arial-Bold !HDRINFO! -font Arial -annotate +120+30 "Frames: !RPU_FRAMES!, Scenecuts: !RPU_SHOTCOUNT!" -font Arial-Bold -pointsize 25 -gravity Center -annotate !titlepos!-552 "!INPUTFILENAME!!INPUTFILEEXT!" -font Arial -pointsize 25 -annotate !titlepos!-518 "(HDR10+ Plot)" -pointsize 20 -gravity NorthWest !A1! !A2! !A3! !A4! !A5! !P1! !P2! !P3! !P4! !P5! !MDL! -font Arial-Bold !AM! !AA! "!INPUTFILEPATH!!INPUTFILENAME!_[HDR10+ Plot].png"
 if exist "!INPUTFILEPATH!!INPUTFILENAME!_[HDR10+ Plot].png" (
 	%HCGREEN%
 	echo Done.
@@ -1091,8 +1314,8 @@ echo.
 goto :eof
 
 :DV8CHK
-if /i "%~2!HDR_DV!"=="-CHECKFALSE" goto :SC_NODV
-if "!HDR_DV_Profile!" NEQ "8" goto :SC_NODV
+if /i "%~2!DV!"=="-CHECKFALSE" goto :SC_NODV
+if "!DV_Profile!" NEQ "8" goto :SC_NODV
 if /i "!INPUTFILEEXT!"==".bin" goto :FALSEINPUTCHECK
 mode con cols=125 lines=50
 if exist "%~dp0DDVT_OPTIONS.ini" (
@@ -1231,22 +1454,22 @@ IF "%RAW_FILE%"=="TRUE" if exist !CONTAINERSTREAM! DEL !CONTAINERSTREAM!
 :DV8CHKMENU
 :: VIDEO-INPUT = RPU-INPUT
 if "%AA_LC%%AA_TC%%AA_RC%%AA_BC%"=="%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%" (
-	set "RPU_AA_String=!Cecho! {%_CYAN%}Borders = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
-	set "AA_String=!Cecho! {%_CYAN%}Borders = [LEFT=%AA_LC% px], [TOP=%AA_TC% px], [RIGHT=%AA_RC% px], [BOTTOM=%AA_BC% px] [{%HC_GREEN%}MATCH WITH RPU{%_CYAN%}]{#}{\n}"
+	set "RPU_AA_String="!Cecho!" {%_CYAN%}Borders = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
+	set "AA_String="!Cecho!" {%_CYAN%}Borders = [LEFT=%AA_LC% px], [TOP=%AA_TC% px], [RIGHT=%AA_RC% px], [BOTTOM=%AA_BC% px] [{%HC_GREEN%}MATCH WITH RPU{%_CYAN%}]{#}{\n}"
 ) else (
-	set "RPU_AA_String=!Cecho! {%_CYAN%}Borders = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
-	set "AA_String=!Cecho! {%_CYAN%}Borders = [LEFT=%AA_LC% px], [TOP=%AA_TC% px], [RIGHT=%AA_RC% px], [BOTTOM=%AA_BC% px] [{%HC_RED%}NOT MATCH WITH RPU{%_CYAN%}]{#}{\n}"
+	set "RPU_AA_String="!Cecho!" {%_CYAN%}Borders = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
+	set "AA_String="!Cecho!" {%_CYAN%}Borders = [LEFT=%AA_LC% px], [TOP=%AA_TC% px], [RIGHT=%AA_RC% px], [BOTTOM=%AA_BC% px] [{%HC_RED%}NOT MATCH WITH RPU{%_CYAN%}]{#}{\n}"
 )
-IF "%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%"=="UndefinedUndefinedUndefinedUndefined" set "RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_GREY%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}"
+IF "%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%"=="UndefinedUndefinedUndefinedUndefined" set "RPU_AA_String="!Cecho!" {%_CYAN%}Borders    = [{%_GREY%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}"
 
 IF "!V0_FRAMES!"=="!RPU_FRAMES!" (
-	set "FRAMEINFO_VIDEO=!Cecho! {%_CYAN%}Frames  = [!V0_FRAMES!] [{%HC_GREEN%}MATCH WITH RPU{%_CYAN%}]{#}{\n}"
-	set "FRAMEINFO_RPU=!Cecho! {%_CYAN%}Frames  = [!RPU_FRAMES!] [{%HC_GREEN%}MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
-	set "FRAME_String=!Cecho! {%HC_GREEN%}VIDEO AND RPU FRAMECOUNT EQUAL!{#}{\n}"
+	set "FRAMEINFO_VIDEO="!Cecho!" {%_CYAN%}Frames  = [!V0_FRAMES!] [{%HC_GREEN%}MATCH WITH RPU{%_CYAN%}]{#}{\n}"
+	set "FRAMEINFO_RPU="!Cecho!" {%_CYAN%}Frames  = [!RPU_FRAMES!] [{%HC_GREEN%}MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
+	set "FRAME_String="!Cecho!" {%HC_GREEN%}VIDEO AND RPU FRAMECOUNT EQUAL!{#}{\n}"
 ) else (
-	set "FRAMEINFO_VIDEO=!Cecho! {%_CYAN%}Frames  = [!V0_FRAMES!] [{%HC_RED%}NOT MATCH WITH RPU{%_CYAN%}]{#}{\n}"
-	set "FRAMEINFO_RPU=!Cecho! {%_CYAN%}Frames  = [!RPU_FRAMES!] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
-	set "FRAME_String=!Cecho! {%HC_RED%}VIDEO AND RPU FRAMECOUNT NOT EQUAL!{#}{\n}"
+	set "FRAMEINFO_VIDEO="!Cecho!" {%_CYAN%}Frames  = [!V0_FRAMES!] [{%HC_RED%}NOT MATCH WITH RPU{%_CYAN%}]{#}{\n}"
+	set "FRAMEINFO_RPU="!Cecho!" {%_CYAN%}Frames  = [!RPU_FRAMES!] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
+	set "FRAME_String="!Cecho!" {%HC_RED%}VIDEO AND RPU FRAMECOUNT NOT EQUAL!{#}{\n}"
 )
 cls
 %GREEN%
@@ -1285,19 +1508,19 @@ echo  == INFORMATIONS ==========================================================
 echo.
 %FRAME_String%
 IF "%AA_LC%%AA_TC%%AA_RC%%AA_BC%"=="%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%" (
-	!Cecho! {%HC_GREEN%}ALL CROPPING VALUES CORRECT. Press [{%HC_YELLOW%}E{%HC_GREEN%}] to Exit!{#}{\n}
+	"!Cecho!" {%HC_GREEN%}ALL CROPPING VALUES CORRECT. Press [{%HC_YELLOW%}E{%HC_GREEN%}] to Exit!{#}{\n}
 ) else (
-	!Cecho! {%HC_RED%}CROPPING VALUES INCORRECT. Press [{%HC_YELLOW%}S{%HC_RED%}] to fix them!{#}{\n}
+	"!Cecho!" {%HC_RED%}CROPPING VALUES INCORRECT. Press [{%HC_YELLOW%}S{%HC_RED%}] to fix them!{#}{\n}
 )
 %WHITE%
 echo.
 echo  ========================================================================================================================
 echo.
 %HCWHITE%
-!Cecho! {%HC_WHITE%}L. Set [{%HC_YELLOW%}LEFT{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_LC! px{%HC_WHITE%}]{#}{\n}
-!Cecho! {%HC_WHITE%}T. Set [{%HC_YELLOW%}TOP{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_TC! px{%HC_WHITE%}]{#}{\n}
-!Cecho! {%HC_WHITE%}R. Set [{%HC_YELLOW%}RIGHT{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_RC! px{%HC_WHITE%}]{#}{\n}
-!Cecho! {%HC_WHITE%}B. Set [{%HC_YELLOW%}BOTTOM{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_BC! px{%HC_WHITE%}]{#}{\n}
+"!Cecho!" {%HC_WHITE%}L. Set [{%HC_YELLOW%}LEFT{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_LC! px{%HC_WHITE%}]{#}{\n}
+"!Cecho!" {%HC_WHITE%}T. Set [{%HC_YELLOW%}TOP{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_TC! px{%HC_WHITE%}]{#}{\n}
+"!Cecho!" {%HC_WHITE%}R. Set [{%HC_YELLOW%}RIGHT{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_RC! px{%HC_WHITE%}]{#}{\n}
+"!Cecho!" {%HC_WHITE%}B. Set [{%HC_YELLOW%}BOTTOM{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_BC! px{%HC_WHITE%}]{#}{\n}
 echo.
 IF "%AA_LC%%AA_TC%%AA_RC%%AA_BC%"=="%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%" (
 	%HCWHITE%
@@ -1305,14 +1528,14 @@ IF "%AA_LC%%AA_TC%%AA_RC%%AA_BC%"=="%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%
 	%GREEN%
 	echo E. EXIT and do nothing [RECOMMENDED]
 	echo.
-	!Cecho! {%HC_WHITE%}Change Settings and press [S] to FIX or [{%_GREEN%}E{%HC_WHITE%}] to {%_GREEN%}EXIT{%HC_WHITE%}!{#}{\n}
+	"!Cecho!" {%HC_WHITE%}Change Settings and press [S] to FIX or [{%_GREEN%}E{%HC_WHITE%}] to {%_GREEN%}EXIT{%HC_WHITE%}!{#}{\n}
 ) else (
 	%GREEN%
 	echo S. SAVE and FIX Release [RECOMMENDED]
 	%HCWHITE%
 	echo E. EXIT and do nothing
 	echo.
-	!Cecho! {%HC_WHITE%}Change Settings and press [{%_GREEN%}S{%HC_WHITE%}] to {%_GREEN%}FIX{%HC_WHITE%} or [E] to EXIT!{#}{\n}
+	"!Cecho!" {%HC_WHITE%}Change Settings and press [{%_GREEN%}S{%HC_WHITE%}] to {%_GREEN%}FIX{%HC_WHITE%} or [E] to EXIT!{#}{\n}
 )
 %HCWHITE%
 CHOICE /C LTRBSE /N /M "Select a Letter L,T,R,B,[S]ave,[E]xit"
@@ -1679,7 +1902,7 @@ if exist "!TMP_FOLDER!" (
 	)
 )
 setlocal DisableDelayedExpansion
-ENDLOCAL
+endlocal
 %WHITE%
 echo.
 echo  == EXIT ================================================================================================================
@@ -1698,21 +1921,42 @@ if "%ERRORCOUNT%"=="0" (
 )
 exit
 
+:ANALYSESTREAMS
+FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=General;%%VideoCount%% "!INPUTFILE!""') do set "VIDEO_COUNT=%%A"
+if "!VIDEO_COUNT!" NEQ "1" set "LAYERTYPE= DL"
+"!FFPROBEpath!" "!INPUTFILE!" -show_streams -v 0 -of compact=p=0:nk=1 >"!TMP_FOLDER!\STREAMS.txt"
+FOR /F "delims=" %%A IN ('findstr /C:"hevc|H.265" "!TMP_FOLDER!\STREAMS.txt"') DO echo %%A>>"!TMP_FOLDER!\VSTREAMS.txt"
+FOR /F "delims=" %%A IN ('findstr /C:"3840|2160" "!TMP_FOLDER!\VSTREAMS.txt"') DO set "BL_STREAMINFO=%%A"
+FOR /F "delims=" %%A IN ('findstr /C:"1920|1080" "!TMP_FOLDER!\VSTREAMS.txt"') DO set "EL_STREAMINFO=%%A"
+if defined BL_STREAMINFO (
+	for /F "tokens=1 delims=|" %%A in ("!BL_STREAMINFO!") do set "BL_INDEX=%%A"
+) else (
+	set "BL_INDEX=0"
+)
+if defined EL_STREAMINFO (
+	for /F "tokens=1 delims=|" %%A in ("!EL_STREAMINFO!") do set "EL_INDEX=%%A"
+) else (
+	set "EL_INDEX=0"
+)
+if exist "!TMP_FOLDER!\STREAMS.txt" del "!TMP_FOLDER!\STREAMS.txt"
+if exist "!TMP_FOLDER!\VSTREAMS.txt" del "!TMP_FOLDER!\VSTREAMS.txt"
+goto :eof
+
 :NOLAVFILTERS
 set "NewLine=[System.Environment]::NewLine"
 set "Line1=LAV Filters not set or installed."
 set "Line2=Start <DDVT_OPTIONS.cmd> and set correct directory or install LAV Filters."
 setlocal DisableDelayedExpansion
-START /MIN /WAIT PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT FileInfo [QfG] v%VERSION%', 'Ok','Info')"
+START /MIN /WAIT PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT FileInfo v%VERSION%', 'Ok','Info')"
 goto :eof
 
 :FALSEINPUT
 if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
 set "NewLine=[System.Environment]::NewLine"
 set "Line1=Unsupported Input File. Supported Files are:"
-set "Line2=*.mkv | *.mp4 | *.h265 | *.hevc | *.bin"
+set "Line2=*.bin | *.mp4 | *.m2ts | *.mkv | *.json | *.h265 | *.hevc"
 setlocal DisableDelayedExpansion
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT FileInfo [QfG] v%VERSION%', 'Ok','Info')"
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT FileInfo v%VERSION%', 'Ok','Info')"
 exit
 
 :CORRUPTFILE
@@ -1722,7 +1966,7 @@ set "NewLine=[System.Environment]::NewLine"
 set "Line1=""%MISSINGFILE%""""
 set "Line2=Copy the file to the directory or download and extract DDVT_tools.rar"
 setlocal DisableDelayedExpansion
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('NEEDED FILE NOT FOUND!' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT FileInfo [QfG] v%VERSION%', 'Ok','Error')"
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('NEEDED FILE NOT FOUND!' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT FileInfo v%VERSION%', 'Ok','Error')"
 exit
 
 :ERROR
@@ -1731,7 +1975,7 @@ set "NewLine=[System.Environment]::NewLine"
 set "Line1=%ERRORCOUNT% Error(s) during processing^!
 set "Line2=Target file don''t exist or corrupt.
 setlocal DisableDelayedExpansion
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT FileInfo [QfG] v%VERSION%', 'Ok','Error')"
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT FileInfo v%VERSION%', 'Ok','Error')"
 exit
 
 :SC_NODV
@@ -1740,7 +1984,7 @@ set "NewLine=[System.Environment]::NewLine"
 set "Line1=Unsupported Input File.
 set "Line2=Only Files with Dolby Vision Profile 8 supported.
 setlocal DisableDelayedExpansion
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT FileInfo [QfG] v%VERSION%', 'Ok','Info')"
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT FileInfo v%VERSION%', 'Ok','Info')"
 exit
 
 :FALSEINPUTCHECK
@@ -1749,7 +1993,7 @@ set "NewLine=[System.Environment]::NewLine"
 set "Line1=Unsupported Input File. Supported Files are:"
 set "Line2=*.mkv | *.mp4 | *.h265 | *.hevc | *.bin | *.json"
 setlocal DisableDelayedExpansion
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT SyncCheck [QfG] v%VERSION%', 'Ok','Info')"
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT SyncCheck v%VERSION%', 'Ok','Info')"
 exit
 
 :CreatePassword
@@ -1757,8 +2001,8 @@ set TempVar=%PasswordChars%
 set /a PWCharCount=0
 
 :CountLoop
-	set TempVar=%TempVar:~1%
-	set /a PWCharCount+=1
+set TempVar=%TempVar:~1%
+set /a PWCharCount+=1
 if not "%TempVar%"=="" goto CountLoop
 set TempVar=
 set Length=0

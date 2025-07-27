@@ -1,3 +1,12 @@
+-v0.71.1 "The Emperor protects"
+*UPDATED hdr10plus_tool to v1.7.1.
+*UPDATED - All scripts support Drag & Drop now. (Start without Input).
+*UPDATED - Demuxer script (creates now logfiles).
+*UPDATED - Fileinfo script supports now Dual Layer files.
+*UPDATED - MediaInfo supports now Blu-ray ISO files (needed Admin rights! Set Powershell policy to remoteSigned).
+*Major Bugfixes.
+(Do not forget to Download the new 3rd Party Apps!).
+
 -v0.71 "Back to the roots"
 *FIXED - Problems with =/() symbols in tool dirname.
 *REWORKED - Demuxer script (more options and better stability with Dual Layer files).

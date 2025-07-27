@@ -4,27 +4,26 @@ set "VERSION=--N.A.-- INCORRECTLY INSTALLED"
 set "HEADER1=File "%~dp0DDVT_OPTIONS.cmd" missing! Script works not correctly!"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"HEADER1=" "%~dp0DDVT_OPTIONS.cmd"') DO set "HEADER1=%%A"
-TITLE DDVT MediaInfo [QfG] v%VERSION%
+TITLE DDVT MediaInfo v%VERSION%
 set DESIGN=STANDARD
 set "TOOLTYPE=TEXT"
 if /i "%~2"=="-MSGBOX" set "TOOLTYPE=MSGBOX"
 if "%TOOLTYPE%"=="TEXT" (
 	mode con cols=125 lines=30
 ) else (
-	mode con cols=122 lines=15
+	mode con cols=122 lines=20
 )
 
 set PasswordChars=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 set PasswordLength=5
 call :CreatePassword Password
 
-set "Cecho="%~dp0tools\cecho_x64.exe"" rem Path to cecho_x64.exe
+set "Cecho=%~dp0tools\cecho_x64.exe" rem Path to cecho_x64.exe
 set "sfkpath=%~dp0tools\sfk.exe" rem Path to sfk.exe
 set "FFMPEGpath=%~dp0tools\ffmpeg.exe" rem Path to ffmpeg.exe
 set "FFPROBEpath=%~dp0tools\ffprobe.exe" rem Path to ffprobe.exe
 set "MEDIAINFOpath=%~dp0tools\mediainfo.exe" rem Path to mediainfo.exe
 set "DO_VI_TOOLpath=%~dp0tools\dovi_tool.exe" rem Path to dovi_tool.exe
-set "LOGFILEpath=%~1_DDVT_MediaInfo.txt" rem Path where your logfile will be saved
 
 rem --- Hardcoded settings. Cannot be changed ---
 set "LOGFILE=YES"
@@ -90,11 +89,6 @@ set "_WHITE=0F"
 
 if "!DESIGN!" NEQ "STANDARD" call "!DESIGN!"
 
-if "%TMP_FOLDER%"=="SAME AS SOURCE" (
-	set "TMP_FOLDER=%tmp%\DDVT_%Password%_TMP"
-) else (
-	set "TMP_FOLDER=!TMP_FOLDER!\DDVT_%Password%_TMP"
-)
 if "!MKVTOOLNIX_FOLDER!"=="INCLUDED" set "MKVTOOLNIX_FOLDER=%~dp0tools"
 set "MKVMERGEpath=!MKVTOOLNIX_FOLDER!\mkvmerge.exe"
 
@@ -112,17 +106,56 @@ set "FILEPATH=%~dp1"
 set "FILENAME=%~n1"
 set "FILEEXT=%~x1"
 
-::CHECK FILETYPE
-if "!FILEEXT!"=="" goto :NOINPUT
-if "!FILEEXT!"==".mkv" set "RAWFILE=FALSE" & goto :PREPARE
-if "!FILEEXT!"==".ts"  goto :PREPARE
-if "!FILEEXT!"==".m2ts" goto :PREPARE
-if "!FILEEXT!"==".mp4" goto :PREPARE
-if "!FILEEXT!"==".bin" set "RAWFILE=FALSE" & goto :PREPARE
-if "!FILEEXT!"==".xml" set "RAWFILE=FALSE" & goto :PREPARE
-if "!FILEEXT!"==".h265" goto :PREPARE
-if "!FILEEXT!"==".hevc" goto :PREPARE
+if /i "!FILEEXT!"=="" CALL :INSERT_INPUT
+
+set "LOGFILEpath=!FILEPATH!!FILENAME!!FILEEXT!_DDVT_MediaInfo.txt" rem Path where your logfile will be saved
+if "%TMP_FOLDER%"=="SAME AS SOURCE" (
+	set "TMP_FOLDER=%tmp%\DDVT_%Password%_TMP"
+) else (
+	set "TMP_FOLDER=!TMP_FOLDER!\DDVT_%Password%_TMP"
+)
+
+if /i "!FILEEXT!"==".mkv" set "RAWFILE=FALSE" & goto :PREPARE
+if /i "!FILEEXT!"==".ts"  goto :PREPARE
+if /i "!FILEEXT!"==".m2ts" goto :PREPARE
+if /i "!FILEEXT!"==".mp4" goto :PREPARE
+if /i "!FILEEXT!"==".bin" set "RAWFILE=FALSE" & goto :PREPARE
+if /i "!FILEEXT!"==".xml" set "RAWFILE=FALSE" & goto :PREPARE
+if /i "!FILEEXT!"==".h265" goto :PREPARE
+if /i "!FILEEXT!"==".hevc" goto :PREPARE
+if /i "!FILEEXT!"==".iso" set "ISOFILE=TRUE" & goto :PREPARE
 call :FALSEINPUT
+
+:INSERT_INPUT
+cls
+%GREEN%
+echo  !HEADER1!
+%WHITE%
+echo.
+echo                                         ====================================
+%GREEN%
+echo                                              Dolby Vision Tool MEDIAINFO
+%WHITE%
+echo                                         ====================================
+echo.
+echo.
+echo  == INSERT FILE HERE ====================================================================================================
+%HCYELLOW%
+echo.
+echo [Info] Insert one file with following extensions:
+echo        .iso ^(Blu-ray^) ^| .hevc ^| .h265 ^| .xml ^| .bin ^| .mp4 ^| .m2ts ^| .ts ^| .mkv
+echo.
+%WHITE%
+"!Cecho!" {%_WHITE%}Drag 'n' Drop {%_GREEN%}FILE {%_WHITE%}here and press ENTER:{#}{\n}
+%GREEN%
+set /p "FILE=%~1" || if "!FILE!"=="" goto :INSERT_INPUT
+
+for %%f in (!FILE!) do set "FILENAME=%%~nf"
+for %%f in (!FILE!) do set "FILEEXT=%%~xf"
+for %%f in (!FILE!) do set "FILEPATH=%%~dpf"
+for %%f in (!FILE!) do set "FILE=%%~dpnxf"
+
+goto :eof
 
 :PREPARE
 cls
@@ -156,23 +189,28 @@ if /i "!FILEEXT!"==".xml" (
 	)
 )
 
+if "!ISOFILE!"=="TRUE" (
+	for %%a in (Z Y X W V U T S R Q P O N M L K J I H G F E D C B A) do (if not exist "%%a:\" set "MountDrive=%%a")
+	if "!MountDrive!"=="" (
+		"!Cecho!" {%_CYAN%}[{%HC_RED%}No Free Drive letter found^^!{%_CYAN%}]{#}{\n}
+		goto :NOMOUNTDRIVE
+	) else (
+		CALL :MOUNT
+	)
+)	
+
+::SET BL EL STREAMINDEX
+call :ANALYSESTREAMS
+
 ::WRITE MEDIAINFO
-rem "!MEDIAINFOpath!" --full --Output=JSON "!FILE!">"!TMP_FOLDER!\mediainfo.json"
-echo.
 set "MI_INFOVIDEO=!FILE!"
-set "BL_INFOVIDEO=!FILE!"
-FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=General;%%VideoCount%% "!FILE!""') do set "VIDEO_COUNT=%%A"
-if "!VIDEO_COUNT!" NEQ "1" set "RAWFILE=TRUE"
 if "!RAWFILE!"=="TRUE" (
 	"!MKVMERGEpath!" --ui-language en --priority higher --output ^"!TMP_FOLDER!\Info.mkv^" --language 0:und --compression 0:none ^"^(^" ^"!FILE!^" ^"^)^" --split parts:00:00:00-00:00:01 -q
-	if exist "!TMP_FOLDER!\Info.mkv" (
-		set "MI_INFOVIDEO=!TMP_FOLDER!\Info.mkv"
-		set "BL_INFOVIDEO=!TMP_FOLDER!\Info.mkv"
-	)
-	if "!VIDEO_COUNT!" NEQ "1" "!FFMPEGpath!" -loglevel panic -y -i "!FILE!" -map 0:0 -c:v copy -to 1 -bsf:v hevc_mp4toannexb -f hevc "!TMP_FOLDER!\BL_Info.mkv"
-	if exist "!TMP_FOLDER!\BL_Info.mkv" (
-		set "BL_INFOVIDEO=!TMP_FOLDER!\BL_Info.mkv"
-	)
+	if exist "!TMP_FOLDER!\Info.mkv" set "MI_INFOVIDEO=!TMP_FOLDER!\Info.mkv"
+)
+if "!VIDEO_COUNT!" NEQ "1" (
+	"!MKVMERGEpath!" --ui-language en --priority higher --output ^"!TMP_FOLDER!\Info.mkv^" --language 0:und --compression 0:none ^"^(^" ^"!FILE!^" ^"^)^" --split parts:00:00:00-00:00:01 -q
+	if exist "!TMP_FOLDER!\Info.mkv" set "MI_INFOVIDEO=!TMP_FOLDER!\Info.mkv"
 )
 
 ::SET HDR FORMAT
@@ -214,56 +252,33 @@ if not defined DVprofile (
 	FOR /F "delims=" %%A IN ('findstr /C:".03." "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=3"
 )
 
-::DUAL LAYER OPERATION
-if "!VIDEO_COUNT!" NEQ "1" (
-	set "LAYERTYPE= DL"
-	"!FFPROBEpath!" "!FILE!" -show_streams -v 0 -of compact=p=0:nk=1 >"!TMP_FOLDER!\STREAMS.txt"
-	FOR /F "delims=" %%A IN ('findstr /C:"1920|1080" "!TMP_FOLDER!\STREAMS.txt"') DO set "STREAMINFO=%%A"
-	if exist "!TMP_FOLDER!\STREAMS.txt" del "!TMP_FOLDER!\STREAMS.txt"
-	if defined STREAMINFO (
-		for /F "tokens=1 delims=|" %%A in ("!STREAMINFO!") do set "STREAMINFO=%%A"
-		set "DT=-map 0:!STREAMINFO!"
-	) else (
-		set "DT=-map 0:1"
-	)
-)
-
 ::DEMUX RPU SAMPLE
 if "!DVinput!"=="YES" (
-	if exist "!MI_INFOVIDEO!" (
-		"!FFMPEGpath!" -loglevel panic -i "!MI_INFOVIDEO!" -c:v copy -to 1 -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" - >nul 2>&1
-		if exist "!TMP_FOLDER!\RPU.bin" (
-			FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU.bin"') DO set "RPUSIZE=%%~zA"
-			if "!RPUSIZE!" NEQ "0" (
-				set "RPU=!TMP_FOLDER!\RPU.bin"
-				set "RPU_EXIST=TRUE"
-				set "RPU_STRING="
-			) else (
-				if exist "!TMP_FOLDER!\RPU.bin" del "!TMP_FOLDER!\RPU.bin" >nul
-				set "RPU_STRING=RPU FOUND BUT CANNOT DEMUXED FROM VIDEO"
-				set "RPU_EXIST=FALSE"
-			)
-		) else (
-			set "RPU_STRING=RPU ERROR DURING DEMUXING. DOLBY VISION INFOS DISABLED"
-			set "RPU_EXIST=FALSE"
+	"!FFMPEGpath!" -loglevel panic -i "!FILE!" -map 0:!EL_INDEX! -c:v copy -to 1 -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" - >nul 2>&1
+	if exist "!TMP_FOLDER!\RPU.bin" (
+		FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU.bin"') DO set "RPUSIZE=%%~zA"
+		if "!RPUSIZE!" NEQ "0" (
+			set "RPU=!TMP_FOLDER!\RPU.bin"
+			set "RPU_EXIST=TRUE"
+			set "RPU_STRING="
 		)
+	) else (
+		"!FFMPEGpath!" -loglevel panic -i "!MI_INFOVIDEO!" -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" - >nul 2>&1
 	)
-	if "!RPU_EXIST!"=="FALSE" (
-		"!FFMPEGpath!" -loglevel panic -i "!FILE!" !DT! -c:v copy -to 1 -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" - >nul 2>&1
-		if exist "!TMP_FOLDER!\RPU.bin" (
-			FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU.bin"') DO set "RPUSIZE=%%~zA"
-			if "!RPUSIZE!" NEQ "0" (
-				set "RPU=!TMP_FOLDER!\RPU.bin"
-				set "RPU_EXIST=TRUE"
-				set "RPU_STRING="
-			) else (
-				set "RPU_STRING=RPU FOUND BUT CANNOT DEMUXED FROM VIDEO"
-				set "RPU_EXIST=FALSE"
-			)
+	if exist "!TMP_FOLDER!\RPU.bin" (
+		FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU.bin"') DO set "RPUSIZE=%%~zA"
+		if "!RPUSIZE!" NEQ "0" (
+			set "RPU=!TMP_FOLDER!\RPU.bin"
+			set "RPU_EXIST=TRUE"
+			set "RPU_STRING="
 		) else (
-			set "RPU_STRING=RPU ERROR DURING DEMUXING. DOLBY VISION INFOS DISABLED"
+			if exist "!TMP_FOLDER!\RPU.bin" del "!TMP_FOLDER!\RPU.bin" >nul
+			set "RPU_STRING=RPU FOUND BUT CANNOT DEMUXED FROM VIDEO"
 			set "RPU_EXIST=FALSE"
 		)
+	) else (
+		set "RPU_STRING=RPU ERROR DURING DEMUXING. DOLBY VISION INFOS DISABLED"
+		set "RPU_EXIST=FALSE"
 	)
 )
 
@@ -287,17 +302,17 @@ if defined TEXT_COUNT (
 ::BL MEDIAINFO
 
 ::CODEC NAME
-FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%Format%%^-%%BitDepth%%Bit^-%%ColorSpace%%^-%%ChromaSubsampling%% "!BL_INFOVIDEO!""') do set "CODEC_NAME=%%A"
+FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%Format%%^-%%BitDepth%%Bit^-%%ColorSpace%%^-%%ChromaSubsampling%% "!MI_INFOVIDEO!""') do set "CODEC_NAME=%%A"
 if not defined CODEC_NAME set "CODEC_NAME=N/A"
 ::MAXCll and MAXFall
-FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%MaxCLL%% "!BL_INFOVIDEO!""') do set "MaxCLL=%%A"
+FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%MaxCLL%% "!MI_INFOVIDEO!""') do set "MaxCLL=%%A"
 if not defined MaxCLL set "MaxCLL=N/A"
-FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%MaxFALL%% "!BL_INFOVIDEO!""') do set "MaxFALL=%%A"
+FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%MaxFALL%% "!MI_INFOVIDEO!""') do set "MaxFALL=%%A"
 if not defined MaxFALL set "MaxFALL=N/A"
 ::HDR METADATA
-FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%MasteringDisplay_ColorPrimaries%% "!BL_INFOVIDEO!""') do set "MDCP=%%A"
+FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%MasteringDisplay_ColorPrimaries%% "!MI_INFOVIDEO!""') do set "MDCP=%%A"
 if not defined MDCP set "MDCP=N/A"
-FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%MasteringDisplay_Luminance%% "!BL_INFOVIDEO!""') do set "Luminance=%%A"
+FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%MasteringDisplay_Luminance%% "!MI_INFOVIDEO!""') do set "Luminance=%%A"
 if not defined Luminance (
 	set "MinDML=N/A"
 	set "MaxDML=N/A"
@@ -439,6 +454,8 @@ if "!RPU_EXIST!"=="TRUE" (
 	)
 )
 
+if "!ISOFILE!"=="TRUE" powershell.exe -ExecutionPolicy Bypass -File "!TMP_FOLDER!\dismount.ps1"
+
 ::BEGIN DISPLAYING
 if "!TOOLTYPE!"=="MSGBOX" (
 	if exist "!TMP_FOLDER!" rmdir /Q /S "!TMP_FOLDER!">nul
@@ -449,8 +466,10 @@ if "!TOOLTYPE!"=="TEXT" CALL :OUTPUT_TEXT
 if "!LOGFILE!"=="YES" (
 	if exist "!TMP_FOLDER!\logfile.txt" copy "!TMP_FOLDER!\logfile.txt" "!LOGFILEpath!">nul
 )
+	
 if exist "!TMP_FOLDER!" rmdir /Q /S "!TMP_FOLDER!">nul
 setlocal DisableDelayedExpansion
+endlocal
 pause>nul
 exit
 
@@ -481,35 +500,39 @@ echo.
 echo.
 echo  == SUMMARY =============================================================================================================
 echo.
-!Cecho! {%_YELLOW%}Filename          {%HC_WHITE%}: !FILENAME!!FILEEXT!{#}{\n}
+"!Cecho!" {%_YELLOW%}Filename          {%HC_WHITE%}: !FILENAME!!FILEEXT!{#}{\n}
 if defined FILESIZE (
 	echo.
-	!Cecho! {%_YELLOW%}Filesize          {%HC_WHITE%}: !FILESIZE!{#}{\n}
+	"!Cecho!" {%_YELLOW%}Filesize          {%HC_WHITE%}: !FILESIZE!{#}{\n}
 )
 if defined DURATION (
 	echo.
-	!Cecho! {%_YELLOW%}Duration          {%HC_WHITE%}: !DURATION!{#}{\n}
+	"!Cecho!" {%_YELLOW%}Duration          {%HC_WHITE%}: !DURATION!{#}{\n}
 )
 echo.
 ::DV P7 INFOLINE
-if "!EL_INPUT!!DVinput!!DVP7!!DVBIN!"=="FALSEYESYESNO" !Cecho! {%_YELLOW%}Video             {%HC_WHITE%}: Base Layer ({%HC_GREEN%}!HDRFormat!{%HC_WHITE%}) + Enhanced Layer ({%HC_GREEN%}Dolby Vision Profile 7!LAYERTYPE! !subprofile!{%HC_WHITE%}) + RPU ({%HC_GREEN%}!DM:~2!{%HC_WHITE%}){#}{\n}
+if "!EL_INPUT!!DVinput!!DVP7!!DVBIN!"=="FALSEYESYESNO" "!Cecho!" {%_YELLOW%}Video             {%HC_WHITE%}: Base Layer ({%HC_GREEN%}!HDRFormat!{%HC_WHITE%}) + Enhanced Layer ({%HC_GREEN%}Dolby Vision Profile 7!LAYERTYPE! !subprofile!{%HC_WHITE%}) + RPU ({%HC_GREEN%}!DM:~2!{%HC_WHITE%}){#}{\n}
 ::DV P5/P8 INFOLINE
-if "!EL_INPUT!!DVinput!!DVP7!!DVBIN!"=="FALSEYESNONO" !Cecho! {%_YELLOW%}Video             {%HC_WHITE%}: Base Layer ({%HC_GREEN%}!HDRFormat!{%HC_WHITE%}) + RPU ({%HC_GREEN%}Dolby Vision Profile !DVprofile!!DM!{%HC_WHITE%}){#}{\n}
+if "!EL_INPUT!!DVinput!!DVP7!!DVBIN!"=="FALSEYESNONO" "!Cecho!" {%_YELLOW%}Video             {%HC_WHITE%}: Base Layer ({%HC_GREEN%}!HDRFormat!{%HC_WHITE%}) + RPU ({%HC_GREEN%}Dolby Vision Profile !DVprofile!!DM!{%HC_WHITE%}){#}{\n}
 ::EL INFOLINE
-if "!EL_INPUT!!DVinput!"=="TRUEYES" !Cecho! {%_YELLOW%}Video             {%HC_WHITE%}: Enhanced Layer ({%HC_GREEN%}Dolby Vision Profile 7{%HC_WHITE%}) [!subprofile!{%HC_WHITE%}] + RPU ({%HC_GREEN%}!DM:~2!{%HC_WHITE%}){#}{\n}
+if "!EL_INPUT!!DVinput!"=="TRUEYES" "!Cecho!" {%_YELLOW%}Video             {%HC_WHITE%}: Enhanced Layer ({%HC_GREEN%}Dolby Vision Profile 7{%HC_WHITE%}) [!subprofile!{%HC_WHITE%}] + RPU ({%HC_GREEN%}!DM:~2!{%HC_WHITE%}){#}{\n}
 ::DV RPU/XML INFOLINE
-if "!DVinput!!DVBIN!"=="YESYES" !Cecho! {%_YELLOW%}RPU               {%HC_WHITE%}: Reference Processing Unit Binary ({%HC_GREEN%}}Dolby Vision Profile !DVprofile!!DM!{%HC_WHITE%}){#}{\n}
+if "!DVinput!!DVBIN!"=="YESYES" "!Cecho!" {%_YELLOW%}RPU               {%HC_WHITE%}: Reference Processing Unit Binary ({%HC_GREEN%}}Dolby Vision Profile !DVprofile!!DM!{%HC_WHITE%}){#}{\n}
 ::NO_DV
-if "!DVinput!!DVBIN!"=="NONO" !Cecho! {%_YELLOW%}Video             {%HC_WHITE%}: !CODEC_NAME! ({%HC_GREEN%}!HDRFormat!{%HC_WHITE%}){#}{\n}
+if "!DVinput!!DVBIN!"=="NONO" "!Cecho!" {%_YELLOW%}Video             {%HC_WHITE%}: !CODEC_NAME! ({%HC_GREEN%}!HDRFormat!{%HC_WHITE%}){#}{\n}
 
 ::RPU STATUS MESSAGE
-if "!RPU_STRING!" NEQ "" !Cecho! {%HC_YELLOW%}                    !RPU_STRING!{#}{\n}
+if "!RPU_STRING!" NEQ "" "!Cecho!" {%HC_YELLOW%}                    !RPU_STRING!{#}{\n}
 
 ::EL LAYER STATUS MESSAGE
-if "!EL_INPUT!!DVinput!"=="TRUEYES" !Cecho! {%HC_YELLOW%}                    Enhanced Layer needs muxing into HDR10 Base Layer to work correctly{#}{\n}
+if "!EL_INPUT!!DVinput!"=="TRUEYES" "!Cecho!" {%HC_YELLOW%}                    Enhanced Layer needs muxing into HDR10 Base Layer to work correctly.{#}{\n}
+
+::ISO BB STATUS MESSAGE
+if "!ISOFILE!"=="TRUE" "!Cecho!" {%HC_YELLOW%}                    When the Blu-ray is mastered with seamless branching, Filesize and Duration{#}{\n}
+if "!ISOFILE!"=="TRUE" "!Cecho!" {%HC_YELLOW%}                    of the main movie are not displayed correctly.{#}{\n}
 
 ::DV5 NO FALLBACK INFO
-if "!DVprofile!"=="5" !Cecho! {%HC_YELLOW%}                    No HDR10 Fallback with Dolby Vision Profile 5{#}{\n}
+if "!DVprofile!"=="5" "!Cecho!" {%HC_YELLOW%}                    No HDR10 Fallback with Dolby Vision Profile 5.{#}{\n}
 ::BASE LAYER INFO
 if "!DVBIN!"=="NO" (
 	if "!DVinput!"=="YES" (
@@ -536,7 +559,7 @@ if "!DVinput!!RPU_EXIST!"=="YESTRUE" (
     echo L1-MaxCLL         : !RPUCLL_L1!
     echo L1-MaxFALL        : !RPUFALL_L1!
     echo L2-Trims          : !L2_TRIMS!
-	!Cecho! {%HC_WHITE%}L5-Active Area    : !L5_STRING!{#}{\n}
+	"!Cecho!" {%HC_WHITE%}L5-Active Area    : !L5_STRING!{#}{\n}
     echo L6-Mastering DL   : !RPULuminanceL6!
     echo L6-MaxCLL         : !RPUCLL_L6!
 	echo L6-MaxFALL        : !RPUFALL_L6!
@@ -546,27 +569,27 @@ if "!DVinput!!RPU_EXIST!"=="YESTRUE" (
 if "!DVBIN!"=="NO" (
 	if defined RESOLUTION (
 		echo.
-		!Cecho! {%_YELLOW%}Resolution        {%HC_WHITE%}: !RESOLUTION!{#}{\n}
+		"!Cecho!" {%_YELLOW%}Resolution        {%HC_WHITE%}: !RESOLUTION!{#}{\n}
 	)
 	if defined BITRATE (
 		echo.
-		!Cecho! {%_YELLOW%}Video Bitrate     {%HC_WHITE%}: !BITRATE!{#}{\n}
+		"!Cecho!" {%_YELLOW%}Video Bitrate     {%HC_WHITE%}: !BITRATE!{#}{\n}
 	)
 	if defined STREAMSIZE (
 		echo.
-		!Cecho! {%_YELLOW%}Video Size        {%HC_WHITE%}: !STREAMSIZE!{#}{\n}
+		"!Cecho!" {%_YELLOW%}Video Size        {%HC_WHITE%}: !STREAMSIZE!{#}{\n}
 	)
 	if defined FRAMERATE (
 		echo.
-		!Cecho! {%_YELLOW%}Framerate         {%HC_WHITE%}: !FRAMERATE!{#}{\n}
+		"!Cecho!" {%_YELLOW%}Framerate         {%HC_WHITE%}: !FRAMERATE!{#}{\n}
 	)
 	if defined AUDIO_COUNT (
 		echo.
-		!Cecho! {%_YELLOW%}Audio             {%HC_WHITE%}: !AUDIO_COUNT!{#}{\n}
+		"!Cecho!" {%_YELLOW%}Audio             {%HC_WHITE%}: !AUDIO_COUNT!{#}{\n}
 	)
 	if defined TEXT_COUNT (
 		echo.
-		!Cecho! {%_YELLOW%}Subtitles         {%HC_WHITE%}: !TEXT_COUNT!{#}{\n}
+		"!Cecho!" {%_YELLOW%}Subtitles         {%HC_WHITE%}: !TEXT_COUNT!{#}{\n}
 	)
 )
 echo.
@@ -704,13 +727,100 @@ echo.>>"!TMP_FOLDER!\logfile.txt"
 echo  == LOGFILE END =========================================================================================================>>"!TMP_FOLDER!\logfile.txt"
 goto :eof
 
+:ANALYSESTREAMS
+FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=General;%%VideoCount%% "!FILE!""') do set "VIDEO_COUNT=%%A"
+if "!VIDEO_COUNT!" NEQ "1" set "LAYERTYPE= DL"
+"!FFPROBEpath!" "!FILE!" -show_streams -v 0 -of compact=p=0:nk=1 >"!TMP_FOLDER!\STREAMS.txt"
+FOR /F "delims=" %%A IN ('findstr /C:"hevc|H.265" "!TMP_FOLDER!\STREAMS.txt"') DO echo %%A>>"!TMP_FOLDER!\VSTREAMS.txt"
+if exist "!TMP_FOLDER!\VSTREAMS.txt" (
+	FOR /F "delims=" %%A IN ('findstr /C:"3840|2160" "!TMP_FOLDER!\VSTREAMS.txt"') DO set "BL_STREAMINFO=%%A"
+	FOR /F "delims=" %%A IN ('findstr /C:"1920|1080" "!TMP_FOLDER!\VSTREAMS.txt"') DO set "EL_STREAMINFO=%%A"
+)
+if defined BL_STREAMINFO (
+	for /F "tokens=1 delims=|" %%A in ("!BL_STREAMINFO!") do set "BL_INDEX=%%A"
+) else (
+	set "BL_INDEX=0"
+)
+if defined EL_STREAMINFO (
+	for /F "tokens=1 delims=|" %%A in ("!EL_STREAMINFO!") do set "EL_INDEX=%%A"
+) else (
+	set "EL_INDEX=0"
+)
+if exist "!TMP_FOLDER!\STREAMS.txt" del "!TMP_FOLDER!\STREAMS.txt"
+if exist "!TMP_FOLDER!\VSTREAMS.txt" del "!TMP_FOLDER!\VSTREAMS.txt"
+goto :eof
+
+:MOUNT
+(
+echo $isoImg = "!FILE!"
+echo $driveLetter = "!MountDrive!:\"
+echo.
+echo #Check if elevated
+echo ^[Security.Principal.WindowsPrincipal]$user = ^[Security.Principal.WindowsIdentity^]::GetCurrent^(^);
+echo $Admin = $user.IsInRole^(^[Security.Principal.WindowsBuiltinRole^]::Administrator^);
+echo.
+echo if ^($Admin^) 
+echo {
+echo     Write-Host "Administrator rights granted.";
+echo.
+echo     Write-Host "Mount ISO file to !MountDrive!:\...";
+echo     $diskImg = Mount-DiskImage -ImagePath $isoImg  -NoDriveLetter -PassThru;
+echo.
+echo     #Write-Host "Get mounted ISO volume";
+echo     $volInfo = $diskImg ^| Get-Volume
+echo.
+echo     #Write-Host "Mount volume with specified drive letter";
+echo     mountvol $driveLetter $volInfo.UniqueId
+echo.
+echo     #Write-Host "Ready";
+echo     exit 0;
+echo }
+echo else
+echo {
+echo     Write-Error "This script must be executed as Administrator.";
+echo     exit 1;
+echo }
+)>"!TMP_FOLDER!\mount.ps1"
+(
+echo $isoImg = "!FILE!"
+echo $driveLetter = "!MountDrive!:\"
+echo.
+echo #Check if elevated
+echo ^[Security.Principal.WindowsPrincipal]$user = ^[Security.Principal.WindowsIdentity^]::GetCurrent^(^);
+echo $Admin = $user.IsInRole^(^[Security.Principal.WindowsBuiltinRole^]::Administrator^);
+echo.
+echo if ^($Admin^) 
+echo {
+echo     Write-Host "Dismount ISO file from !MountDrive!:\..."; 
+echo     DisMount-DiskImage -ImagePath $isoImg ^| Out-Null
+echo.    
+echo     #Write-Host "Ready";
+echo     exit 0;
+echo }
+echo else
+echo {
+echo     Write-Error "This script must be executed as Administrator.";
+echo     exit 1;
+echo }
+)>"!TMP_FOLDER!\dismount.ps1"
+powershell.exe -ExecutionPolicy Bypass -File "!TMP_FOLDER!\mount.ps1"
+if exist "!MountDrive!:\BDMV\STREAM\*.m2ts" (
+	"!Cecho!" {%_CYAN%}[{%HC_GREEN%}Blu-ray structure found^^!{%_CYAN%}]{#}{\n}
+	for /f "tokens=1" %%A in ('dir /B /O:S /A:-D "!MountDrive!:\BDMV\STREAM\*.m2ts"') do set "FILE=!MountDrive!:\BDMV\STREAM\%%A"
+) else (
+	"!Cecho!" {%_CYAN%}[{%HC_RED%}Blu-ray structure not found^^!{%_CYAN%}]{#}{\n}
+	powershell.exe -ExecutionPolicy Bypass -File "!TMP_FOLDER!\dismount.ps1"
+	goto :FALSEINPUT
+)
+goto :eof
+
 :CORRUPTVIDEO
 if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
 set "NewLine=[System.Environment]::NewLine"
 set "Line1=NO VIDEO INFORMATIONS FOUND OR CORRUPT INPUT FILE^!"
 rmdir /Q /S "!TMP_FOLDER!">nul
 setlocal DisableDelayedExpansion
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%FILENAME%%FILEEXT%' + %NewLine% + %NewLine% + '%Line1%', 'DDVT MediaInfo [QfG] v%VERSION%', 'Ok','Warning')"
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%FILENAME%%FILEEXT%' + %NewLine% + %NewLine% + '%Line1%', 'DDVT MediaInfo v%VERSION%', 'Ok','Warning')"
 exit
 
 :CORRUPTRPU
@@ -719,46 +829,25 @@ set "NewLine=[System.Environment]::NewLine"
 set "Line1=CORRUPT DOLBY VISION XML / RPU BINARY FILE^!"
 rmdir /Q /S "!TMP_FOLDER!">nul
 setlocal DisableDelayedExpansion
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%FILENAME%%FILEEXT%' + %NewLine% + %NewLine% + '%Line1%', 'DDVT MediaInfo [QfG] v%VERSION%', 'Ok','Warning')"
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%FILENAME%%FILEEXT%' + %NewLine% + %NewLine% + '%Line1%', 'DDVT MediaInfo v%VERSION%', 'Ok','Warning')"
+exit
+
+:NOMOUNTDRIVE
+if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
+set "NewLine=[System.Environment]::NewLine"
+set "Line1=NO FREE DRIVE LETTER FOR MOUNTING^!"
+rmdir /Q /S "!TMP_FOLDER!">nul
+setlocal DisableDelayedExpansion
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%FILENAME%%FILEEXT%' + %NewLine% + %NewLine% + '%Line1%', 'DDVT MediaInfo v%VERSION%', 'Ok','Warning')"
 exit
 
 :FALSEINPUT
 if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
 set "NewLine=[System.Environment]::NewLine"
 set "Line1=Unsupported Input File. Supported Files are:"
-set "Line2=*.mkv | *.ts | *.m2ts | *.mp4 | *.bin | *.xml | *.h265 | *.hevc"
+set "Line2=*.iso (Blu-ray) | *.mkv | *.ts | *.m2ts | *.mp4 | *.bin | *.xml | *.h265 | *.hevc"
 setlocal DisableDelayedExpansion
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%FILENAME%%FILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT MediaInfo [QfG] v%VERSION%', 'Ok','Info')"
-exit
-
-:NOINPUT
-cls
-%GREEN%
-echo  %HEADER1%
-echo.
-%WHITE%
-echo                                         ====================================
-%GREEN%
-echo                                              Dolby Vision Tool MEDIAINFO
-%WHITE%
-echo                                         ====================================
-echo.
-echo.
-echo  == CHECK INPUT FILE ====================================================================================================
-%HCYELLOW%
-echo.
-echo No Input File. Use^:
-echo.
-echo DDVT_MEDIAINFO.cmd "YourFilename.mkv/ts/m2ts/mp4/bin/xml/hevc/h265"
-echo.
-echo or use for simple Dolby Vision check^:
-echo.
-echo DDVT_MEDIAINFO.cmd "YourFilename.mkv/ts/m2ts/mp4/bin/xml/hevc/h265" -MSGBOX
-echo.
-%WHITE%
-echo  ========================================================================================================================
-setlocal DisableDelayedExpansion
-TIMEOUT 30
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%FILENAME%%FILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT MediaInfo v%VERSION%', 'Ok','Info')"
 exit
 
 :CORRUPTFILE
@@ -768,7 +857,7 @@ set "NewLine=[System.Environment]::NewLine"
 set "Line1=""%MISSINGFILE%""""
 set "Line2=Copy the file to the directory or download and extract DDVT_tools.rar"
 setlocal DisableDelayedExpansion
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('NEEDED FILE NOT FOUND!' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT MediaInfo [QfG] v%VERSION%', 'Ok','Error')"
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('NEEDED FILE NOT FOUND!' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT MediaInfo v%VERSION%', 'Ok','Error')"
 exit
 
 :CreatePassword
@@ -776,8 +865,8 @@ set TempVar=%PasswordChars%
 set /a PWCharCount=0
 
 :CountLoop
-	set TempVar=%TempVar:~1%
-	set /a PWCharCount+=1
+set TempVar=%TempVar:~1%
+set /a PWCharCount+=1
 if not "%TempVar%"=="" goto CountLoop
 set TempVar=
 set Length=0

@@ -11,7 +11,7 @@ set PasswordChars=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 set PasswordLength=5
 call :CreatePassword Password
 
-set "Cecho="%~dp0tools\cecho_x64.exe"" rem Path to cecho_x64.exe
+set "Cecho=%~dp0tools\cecho_x64.exe" rem Path to cecho_x64.exe
 set "sfkpath=%~dp0tools\sfk.exe" rem Path to sfk.exe
 set "MP4BOXpath=%~dp0tools\mp4box.exe" rem Path to mp4box.exe
 set "MEDIAINFOpath=%~dp0tools\mediainfo.exe" rem Path to mediainfo.exe
@@ -87,20 +87,11 @@ set "_CYAN=0B"
 set "_WHITE=0F"
 
 if "!DESIGN!" NEQ "STANDARD" call "!DESIGN!"
-if "%TMP_FOLDER%"=="SAME AS SOURCE" (
-	set "TMP_FOLDER=%~dp1DDVT_%Password%_TMP"
-) else (
-	set "TMP_FOLDER=!TMP_FOLDER!\DDVT_%Password%_TMP"
-)
-if "!TARGET_FOLDER!"=="SAME AS SOURCE" (
-	set "TARGET_FOLDER=%~dp1"
-	set "TARGET_FOLDER=!TARGET_FOLDER:~0,-1!"
-	set "TARGET_FOLDER_TYPE=SOURCE"
-)
+
 if "!MKVTOOLNIX_FOLDER!"=="INCLUDED" set "MKVTOOLNIX_FOLDER=%~dp0tools"
 set "MKVMERGEpath=!MKVTOOLNIX_FOLDER!\mkvmerge.exe"
 set "MKVEXTRACTpath=!MKVTOOLNIX_FOLDER!\mkvextract.exe"
-set "logfile=%TMP_FOLDER%\!INPUTFILENAME!.log"
+
 
 if not exist "%Cecho%" set "MISSINGFILE=%~dp0tools\cecho_x64.exe" & goto :CORRUPTFILE
 if not exist "%sfkpath%" set "MISSINGFILE=%sfkpath%" & goto :CORRUPTFILE
@@ -111,40 +102,65 @@ if not exist "%MEDIAINFOpath%" set "MISSINGFILE=%MEDIAINFOpath%" & goto :CORRUPT
 if not exist "%HDR10Plus_TOOLpath%" set "MISSINGFILE=%HDR10Plus_TOOLpath%" & goto :CORRUPTFILE
 if not exist "%DO_VI_TOOLpath%" set "MISSINGFILE=%DO_VI_TOOLpath%" & goto :CORRUPTFILE
 
+if /i "!INPUTFILEEXT!"=="" CALL :INSERT_INPUT
+
+if "%TMP_FOLDER%"=="SAME AS SOURCE" (
+	set "TMP_FOLDER=!INPUTFILEPATH!DDVT_%Password%_TMP"
+) else (
+	set "TMP_FOLDER=!TMP_FOLDER!\DDVT_%Password%_TMP"
+)
+set "logfile=%TMP_FOLDER%\!INPUTFILENAME!.log"
+if "!TARGET_FOLDER!"=="SAME AS SOURCE" (
+	set "TARGET_FOLDER=!INPUTFILEPATH!"
+	set "TARGET_FOLDER=!TARGET_FOLDER:~0,-1!"
+	set "TARGET_FOLDER_TYPE=SOURCE"
+)
+
+dir /b/ad "!INPUTFILE!" >nul 2>nul && set DIRFOUND=TRUE
+if "!DIRFOUND!"=="TRUE" goto :MPREPARE
+
+if /i "!INPUTFILEEXT!"==".hevc" set "RAW_FILE=TRUE" & goto CHECK
+if /i "!INPUTFILEEXT!"==".h265" set "RAW_FILE=TRUE" & goto CHECK
+if /i "!INPUTFILEEXT!"==".mkv" set "MKVExtract=TRUE" & goto CHECK
+if /i "!INPUTFILEEXT!"==".mp4" set "MP4Extract=TRUE" & goto CHECK
+
+goto :FALSEINPUT
+
+:INSERT_INPUT
 cls
 %GREEN%
 echo  !HEADER1!
-echo.
 %WHITE%
+echo.
 echo                                         ====================================
 %GREEN%
-echo                                              Dolby Vision Tool MKVtoMP4
+echo                                              Dolby Vision Tool REMOVER
 %WHITE%
 echo                                         ====================================
+echo.
+echo.
+echo  == INSERT FILE OR FOLDER HERE ==========================================================================================
+%HCYELLOW%
+echo.
+echo [Info] Insert one file with following extensions:
+echo        .mp4 ^| .mkv ^| .h265 ^| .hevc
+echo.
+echo        or insert a complete folder for Mass-Removing^^!
+echo.
 %WHITE%
-echo.
-echo.
-echo  == CHECK INPUT FILE ====================================================================================================
-if "%~1"=="" (
-	%HCYELLOW%
-	echo.
-	echo No Input File. Use %~nx0 "YourFilename.mkv"
-	echo.
-	goto EXIT
-)
+"!Cecho!" {%_WHITE%}Drag 'n' Drop {%_GREEN%}FILE {%_WHITE%}or {%_GREEN%}FOLDER {%_WHITE%}here and press ENTER:{#}{\n}
+%GREEN%
+set /p "INPUTFILE=%~1" || if "!INPUTFILE!"=="" goto :INSERT_INPUT
 
-dir /b/ad "%~1" >nul 2>nul && set DIRFOUND=TRUE
-if "!DIRFOUND!"=="TRUE" goto :MPREPARE
+for %%f in (!INPUTFILE!) do set "INPUTFILENAME=%%~nf"
+for %%f in (!INPUTFILE!) do set "INPUTFILEEXT=%%~xf"
+for %%f in (!INPUTFILE!) do set "INPUTFILEPATH=%%~dpf"
+for %%f in (!INPUTFILE!) do set "INPUTFILE=%%~dpnxf"
 
-if /i "%~x1"==".hevc" set "RAW_FILE=TRUE" & goto CHECK
-if /i "%~x1"==".h265" set "RAW_FILE=TRUE" & goto CHECK
-if /i "%~x1"==".mkv" set "MKVExtract=TRUE" & goto CHECK
-if /i "%~x1"==".mp4" set "MP4Extract=TRUE" & goto CHECK
-
-if not "!INPUTFILE!"=="" goto :FALSEINPUT
+goto :eof
 
 :MPREPARE
-set "SOURCE_FOLDER=%~1"
+set "SOURCE_FOLDER=!INPUTFILE!"
 set /A "ERRORCOUNT=0" & set "ERRORCOUNTC=08"
 set /A "DONECOUNT=0" & set "DONECOUNTC=08"
 set /A "SKIPCOUNT=0" & set "SKIPCOUNTC=08"
@@ -155,6 +171,20 @@ for /F %%i in ('dir "!SOURCE_FOLDER!\*.*" /B /A-d') do set /A SOURCEFILES=!SOURC
 goto :MSTART
 
 :CHECK
+cls
+%GREEN%
+echo  !HEADER1!
+echo.
+%WHITE%
+echo                                         ====================================
+%GREEN%
+echo                                              Dolby Vision Tool REMOVER
+%WHITE%
+echo                                         ====================================
+%WHITE%
+echo.
+echo.
+echo  == CHECK INPUT FILE ====================================================================================================
 set "VIDEO_COUNT="
 set "RESOLUTION="
 set "CODEC_NAME="
@@ -367,7 +397,7 @@ echo.
 echo S. START
 %HCWHITE%
 echo.
-!Cecho! {%HC_WHITE%}Change Settings and press [{%_GREEN%}S{%HC_WHITE%}] to start Removing^^!{#}{\n}
+"!Cecho!" {%HC_WHITE%}Change Settings and press [{%_GREEN%}S{%HC_WHITE%}] to start Removing^^!{#}{\n}
 if "%HDR10P%"=="TRUE" if "%DV%"=="TRUE" CHOICE /C 12S /N /M "Select a Letter 1,2,[S]tart"
 if "%HDR10P%"=="TRUE" if "%DV%"=="FALSE" CHOICE /C 12S /N /M "Select a Letter 1,[S]tart"
 if "%HDR10P%"=="FALSE" if "%DV%"=="TRUE" CHOICE /C 12S /N /M "Select a Letter 2,[S]tart"
@@ -399,9 +429,9 @@ echo.
 echo  == MASS REMOVER ========================================================================================================
 echo.
 %CYAN%
-!Cecho! {%_CYAN%}Status     = [!MSTATUS!{%_CYAN%}]{#}{\n}
-!Cecho! {%_CYAN%}Folder     = [{%HC_WHITE%}!SOURCE_FOLDER!{%_CYAN%}]{#}{\n}
-!Cecho! {%_CYAN%}Info       = [FILES PROCESSED/SUM: {!PFILECOUNTC!}!PFILECOUNT!{%_CYAN%}/!SOURCEFILES!] [DONE: {!DONECOUNTC!}!DONECOUNT!{%_CYAN%}] [ERROR^(S^): {!ERRORCOUNTC!}!ERRORCOUNT_END!{%_CYAN%}] [SKIPPED: {!SKIPCOUNTC!}!SKIPCOUNT!{%_CYAN%}]{#}{\n}
+"!Cecho!" {%_CYAN%}Status     = [!MSTATUS!{%_CYAN%}]{#}{\n}
+"!Cecho!" {%_CYAN%}Folder     = [{%HC_WHITE%}!SOURCE_FOLDER!{%_CYAN%}]{#}{\n}
+"!Cecho!" {%_CYAN%}Info       = [FILES PROCESSED/SUM: {!PFILECOUNTC!}!PFILECOUNT!{%_CYAN%}/!SOURCEFILES!] [DONE: {!DONECOUNTC!}!DONECOUNT!{%_CYAN%}] [ERROR^(S^): {!ERRORCOUNTC!}!ERRORCOUNT_END!{%_CYAN%}] [SKIPPED: {!SKIPCOUNTC!}!SKIPCOUNT!{%_CYAN%}]{#}{\n}
 )
 echo.
 %WHITE%
@@ -415,7 +445,7 @@ echo.
 echo S. START
 %HCWHITE%
 echo.
-!Cecho! {%HC_WHITE%}Change Settings and press [{%_GREEN%}S{%HC_WHITE%}] to start Removing^^!{#}{\n}
+"!Cecho!" {%HC_WHITE%}Change Settings and press [{%_GREEN%}S{%HC_WHITE%}] to start Removing^^!{#}{\n}
 CHOICE /C 12S /N /M "Select a Letter 1,2,[S]tart"
 
 if "!ERRORLEVEL!"=="3" goto :MBEGIN
@@ -478,10 +508,10 @@ for %%A in ("!SOURCE_FOLDER!\*.*") do (
 	echo  == MASS REMOVER ========================================================================================================
 	echo.
 	%CYAN%
-	!Cecho! {%_CYAN%}Status     = [!MSTATUS!{%_CYAN%}]{#}{\n}
-	!Cecho! {%_CYAN%}Folder     = [{%HC_WHITE%}!SOURCE_FOLDER!{%_CYAN%}]{#}{\n}
-	!Cecho! {%_CYAN%}Filename   = [{%HC_WHITE%}!INPUTFILENAME!!INPUTFILEEXT!{%_CYAN%}]{#}{\n}
-	!Cecho! {%_CYAN%}Info       = [FILE PROCESS/SUM: {!PFILECOUNTC!}!PFILECOUNT!{%_CYAN%}/!SOURCEFILES!] [DONE: {!DONECOUNTC!}!DONECOUNT!{%_CYAN%}] [ERROR^(S^): {!ERRORCOUNTC!}!ERRORCOUNT!{%_CYAN%}] [SKIPPED: {!SKIPCOUNTC!}!SKIPCOUNT!{%_CYAN%}]{#}{\n}
+	"!Cecho!" {%_CYAN%}Status     = [!MSTATUS!{%_CYAN%}]{#}{\n}
+	"!Cecho!" {%_CYAN%}Folder     = [{%HC_WHITE%}!SOURCE_FOLDER!{%_CYAN%}]{#}{\n}
+	"!Cecho!" {%_CYAN%}Filename   = [{%HC_WHITE%}!INPUTFILENAME!!INPUTFILEEXT!{%_CYAN%}]{#}{\n}
+	"!Cecho!" {%_CYAN%}Info       = [FILE PROCESS/SUM: {!PFILECOUNTC!}!PFILECOUNT!{%_CYAN%}/!SOURCEFILES!] [DONE: {!DONECOUNTC!}!DONECOUNT!{%_CYAN%}] [ERROR^(S^): {!ERRORCOUNTC!}!ERRORCOUNT!{%_CYAN%}] [SKIPPED: {!SKIPCOUNTC!}!SKIPCOUNT!{%_CYAN%}]{#}{\n}
 	echo.
 	%WHITE%
 	echo  == ANALYSING ===========================================================================================================
@@ -532,9 +562,9 @@ echo.
 echo  == MASS REMOVER ========================================================================================================
 echo.
 %CYAN%
-!Cecho! {%_CYAN%}Status     = [!MSTATUS!{%_CYAN%}]{#}{\n}
-!Cecho! {%_CYAN%}Folder     = [{%HC_WHITE%}!SOURCE_FOLDER!{%_CYAN%}]{#}{\n}
-!Cecho! {%_CYAN%}Info       = [FILES PROCESSED/SUM: {%_CYAN%}!PFILECOUNT!{%_CYAN%}/!SOURCEFILES!] [DONE: {!DONECOUNTC!}!DONECOUNT!{%_CYAN%}] [ERROR^(S^): {!ERRORCOUNTC!}!ERRORCOUNT!{%_CYAN%}] [SKIPPED: {!SKIPCOUNTC!}!SKIPCOUNT!{%_CYAN%}]{#}{\n}
+"!Cecho!" {%_CYAN%}Status     = [!MSTATUS!{%_CYAN%}]{#}{\n}
+"!Cecho!" {%_CYAN%}Folder     = [{%HC_WHITE%}!SOURCE_FOLDER!{%_CYAN%}]{#}{\n}
+"!Cecho!" {%_CYAN%}Info       = [FILES PROCESSED/SUM: {%_CYAN%}!PFILECOUNT!{%_CYAN%}/!SOURCEFILES!] [DONE: {!DONECOUNTC!}!DONECOUNT!{%_CYAN%}] [ERROR^(S^): {!ERRORCOUNTC!}!ERRORCOUNT!{%_CYAN%}] [SKIPPED: {!SKIPCOUNTC!}!SKIPCOUNT!{%_CYAN%}]{#}{\n}
 echo.
 %WHITE%
 echo  ========================================================================================================================
@@ -865,7 +895,7 @@ if exist "!TMP_FOLDER!" (
 	)
 )
 setlocal DisableDelayedExpansion
-ENDLOCAL
+endlocal
 %WHITE%
 echo.
 echo  == EXIT ================================================================================================================
@@ -970,7 +1000,7 @@ exit
 if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
 set "NewLine=[System.Environment]::NewLine"
 set "Line1=Unsupported Input File. Supported Files are:"
-set "Line2=*.mkv | *.mp4 | *.h265 | *.hevc"
+set "Line2=*.mkv | *.mp4 | *.h265 | *.hevc | Directories"
 setlocal DisableDelayedExpansion
 START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT Remover [QfG] v%VERSION%', 'Ok','Info')"
 exit
@@ -989,8 +1019,8 @@ set TempVar=%PasswordChars%
 set /a PWCharCount=0
 
 :CountLoop
-	set TempVar=%TempVar:~1%
-	set /a PWCharCount+=1
+set TempVar=%TempVar:~1%
+set /a PWCharCount+=1
 if not "%TempVar%"=="" goto CountLoop
 set TempVar=
 set Length=0

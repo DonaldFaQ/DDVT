@@ -4,14 +4,14 @@ set "VERSION=--N.A.-- INCORRECTLY INSTALLED"
 set "HEADER1=File "%~dp0DDVT_OPTIONS.cmd" missing! Script works not correctly!"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"HEADER1=" "%~dp0DDVT_OPTIONS.cmd"') DO set "HEADER1=%%A"
-TITLE DDVT P8 Hybrid Script [QfG] v%VERSION%
+TITLE DDVT P8 Hybrid Script v%VERSION%
 set DESIGN=STANDARD
 
 set PasswordChars=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 set PasswordLength=5
 call :CreatePassword Password
 
-set "Cecho="%~dp0tools\cecho_x64.exe"" rem Path to cecho_x64.exe
+set "Cecho=%~dp0tools\cecho_x64.exe" rem Path to cecho_x64.exe
 set "sfkpath=%~dp0tools\sfk.exe" rem Path to sfk.exe
 set "FFMPEGpath=%~dp0tools\ffmpeg.exe" rem Path to ffmpeg.exe
 set "MP4BOXpath=%~dp0tools\mp4box.exe" rem Path to mp4box.exe
@@ -173,7 +173,7 @@ echo [Info] If you will convert only HDR10+ Metadata to DV P8, drag 'n' drop her
 echo        with ENTER. Also you can remove HDR10+ Metadata from stream.
 echo.
 %WHITE%
-!Cecho! {%_WHITE%}Drag 'n' Drop {%_GREEN%}HDR / HDR10+ {%_WHITE%}file here and press ENTER:{#}{\n}
+"!Cecho!" {%_WHITE%}Drag 'n' Drop {%_GREEN%}HDR / HDR10+ {%_WHITE%}file here and press ENTER:{#}{\n}
 %GREEN%
 if "%~1" NEQ "" set "HDR_File="%~dpnx1""
 set /p "HDR_File=%~dpnx1"
@@ -272,7 +272,7 @@ echo [Info] If you choose a HDR10+ file, you can make DV P8 RPU with this Metada
 echo        into HDR file or remove existing HDR10+ Metadata from HDR file.
 echo.
 %WHITE%
-!Cecho! {%_WHITE%}Drag 'n' Drop {%_GREEN%}DV / HDR10+ {%_WHITE%}file here and press ENTER:{#}{\n}
+"!Cecho!" {%_WHITE%}Drag 'n' Drop {%_GREEN%}DV / HDR10+ {%_WHITE%}file here and press ENTER:{#}{\n}
 %GREEN%
 set /p "DV_File="
 for %%f in (!DV_File!) do set "DV_Filename=%%~nf"
@@ -752,51 +752,51 @@ if "!HDR_MDCP!"=="!DV_L9MDP!" (
 ::VIDEO LINE
 :: VIDEO-INPUT = RPU-INPUT
 if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%" (
-	set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_GREEN%}MATCH WITH INPUT RPU{%_CYAN%}]{#}{\n}"
+	set "HEADER_RPU_AA_String="!Cecho!" {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
+	set "AA_String="!Cecho!" {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_GREEN%}MATCH WITH INPUT RPU{%_CYAN%}]{#}{\n}"
 ) else (
-	set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_RED%}NOT MATCH WITH INPUT RPU{%_CYAN%}]{#}{\n}"
+	set "HEADER_RPU_AA_String="!Cecho!" {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
+	set "AA_String="!Cecho!" {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_RED%}NOT MATCH WITH INPUT RPU{%_CYAN%}]{#}{\n}"
 )
 
 ::RPU LINE
 :: RPU-INPUT = NONE
-if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_GREY%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}"
+if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_AA_String="!Cecho!" {%_CYAN%}Borders    = [{%_GREY%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}"
 
 ::OUTPUT_LINE
-set "HEADER_RPU_OUTPUT_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
+set "HEADER_RPU_OUTPUT_String="!Cecho!" {%_CYAN%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
 
 :: RPU-OUTPUT = VIDEO-INPUT
 if "%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%"=="%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%" (
-	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_YELLOW%}]{#}{\n}"
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_GREEN%}MATCH WITH OUTPUT{%_CYAN%}]{#}{\n}"
+	set "HEADER_RPU_OUTPUT_String="!Cecho!" {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_YELLOW%}]{#}{\n}"
+	set "AA_String="!Cecho!" {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_GREEN%}MATCH WITH OUTPUT{%_CYAN%}]{#}{\n}"
 ) else (
-	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_YELLOW%}]{#}{\n}"
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_RED%}NOT MATCH WITH OUTPUT{%_CYAN%}]{#}{\n}"
+	set "HEADER_RPU_OUTPUT_String="!Cecho!" {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_YELLOW%}]{#}{\n}"
+	set "AA_String="!Cecho!" {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_RED%}NOT MATCH WITH OUTPUT{%_CYAN%}]{#}{\n}"
 )
 	
 ::OUTPUT LINE
 :: VIDEO-INPUT = NONE
 if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="" (
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = [{%_YELLOW%}NOT FOUND. MUX FILE IN CONTAINER OR SET CROPPING VALUES MANUALLY{%_CYAN%}]{#}{\n}"
+	set "AA_String="!Cecho!" {%_CYAN%}Borders    = [{%_YELLOW%}NOT FOUND. MUX FILE IN CONTAINER OR SET CROPPING VALUES MANUALLY{%_CYAN%}]{#}{\n}"
 	if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" (
-		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_YELLOW%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}"
+		set "HEADER_RPU_AA_String="!Cecho!" {%_CYAN%}Borders    = [{%_YELLOW%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}"
 	) else (
-		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%_YELLOW%}VIDEO BORDERS NOT FOUND{%_CYAN%}]{#}{\n}"
+		set "HEADER_RPU_AA_String="!Cecho!" {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%_YELLOW%}VIDEO BORDERS NOT FOUND{%_CYAN%}]{#}{\n}"
 	)
-	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%_WHITE%}VIDEO BORDERS NOT FOUND{%_YELLOW%}]{#}{\n}"
+	set "HEADER_RPU_OUTPUT_String="!Cecho!" {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%_WHITE%}VIDEO BORDERS NOT FOUND{%_YELLOW%}]{#}{\n}"
 )
 
-set "HEADER_RPU_AA_String_RPU=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px]{#}{\n}"
-set "HEADER_RPU_OUTPUT_String_RPU=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px]{#}{\n}"
+set "HEADER_RPU_AA_String_RPU="!Cecho!" {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px]{#}{\n}"
+set "HEADER_RPU_OUTPUT_String_RPU="!Cecho!" {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px]{#}{\n}"
 if "!RPU_AA_String!"=="[LEAVE UNTOUCHED]" (
 	if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%" (
-		set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [{%HC_GREEN%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}"
+		set "HEADER_RPU_OUTPUT_String="!Cecho!" {%_YELLOW%}Borders    = [{%HC_GREEN%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}"
 	) else (
-		set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [{%HC_RED%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}"
+		set "HEADER_RPU_OUTPUT_String="!Cecho!" {%_YELLOW%}Borders    = [{%HC_RED%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}"
 	)
-	if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [{%HC_WHITE%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}"
-	if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="" set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [{%HC_WHITE%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}"
+	if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_OUTPUT_String="!Cecho!" {%_YELLOW%}Borders    = [{%HC_WHITE%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}"
+	if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="" set "HEADER_RPU_OUTPUT_String="!Cecho!" {%_YELLOW%}Borders    = [{%HC_WHITE%}LEAVE UNTOUCHED{%_YELLOW%}]{#}{\n}"
 )
 set "OUTPUT_RPU_CMV=!DV_RPU_CMV!"
 if "!OUTPUT_RPU_CMV!"=="" set "OUTPUT_RPU_CMV=!HDR_RPU_CMV!"
@@ -834,8 +834,8 @@ if "!HDR_File_support!"=="TRUE" (
 	echo.
 	%CYAN%
 	echo Filename   = [!HDR_Filename!!HDR_Fileext!]
-	!Cecho! {%_CYAN%}Video Info = [Resolution = !RESOLUTION_HDR!] [Codec = !CODEC_NAME_HDR!] [Frames = !FR_CHCK_CLR!!FRAMES_HDR!{%_CYAN%}] [FPS = !FRAMERATE_ORIG_HDR!]{#}{\n}
-	!Cecho! {%_CYAN%}HDR Info   = [!HDR_Info!] [MDCP = !FR_CHCK_MDCP!!HDR_MDCP!{%_CYAN%}]{#}{\n}
+	"!Cecho!" {%_CYAN%}Video Info = [Resolution = !RESOLUTION_HDR!] [Codec = !CODEC_NAME_HDR!] [Frames = !FR_CHCK_CLR!!FRAMES_HDR!{%_CYAN%}] [FPS = !FRAMERATE_ORIG_HDR!]{#}{\n}
+	"!Cecho!" {%_CYAN%}HDR Info   = [!HDR_Info!] [MDCP = !FR_CHCK_MDCP!!HDR_MDCP!{%_CYAN%}]{#}{\n}
 	%CYAN%
 	if "!HDR_DV!"=="TRUE" echo RPU Info   = [Dolby Vision Profile !HDR_DV_Profile!] [DM = !HDR_RPU_CMV!] [MDCP = !HDR_L9MDP!]
 	%AA_String%
@@ -848,11 +848,11 @@ if "!DV_File_support!"=="TRUE" (
 	echo.
 	%CYAN%
 	echo Filename   = [!DV_Filename!!DV_Fileext!]
-	!Cecho! {%_CYAN%}Video Info = [Resolution = !RESOLUTION_DV!] [Codec = !CODEC_NAME_DV!] [Frames = !FR_CHCK_CLR!!FRAMES_DV!{%_CYAN%}] [FPS = !FRAMERATE_ORIG_DV!]{#}{\n}
+	"!Cecho!" {%_CYAN%}Video Info = [Resolution = !RESOLUTION_DV!] [Codec = !CODEC_NAME_DV!] [Frames = !FR_CHCK_CLR!!FRAMES_DV!{%_CYAN%}] [FPS = !FRAMERATE_ORIG_DV!]{#}{\n}
 	%CYAN%
 	echo HDR Info   = [!DV_Info!]!DV_MDCP!
 	if "!DV_DV!"=="TRUE" (
-		!Cecho! {%_CYAN%}RPU Info   = [Dolby Vision Profile !DV_DV_Profile!] [DM = !DV_RPU_CMV!] [MDCP = !FR_CHCK_MDCP!!DV_L9MDP!{%_CYAN%}]{#}{\n}
+		"!Cecho!" {%_CYAN%}RPU Info   = [Dolby Vision Profile !DV_DV_Profile!] [DM = !DV_RPU_CMV!] [MDCP = !FR_CHCK_MDCP!!DV_L9MDP!{%_CYAN%}]{#}{\n}
 		%CYAN%
 		%HEADER_RPU_AA_String%
 	)
@@ -869,7 +869,7 @@ if "!MUXINMKV!"=="YES" (
 )
 echo Video Info = [Resolution = !RESOLUTION_HDR!] [Codec = !CODEC_NAME_HDR!] [Frames = !FRAMES_HDR!] [FPS = !FPS_string!]
 echo HDR Info   = [!OUTPUT_Info!]
-!Cecho! {%_YELLOW%}RPU Info   = [Dolby Vision Profile 8] [DM = !OUTPUT_RPU_CMV!] [MDCP = !FR_CHCK_MDCP!!OUTPUT_L9MDP!{%_YELLOW%}]{#}{\n}
+"!Cecho!" {%_YELLOW%}RPU Info   = [Dolby Vision Profile 8] [DM = !OUTPUT_RPU_CMV!] [MDCP = !FR_CHCK_MDCP!!OUTPUT_L9MDP!{%_YELLOW%}]{#}{\n}
 %HEADER_RPU_OUTPUT_String%
 echo.
 %WHITE%
@@ -879,31 +879,31 @@ echo.
 echo 1. Delay                : [!DELAY! FRAMES]
 echo 2. Change FPS           : [!CHGFPS!]
 
-if "!DV_HDR10P!!DV_DV!"=="TRUETRUE" !Cecho! {%HC_WHITE%}3. Convert HDR10+ to DV : [!CHGHDR_HDR10P!]{%_YELLOW%}*   *Choose {%HC_WHITE%}[YES]{%_YELLOW%} for injecting converted HDR10+ Metadata instead RPU.{#}{\n}
+if "!DV_HDR10P!!DV_DV!"=="TRUETRUE" "!Cecho!" {%HC_WHITE%}3. Convert HDR10+ to DV : [!CHGHDR_HDR10P!]{%_YELLOW%}*   *Choose {%HC_WHITE%}[YES]{%_YELLOW%} for injecting converted HDR10+ Metadata instead RPU.{#}{\n}
 if "!HDR_HDR10P!"=="TRUE" echo 4. Remove HDR10+        : [!REMHDR_HDR10P!]
 if "!DV_HDR10P!!HDR_HDR10P!"=="TRUEFALSE" echo 4. Also inject HDR10+   : [!INJ_HDR10P!]
 if "%MKVExtract_HDR%"=="TRUE" echo 5. Mux Stream in MKV    : [!MUXINMKV!]
 if "%MP4Extract_HDR%"=="TRUE" echo 5. Mux Stream in MP4    : [!MUXINMP4!]
 echo.
-!Cecho! {%HC_WHITE%}E. EDIT ACTIVE AREA{%HC_YELLOW%}*   *Setting Crop Values. DISCARD set Borders to [{%HC_WHITE%}LEAVE UNTOUCHED{%HC_YELLOW%}].{#}{\n}
+"!Cecho!" {%HC_WHITE%}E. EDIT ACTIVE AREA{%HC_YELLOW%}*   *Setting Crop Values. DISCARD set Borders to [{%HC_WHITE%}LEAVE UNTOUCHED{%HC_YELLOW%}].{#}{\n}
 echo.
 %GREEN%
 echo S. START
 if "!HDR_DV!!DV_DV!!DV_HDR10P!"=="TRUEFALSEFALSE" (
 	%HCYELLOW%
 	echo.
-	!Cecho! {%HC_YELLOW%}HDR input file already have {%HC_GREEN%}DV Profile !HDR_DV_Profile! {%HC_YELLOW%}included and no {%_GREEN%}DV / HDR10+ INPUT {%HC_YELLOW%}set.{#}{\n}
-	!Cecho! {%HC_YELLOW%}If you click {%_GREEN%}S. START {%HC_YELLOW%}the DV Profile !HDR_DV_Profile! will changed to {%HC_GREEN%}DV Profile 8{%HC_YELLOW%}.{#}{\n}
+	"!Cecho!" {%HC_YELLOW%}HDR input file already have {%HC_GREEN%}DV Profile !HDR_DV_Profile! {%HC_YELLOW%}included and no {%_GREEN%}DV / HDR10+ INPUT {%HC_YELLOW%}set.{#}{\n}
+	"!Cecho!" {%HC_YELLOW%}If you click {%_GREEN%}S. START {%HC_YELLOW%}the DV Profile !HDR_DV_Profile! will changed to {%HC_GREEN%}DV Profile 8{%HC_YELLOW%}.{#}{\n}
 )
 if "!HDR_HDR10P!!HDR_DV!!DV_DV!!DV_HDR10P!"=="TRUEFALSEFALSEFALSE" (
 	%HCYELLOW%
 	echo.
-	!Cecho! {%HC_YELLOW%}HDR input file already have {%HC_GREEN%}HDR10+ SEI {%HC_YELLOW%}included and no {%_GREEN%}DV / HDR10+ INPUT {%HC_YELLOW%}set.{#}{\n}
-	!Cecho! {%HC_YELLOW%}If you click {%_GREEN%}S. START {%HC_YELLOW%}the HDR10+ SEI will changed to {%HC_GREEN%}DV Profile 8{%HC_YELLOW%}.{#}{\n}
+	"!Cecho!" {%HC_YELLOW%}HDR input file already have {%HC_GREEN%}HDR10+ SEI {%HC_YELLOW%}included and no {%_GREEN%}DV / HDR10+ INPUT {%HC_YELLOW%}set.{#}{\n}
+	"!Cecho!" {%HC_YELLOW%}If you click {%_GREEN%}S. START {%HC_YELLOW%}the HDR10+ SEI will changed to {%HC_GREEN%}DV Profile 8{%HC_YELLOW%}.{#}{\n}
 )
 %HCWHITE%
 echo.
-!Cecho! {%HC_WHITE%}Change Settings and press [{%_GREEN%}S{%HC_WHITE%}] to start Processing^^!{#}{\n}
+"!Cecho!" {%HC_WHITE%}Change Settings and press [{%_GREEN%}S{%HC_WHITE%}] to start Processing^^!{#}{\n}
 CHOICE /C 12345ES /N /M "Select a Letter"
 
 if "%ERRORLEVEL%"=="7" goto OPERATION
@@ -1695,43 +1695,43 @@ if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" (
 ::VIDEO LINE
 :: VIDEO-INPUT = RPU-INPUT
 if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%" (
-	set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_GREEN%}MATCH WITH INPUT RPU{%_CYAN%}]{#}{\n}"
+	set "HEADER_RPU_AA_String="!Cecho!" {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
+	set "AA_String="!Cecho!" {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_GREEN%}MATCH WITH INPUT RPU{%_CYAN%}]{#}{\n}"
 ) else (
-	set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_RED%}NOT MATCH WITH INPUT RPU{%_CYAN%}]{#}{\n}"
+	set "HEADER_RPU_AA_String="!Cecho!" {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
+	set "AA_String="!Cecho!" {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_RED%}NOT MATCH WITH INPUT RPU{%_CYAN%}]{#}{\n}"
 )
 
 ::RPU LINE
 :: RPU-INPUT = NONE
-if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_GREY%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}"
+if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" set "HEADER_RPU_AA_String="!Cecho!" {%_CYAN%}Borders    = [{%_GREY%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}"
 
 ::OUTPUT_LINE
-set "HEADER_RPU_OUTPUT_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
+set "HEADER_RPU_OUTPUT_String="!Cecho!" {%_CYAN%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
 
 :: RPU-OUTPUT = VIDEO-INPUT
 if "%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%"=="%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%" (
-	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_YELLOW%}]{#}{\n}"
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_GREEN%}MATCH WITH OUTPUT{%_CYAN%}]{#}{\n}"
+	set "HEADER_RPU_OUTPUT_String="!Cecho!" {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_YELLOW%}]{#}{\n}"
+	set "AA_String="!Cecho!" {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_GREEN%}MATCH WITH OUTPUT{%_CYAN%}]{#}{\n}"
 ) else (
-	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_YELLOW%}]{#}{\n}"
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_RED%}NOT MATCH WITH OUTPUT{%_CYAN%}]{#}{\n}"
+	set "HEADER_RPU_OUTPUT_String="!Cecho!" {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_YELLOW%}]{#}{\n}"
+	set "AA_String="!Cecho!" {%_CYAN%}Borders    = [LEFT=%AA_INPUT_LC% px], [TOP=%AA_INPUT_TC% px], [RIGHT=%AA_INPUT_RC% px], [BOTTOM=%AA_INPUT_BC% px] [{%HC_RED%}NOT MATCH WITH OUTPUT{%_CYAN%}]{#}{\n}"
 )
 	
 ::OUTPUT LINE
 :: VIDEO-INPUT = NONE
 if "%AA_INPUT_LC%%AA_INPUT_TC%%AA_INPUT_RC%%AA_INPUT_BC%"=="" (
-	set "AA_String=!Cecho! {%_CYAN%}Borders    = [{%_YELLOW%}NOT FOUND. MUX FILE IN CONTAINER OR SET CROPPING VALUES MANUALLY{%_CYAN%}]{#}{\n}"
+	set "AA_String="!Cecho!" {%_CYAN%}Borders    = [{%_YELLOW%}NOT FOUND. MUX FILE IN CONTAINER OR SET CROPPING VALUES MANUALLY{%_CYAN%}]{#}{\n}"
 	if "%RPU_INPUT_AA_LC%%RPU_INPUT_AA_TC%%RPU_INPUT_AA_RC%%RPU_INPUT_AA_BC%"=="" (
-		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [{%_YELLOW%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}"
+		set "HEADER_RPU_AA_String="!Cecho!" {%_CYAN%}Borders    = [{%_YELLOW%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}"
 	) else (
-		set "HEADER_RPU_AA_String=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%_YELLOW%}VIDEO BORDERS NOT FOUND{%_CYAN%}]{#}{\n}"
+		set "HEADER_RPU_AA_String="!Cecho!" {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px] [{%_YELLOW%}VIDEO BORDERS NOT FOUND{%_CYAN%}]{#}{\n}"
 	)
-	set "HEADER_RPU_OUTPUT_String=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%_WHITE%}VIDEO BORDERS NOT FOUND{%_YELLOW%}]{#}{\n}"
+	set "HEADER_RPU_OUTPUT_String="!Cecho!" {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%_WHITE%}VIDEO BORDERS NOT FOUND{%_YELLOW%}]{#}{\n}"
 )
 
-set "HEADER_RPU_AA_String_RPU=!Cecho! {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px]{#}{\n}"
-set "HEADER_RPU_OUTPUT_String_RPU=!Cecho! {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px]{#}{\n}"
+set "HEADER_RPU_AA_String_RPU="!Cecho!" {%_CYAN%}Borders    = [LEFT=%RPU_INPUT_AA_LC% px], [TOP=%RPU_INPUT_AA_TC% px], [RIGHT=%RPU_INPUT_AA_RC% px], [BOTTOM=%RPU_INPUT_AA_BC% px]{#}{\n}"
+set "HEADER_RPU_OUTPUT_String_RPU="!Cecho!" {%_YELLOW%}Borders    = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px]{#}{\n}"
 cls
 %GREEN%
 echo  !HEADER1!
@@ -1783,16 +1783,16 @@ echo.
 echo  ========================================================================================================================
 %HCWHITE%
 echo.
-!Cecho! {%HC_WHITE%}L. Set [{%HC_YELLOW%}LEFT{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_LC! px{%HC_WHITE%}]{#}{\n}
-!Cecho! {%HC_WHITE%}T. Set [{%HC_YELLOW%}TOP{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_TC! px{%HC_WHITE%}]{#}{\n}
-!Cecho! {%HC_WHITE%}R. Set [{%HC_YELLOW%}RIGHT{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_RC! px{%HC_WHITE%}]{#}{\n}
-!Cecho! {%HC_WHITE%}B. Set [{%HC_YELLOW%}BOTTOM{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_BC! px{%HC_WHITE%}]{#}{\n}
+"!Cecho!" {%HC_WHITE%}L. Set [{%HC_YELLOW%}LEFT{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_LC! px{%HC_WHITE%}]{#}{\n}
+"!Cecho!" {%HC_WHITE%}T. Set [{%HC_YELLOW%}TOP{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_TC! px{%HC_WHITE%}]{#}{\n}
+"!Cecho!" {%HC_WHITE%}R. Set [{%HC_YELLOW%}RIGHT{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_RC! px{%HC_WHITE%}]{#}{\n}
+"!Cecho!" {%HC_WHITE%}B. Set [{%HC_YELLOW%}BOTTOM{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_BC! px{%HC_WHITE%}]{#}{\n}
 echo.
 %GREEN%
-!Cecho! {%_GREEN%}D. DISCARD{%HC_YELLOW%}* {%_GREEN%}Settings and Exit   {%HC_YELLOW%}*Set Borders to [{%HC_WHITE%}LEAVE UNTOUCHED{%HC_YELLOW%}].{#}{\n}
+"!Cecho!" {%_GREEN%}D. DISCARD{%HC_YELLOW%}* {%_GREEN%}Settings and Exit   {%HC_YELLOW%}*Set Borders to [{%HC_WHITE%}LEAVE UNTOUCHED{%HC_YELLOW%}].{#}{\n}
 echo S. SAVE Settings and Exit
 echo.
-!Cecho! {%HC_WHITE%}Change Settings and press [{%_GREEN%}S{%HC_WHITE%}] to SAVE or [{%_GREEN%}D{%HC_WHITE%}] to DISCARD{%HC_YELLOW%}*^^{%HC_WHITE%}!{#}{\n}
+"!Cecho!" {%HC_WHITE%}Change Settings and press [{%_GREEN%}S{%HC_WHITE%}] to SAVE or [{%_GREEN%}D{%HC_WHITE%}] to DISCARD{%HC_YELLOW%}*^^{%HC_WHITE%}!{#}{\n}
 %HCWHITE%
 CHOICE /C LTRBDS /N /M "Select a Letter L,T,R,B,[D]iscard,[S]ave"
 
@@ -1812,7 +1812,7 @@ if "%ERRORLEVEL%"=="5" (
 	echo.
 	%HCYELLOW%
 	echo Settings Discarded.
-	!Cecho! {%HC_YELLOW%}Borders set to [{%HC_WHITE%}LEAVE UNTOUCHED{%HC_YELLOW%}].{#}{\n}
+	"!Cecho!" {%HC_YELLOW%}Borders set to [{%HC_WHITE%}LEAVE UNTOUCHED{%HC_YELLOW%}].{#}{\n}
 	TIMEOUT 2 /NOBREAK >nul
 	goto :eof
 )
@@ -1857,7 +1857,7 @@ goto :AA_AREA_BASE
 
 :LOGFILESTART
 if exist "!TMP_FOLDER!" (
-	echo  DDVT P8 Hybrid Script [QfG] v%VERSION%>"!logfile!"
+	echo  DDVT P8 Hybrid Script v%VERSION%>"!logfile!"
 	echo.>>"!logfile!"
 	echo.>>"!logfile!"
 	echo                                         ====================================>>"!logfile!"
@@ -1903,7 +1903,7 @@ if exist "!TMP_FOLDER!" (
 	)
 )
 setlocal DisableDelayedExpansion
-ENDLOCAL
+endlocal
 %WHITE%
 echo.
 echo  == EXIT ================================================================================================================
@@ -1929,7 +1929,7 @@ set "NewLine=[System.Environment]::NewLine"
 set "Line1=""%MISSINGFILE%""""
 set "Line2=Copy the file to the directory or download and extract DDVT_tools.rar"
 setlocal DisableDelayedExpansion
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('NEEDED FILE NOT FOUND!' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT P8 Hybrid Script [QfG] v%VERSION%', 'Ok','Error')"
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('NEEDED FILE NOT FOUND!' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT P8 Hybrid Script v%VERSION%', 'Ok','Error')"
 exit
 
 :ERROR
@@ -1938,7 +1938,7 @@ set "NewLine=[System.Environment]::NewLine"
 set "Line1=%ERRORCOUNT% Error(s) during processing^!
 set "Line2=Target file don''t exist or corrupt.
 setlocal DisableDelayedExpansion
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT P8 Hybrid Script [QfG] v%VERSION%', 'Ok','Error')"
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT P8 Hybrid Script v%VERSION%', 'Ok','Error')"
 exit
 
 :DUALLAYERERROR
@@ -1947,7 +1947,7 @@ set "NewLine=[System.Environment]::NewLine"
 set "Line1=Unsupported Input File.
 set "Line2=Only Dolby Vision Single Layer files supported.
 setlocal DisableDelayedExpansion
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT P8 Hybrid Script [QfG] v%VERSION%', 'Ok','Info')"
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT P8 Hybrid Script v%VERSION%', 'Ok','Info')"
 exit
 
 :CreatePassword
@@ -1955,8 +1955,8 @@ set TempVar=%PasswordChars%
 set /a PWCharCount=0
 
 :CountLoop
-	set TempVar=%TempVar:~1%
-	set /a PWCharCount+=1
+set TempVar=%TempVar:~1%
+set /a PWCharCount+=1
 if not "%TempVar%"=="" goto CountLoop
 set TempVar=
 set Length=0

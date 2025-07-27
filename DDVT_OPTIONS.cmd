@@ -1,12 +1,12 @@
 @echo off & setlocal
 mode con cols=125 lines=57
-set VERSION=0.71 "Back to the roots"
+set VERSION=0.71.1 "The Emperor protects"
 set HEADER1=powered by quietvoids tools                                                                  GNU License (GPL) 2021-2025
-TITLE DDVT OPTIONS [QfG] v%VERSION%
+TITLE DDVT OPTIONS v%VERSION%
 set DESIGN=STANDARD
 
 rem --- Hardcoded settings. Can be changed manually ---
-set "Cecho="%~dp0tools\cecho_x64.exe"" rem Path to cecho_x64.exe
+set "Cecho=%~dp0tools\cecho_x64.exe" rem Path to cecho_x64.exe
 set "sfkpath=%~dp0tools\sfk.exe" rem Path to sfk.exe
 
 rem --- Hardcoded settings. Cannot be changed ---
@@ -170,9 +170,9 @@ echo.
 %CYAN%
 echo TEMP FOLDER        = !TMP_FOLDER_STRING!
 echo OUTPUT FOLDER      = !TARGET_FOLDER_STRING!
-!Cecho! {%_CYAN%}MKVTOOLNIX FOLDER  = !MKVTOOLNIX_FOLDER_STRING! [!MKVTOOLNIX_STAT!{%_CYAN%}]{#}{\n}
-!Cecho! {%_CYAN%}AVISYNTH+ FOLDER   = !AVISYNTH_FOLDER! [!AVISYNTH_STAT!{%_CYAN%}]{#}{\n}
-!Cecho! {%_CYAN%}LAV Filters FOLDER = !LAVFILTERS_FOLDER! [!LAVFILTER_STAT!{%_CYAN%}]{#}{\n}
+"!Cecho!" {%_CYAN%}MKVTOOLNIX FOLDER  = !MKVTOOLNIX_FOLDER_STRING! [!MKVTOOLNIX_STAT!{%_CYAN%}]{#}{\n}
+"!Cecho!" {%_CYAN%}AVISYNTH+ FOLDER   = !AVISYNTH_FOLDER! [!AVISYNTH_STAT!{%_CYAN%}]{#}{\n}
+"!Cecho!" {%_CYAN%}LAV Filters FOLDER = !LAVFILTERS_FOLDER! [!LAVFILTER_STAT!{%_CYAN%}]{#}{\n}
 echo.
 %WHITE%
 echo  == OPTIONS MENU ========================================================================================================
@@ -181,17 +181,17 @@ echo.
 echo 1. Set TEMP Directory
 echo 2. Set OUTPUT Directory
 echo 3. Set MKVTOOLNIX Directory
-!Cecho! {%_CYAN%}4. Set AVISYNTH+ Directory    [{%HC_YELLOW%}Also you can install AVISYNTH+ via this switch{%_CYAN%}]{#}{\n}
-!Cecho! {%_CYAN%}5. Set LAV Filters Directory  [{%HC_YELLOW%}Also you can install LAV Filters via this switch{%_CYAN%}]{#}{\n}
-!Cecho! {%HC_WHITE%}M. MediaInfo Logfile [{%COL_MEDIAINFO_LOGFILE%}!MEDIAINFO_LOGFILE!{%HC_WHITE%}]{#}{\n}
-!Cecho! {%HC_WHITE%}C. Injector Custom Edit Support [{%COL_JSON_SUPPORT%}!JSON_SUPPORT!{%HC_WHITE%}]{#}{\n}
-!Cecho! {%HC_WHITE%}P. Injector Custom Edit Processing [{%COL_JSON_PROCESS%}!JSON_PROCESS!{%HC_WHITE%}]{#}{\n}
-!Cecho! {%HC_WHITE%}F. Fix Scenecut Flags [{%COL_FIX_SCENECUTS%}!FIX_SCENECUTS!{%HC_WHITE%}]{#}{\n}
+"!Cecho!" {%_CYAN%}4. Set AVISYNTH+ Directory    [{%HC_YELLOW%}Also you can install AVISYNTH+ via this switch{%_CYAN%}]{#}{\n}
+"!Cecho!" {%_CYAN%}5. Set LAV Filters Directory  [{%HC_YELLOW%}Also you can install LAV Filters via this switch{%_CYAN%}]{#}{\n}
+"!Cecho!" {%HC_WHITE%}M. MediaInfo Logfile [{%COL_MEDIAINFO_LOGFILE%}!MEDIAINFO_LOGFILE!{%HC_WHITE%}]{#}{\n}
+"!Cecho!" {%HC_WHITE%}C. Injector Custom Edit Support [{%COL_JSON_SUPPORT%}!JSON_SUPPORT!{%HC_WHITE%}]{#}{\n}
+"!Cecho!" {%HC_WHITE%}P. Injector Custom Edit Processing [{%COL_JSON_PROCESS%}!JSON_PROCESS!{%HC_WHITE%}]{#}{\n}
+"!Cecho!" {%HC_WHITE%}F. Fix Scenecut Flags [{%COL_FIX_SCENECUTS%}!FIX_SCENECUTS!{%HC_WHITE%}]{#}{\n}
 echo.
 echo 6. Create Shell Extensions
 echo 7. Delete Shell Extensions
 echo.
-!Cecho! {%HC_WHITE%}D. Design [{%HC_YELLOW%}!DESIGN_STRING!{%HC_WHITE%}]{#}{\n}
+"!Cecho!" {%HC_WHITE%}D. Design [{%HC_YELLOW%}!DESIGN_STRING!{%HC_WHITE%}]{#}{\n}
 echo.
 %GREEN%
 echo S. SAVE SETTINGS
@@ -235,7 +235,7 @@ if "%ERRORLEVEL%"=="12" (
 	echo.
 	%HCWHITE%
 	echo.
-	!Cecho! {%HC_WHITE%}Drag 'n' Drop {%_GREEN%}DESIGN File {%HC_WHITE%}here and press ENTER:{#}{\n}
+	"!Cecho!" {%HC_WHITE%}Drag 'n' Drop {%_GREEN%}DESIGN File {%HC_WHITE%}here and press ENTER:{#}{\n}
 	%GREEN%
 	set /p "DESIGNINPUT=" || set "DESIGN=STANDARD"
 	if "!DESIGNINPUT!" NEQ "STANDARD" for %%f in (!DESIGNINPUT!) do set "DESIGN=%%~dpnxf">nul 2>&1
@@ -262,7 +262,7 @@ if "%ERRORLEVEL%"=="11" (
 		set "NewLine=[System.Environment]::NewLine"
 		set "Line1=REGISTRY STRINGS NOT DELETED^!"
 		set "Line2=Start the script with ADMINISTRATOR permissions to activate/deactivate the Windows SHELL EXTENSIONS. Without ADMINISTRATOR permissions you have insufficent rights changing Windows registry^!"
-		START /MIN PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('!Line1!' + !NewLine! + !NewLine! + '!Line2!', 'DDVT OPTIONS [QfG] %VERSION%', 'Ok','Error')"	
+		START /MIN PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('!Line1!' + !NewLine! + !NewLine! + '!Line2!', 'DDVT OPTIONS %VERSION%', 'Ok','Error')"	
 	)
 	TIMEOUT 2 /NOBREAK >nul
 )
@@ -280,7 +280,6 @@ if "%ERRORLEVEL%"=="10" (
 	
 	reg add "HKCU\Software\Classes\Directory\shell\MenuDDVT" /ve /d "DDVT" /f>nul 2>&1
 	reg add "HKCU\Software\Classes\Directory\shell\MenuDDVT" /v "Icon" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\DDVT.ico\",0" /f>nul 2>&1
-	reg add "HKCU\Software\Classes\Directory\shell\MenuDDVT" /v "ExtendedSubCommandsKey" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\DDVT.ico\",0" /f>nul 2>&1
 	reg add "HKCU\Software\Classes\Directory\shell\MenuDDVT" /v "ExtendedSubCommandsKey" /t REG_SZ /d "Directory\shell\MenuDDVT\ContextMenu" /f>nul 2>&1
 	reg add "HKCU\Software\Classes\Directory\shell\MenuDDVT" /v "Position" /t REG_SZ /d "Top" /f>nul 2>&1
 	reg add "HKCU\Software\Classes\Directory\shell\MenuDDVT\ContextMenu\shell\04REMOVER" /ve /d "Mass-Remover" /f>nul 2>&1
@@ -302,7 +301,6 @@ if "%ERRORLEVEL%"=="10" (
 
 	reg add "HKLM\Software\Classes\Directory\Background\Shell\MenuDDVT" /ve /d "DDVT" /f>nul 2>&1
 	reg add "HKLM\Software\Classes\Directory\Background\Shell\MenuDDVT" /v "Icon" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\DDVT.ico\",0" /f>nul 2>&1
-	reg add "HKLM\Software\Classes\Directory\Background\Shell\MenuDDVT" /v "ExtendedSubCommandsKey" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\DDVT.ico\",0" /f>nul 2>&1
 	reg add "HKLM\Software\Classes\Directory\Background\Shell\MenuDDVT" /v "ExtendedSubCommandsKey" /t REG_SZ /d "Directory\Background\Shell\MenuDDVT\ContextMenu" /f>nul 2>&1
 	reg add "HKLM\Software\Classes\Directory\Background\Shell\MenuDDVT" /v "Position" /t REG_SZ /d "Top" /f>nul 2>&1
 	reg add "HKLM\Software\Classes\Directory\Background\Shell\MenuDDVT\ContextMenu\shell\01HYBRID" /ve /d "Profile 8 Hybrid" /f>nul 2>&1
@@ -311,7 +309,6 @@ if "%ERRORLEVEL%"=="10" (
 
 	reg add "HKCR\*\Shell\MenuDDVT" /ve /d "DDVT" /f>nul 2>&1
 	reg add "HKCR\*\Shell\MenuDDVT" /v "Icon" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\DDVT.ico\",0" /f>nul 2>&1
-	reg add "HKCR\*\Shell\MenuDDVT" /v "ExtendedSubCommandsKey" /t REG_SZ /d "\"!TOOLFOLDER!tools\ICONS\DDVT.ico\",0" /f>nul 2>&1
 	reg add "HKCR\*\Shell\MenuDDVT" /v "ExtendedSubCommandsKey" /t REG_SZ /d "*\Shell\MenuDDVT\ContextMenu" /f>nul 2>&1
 	reg add "HKCR\*\Shell\MenuDDVT" /v "Position" /t REG_SZ /d "Top" /f>nul 2>&1
 	reg add "HKCR\*\Shell\MenuDDVT\ContextMenu\shell\01DEMUXER" /ve /d "Demuxer" /f>nul 2>&1
@@ -351,7 +348,7 @@ if "%ERRORLEVEL%"=="10" (
 		set "NewLine=[System.Environment]::NewLine"
 		set "Line1=REGISTRY STRINGS NOT SET^!"
 		set "Line2=Start the script with ADMINISTRATOR permissions to activate/deactivate the Windows SHELL EXTENSIONS. Without ADMINISTRATOR permissions you have insufficent rights changing Windows registry^!"
-		START /MIN PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('!Line1!' + !NewLine! + !NewLine! + '!Line2!', 'DDVT OPTIONS [QfG] %VERSION%', 'Ok','Error')"	
+		START /MIN PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('!Line1!' + !NewLine! + !NewLine! + '!Line2!', 'DDVT OPTIONS %VERSION%', 'Ok','Error')"	
 	)
 	TIMEOUT 2 /NOBREAK >nul
 )
@@ -418,7 +415,7 @@ goto MAINMENU
 :EXIT
 %WHITE%
 setlocal DisableDelayedExpansion
-ENDLOCAL
+endlocal
 echo.
 echo  == EXIT ================================================================================================================
 echo.

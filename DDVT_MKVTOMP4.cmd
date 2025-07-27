@@ -4,14 +4,14 @@ set "VERSION=--N.A.-- INCORRECTLY INSTALLED"
 set "HEADER1=File "%~dp0DDVT_OPTIONS.cmd" missing! Script works not correctly!"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"VERSION=" "%~dp0DDVT_OPTIONS.cmd"') DO set "VERSION=%%A"
 FOR /F "tokens=2 delims==" %%A IN ('findstr /C:"HEADER1=" "%~dp0DDVT_OPTIONS.cmd"') DO set "HEADER1=%%A"
-TITLE DDVT MKVtoMP4 [QfG] v%VERSION%
+TITLE DDVT MKVtoMP4 v%VERSION%
 set DESIGN=STANDARD
 
 set PasswordChars=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 set PasswordLength=5
 call :CreatePassword Password
 
-set "Cecho="%~dp0tools\cecho_x64.exe"" rem Path to cecho_x64.exe
+set "Cecho=%~dp0tools\cecho_x64.exe" rem Path to cecho_x64.exe
 set "sfkpath=%~dp0tools\sfk.exe" rem Path to sfk.exe
 set "FFMPEGpath=%~dp0tools\ffmpeg.exe" rem Path to ffmpeg.exe
 set "FFPROBEpath=%~dp0tools\ffprobe.exe" rem Path to ffprobe.exe
@@ -92,20 +92,9 @@ set "_WHITE=0F"
 
 if "!DESIGN!" NEQ "STANDARD" call "!DESIGN!"
 
-if "!TARGET_FOLDER!"=="SAME AS SOURCE" (
-	set "TARGET_FOLDER=%~dp1"
-	set "TARGET_FOLDER=!TARGET_FOLDER:~0,-1!"
-	set "TARGET_FOLDER_TYPE=SOURCE"
-)
-if "%TMP_FOLDER%"=="SAME AS SOURCE" (
-	set "TMP_FOLDER=%~dp1DDVT_%Password%_TMP"
-) else (
-	set "TMP_FOLDER=!TMP_FOLDER!\DDVT_%Password%_TMP"
-)
 if "!MKVTOOLNIX_FOLDER!"=="INCLUDED" set "MKVTOOLNIX_FOLDER=%~dp0tools"
 set "MKVMERGEpath=!MKVTOOLNIX_FOLDER!\mkvmerge.exe"
 set "MKVEXTRACTpath=!MKVTOOLNIX_FOLDER!\mkvextract.exe"
-set "logfile=%TMP_FOLDER%\!INPUTFILENAME!.log"
 
 if not exist "%Cecho%" set "MISSINGFILE=%~dp0tools\cecho_x64.exe" & goto :CORRUPTFILE
 if not exist "%sfkpath%" set "MISSINGFILE=%sfkpath%" & goto :CORRUPTFILE
@@ -119,6 +108,61 @@ if not exist "%DO_VI_TOOLpath%" set "MISSINGFILE=%DO_VI_TOOLpath%" & goto :CORRU
 if not exist "%MP4MUXERpath%" set "MISSINGFILE=%MP4MUXERpath%" & goto :CORRUPTFILE
 if not exist "%HDR10P_TOOLpath%" set "MISSINGFILE=%HDR10P_TOOLpath%" & goto :CORRUPTFILE
 
+if /i "!INPUTFILEEXT!"=="" CALL :INSERT_INPUT
+
+if "%TMP_FOLDER%"=="SAME AS SOURCE" (
+	set "TMP_FOLDER=!INPUTFILEPATH!DDVT_%Password%_TMP"
+) else (
+	set "TMP_FOLDER=!TMP_FOLDER!\DDVT_%Password%_TMP"
+)
+set "logfile=%TMP_FOLDER%\!INPUTFILENAME!.log"
+if "!TARGET_FOLDER!"=="SAME AS SOURCE" (
+	set "TARGET_FOLDER=!INPUTFILEPATH!"
+	set "TARGET_FOLDER=!TARGET_FOLDER:~0,-1!"
+	set "TARGET_FOLDER_TYPE=SOURCE"
+)
+
+dir /b/ad "!INPUTFILE!" >nul 2>nul && set DIRFOUND=TRUE
+if "!DIRFOUND!"=="TRUE" goto :MPREPARE
+
+if /i "!INPUTFILEEXT!"==".mkv" set "MKVExtract=TRUE" & goto CHECK
+
+goto :FALSEINPUT
+
+:INSERT_INPUT
+cls
+%GREEN%
+echo  !HEADER1!
+%WHITE%
+echo.
+echo                                         ====================================
+%GREEN%
+echo                                              Dolby Vision Tool MKVtoMP4
+%WHITE%
+echo                                         ====================================
+echo.
+echo.
+echo  == INSERT FILE OR FOLDER HERE ==========================================================================================
+%HCYELLOW%
+echo.
+echo [Info] Insert one file with following extensions:
+echo        .mkv
+echo.
+echo        or insert a complete folder for Mass-Converting^^!
+echo.
+%WHITE%
+"!Cecho!" {%_WHITE%}Drag 'n' Drop {%_GREEN%}FILE {%_WHITE%}or {%_GREEN%}FOLDER {%_WHITE%}here and press ENTER:{#}{\n}
+%GREEN%
+set /p "INPUTFILE=%~1" || if "!INPUTFILE!"=="" goto :INSERT_INPUT
+
+for %%f in (!INPUTFILE!) do set "INPUTFILENAME=%%~nf"
+for %%f in (!INPUTFILE!) do set "INPUTFILEEXT=%%~xf"
+for %%f in (!INPUTFILE!) do set "INPUTFILEPATH=%%~dpf"
+for %%f in (!INPUTFILE!) do set "INPUTFILE=%%~dpnxf"
+
+goto :eof
+
+:CHECK
 cls
 %GREEN%
 echo  !HEADER1!
@@ -133,21 +177,6 @@ echo                                         ===================================
 echo.
 echo.
 echo  == CHECK INPUT FILE ====================================================================================================
-if "%~1"=="" (
-	%HCYELLOW%
-	echo.
-	echo No Input File. Use DDVT_MKVTOMP4.cmd "YourFilename.mkv"
-	echo.
-	goto EXIT
-)
-
-dir /b/ad "%~1" >nul 2>nul && set DIRFOUND=TRUE
-if "!DIRFOUND!"=="TRUE" goto :MPREPARE
-if /i "%~x1"==".mkv" set "MKVExtract=TRUE" & goto CHECK
-
-goto :FALSEINPUT
-
-:CHECK
 set "VIDEO_COUNT="
 set "RESOLUTION="
 set "CODEC_NAME="
@@ -303,7 +332,7 @@ TIMEOUT 2 /NOBREAK>nul
 goto :START
 
 :MPREPARE
-set "SOURCE_FOLDER=%~1"
+set "SOURCE_FOLDER=!INPUTFILE!"
 set /A "ERRORCOUNT=0" & set "ERRORCOUNTC=08"
 set /A "DONECOUNT=0" & set "DONECOUNTC=08"
 set /A "SKIPCOUNT=0" & set "SKIPCOUNTC=08"
@@ -347,9 +376,9 @@ if "!DIRFOUND!"=="FALSE" (
 ) else (
 	echo  == MASS CONVERTER SETTINGS =============================================================================================
 	echo.
-	!Cecho! {%_CYAN%}Status     = [!MSTATUS!{%_CYAN%}]{#}{\n}
-	!Cecho! {%_CYAN%}Folder     = [{%HC_WHITE%}!SOURCE_FOLDER!{%_CYAN%}]{#}{\n}
-	!Cecho! {%_CYAN%}Info       = [FILES PROCESSED/SUM: {!PFILECOUNTC!}!PFILECOUNT!{%_CYAN%}/!SOURCEFILES!] [DONE: {!DONECOUNTC!}!DONECOUNT!{%_CYAN%}] [ERROR^(S^): {!ERRORCOUNTC!}!ERRORCOUNT!{%_CYAN%}] [SKIPPED: {!SKIPCOUNTC!}!SKIPCOUNT!{%_CYAN%}]{#}{\n}
+	"!Cecho!" {%_CYAN%}Status     = [!MSTATUS!{%_CYAN%}]{#}{\n}
+	"!Cecho!" {%_CYAN%}Folder     = [{%HC_WHITE%}!SOURCE_FOLDER!{%_CYAN%}]{#}{\n}
+	"!Cecho!" {%_CYAN%}Info       = [FILES PROCESSED/SUM: {!PFILECOUNTC!}!PFILECOUNT!{%_CYAN%}/!SOURCEFILES!] [DONE: {!DONECOUNTC!}!DONECOUNT!{%_CYAN%}] [ERROR^(S^): {!ERRORCOUNTC!}!ERRORCOUNT!{%_CYAN%}] [SKIPPED: {!SKIPCOUNTC!}!SKIPCOUNT!{%_CYAN%}]{#}{\n}
 )
 echo.
 %HCYELLOW%
@@ -364,13 +393,13 @@ echo  == MENU ==================================================================
 %HCWHITE%
 echo.
 echo 1. Audio Codec                    : [!AUDIOCODEC!]
-if "%FAKEP5ALLOWED%"=="TRUE" !Cecho! {%HC_WHITE%}2. Fake Profile 5                 : [%FAKEP5%]{%HC_YELLOW%}*   *Set Option to {%HC_WHITE%}[YES]{%HC_YELLOW%} for watching video on old {%HC_WHITE%}LG{%HC_YELLOW%} or {%HC_WHITE%}SAMSUNG{%HC_YELLOW%} TVs.{#}{\n}
+if "%FAKEP5ALLOWED%"=="TRUE" "!Cecho!" {%HC_WHITE%}2. Fake Profile 5                 : [%FAKEP5%]{%HC_YELLOW%}*   *Set Option to {%HC_WHITE%}[YES]{%HC_YELLOW%} for watching video on old {%HC_WHITE%}LG{%HC_YELLOW%} or {%HC_WHITE%}SAMSUNG{%HC_YELLOW%} TVs.{#}{\n}
 echo.
 %GREEN%
 echo S. START
 %HCWHITE%
 echo.
-!Cecho! {%HC_WHITE%}Change Settings and press [{%_GREEN%}S{%HC_WHITE%}] to start Converting^^!{#}{\n}
+"!Cecho!" {%HC_WHITE%}Change Settings and press [{%_GREEN%}S{%HC_WHITE%}] to start Converting^^!{#}{\n}
 if "%FAKEP5ALLOWED%"=="TRUE" (
 	CHOICE /C 12S /N /M "Select a Letter 1,2,[S]tart"
 ) else (
@@ -451,10 +480,10 @@ for %%A in ("!SOURCE_FOLDER!\*.mkv") do (
 	echo  == MASS CONVERTER ======================================================================================================
 	echo.
 	%CYAN%
-	!Cecho! {%_CYAN%}Status     = [!MSTATUS!{%_CYAN%}]{#}{\n}
-	!Cecho! {%_CYAN%}Folder     = [{%HC_WHITE%}!SOURCE_FOLDER!{%_CYAN%}]{#}{\n}
-	!Cecho! {%_CYAN%}Filename   = [{%HC_WHITE%}!INPUTFILENAME!!INPUTFILEEXT!{%_CYAN%}]{#}{\n}
-	!Cecho! {%_CYAN%}Info       = [FILE PROCESS/SUM: {!PFILECOUNTC!}!PFILECOUNT!{%_CYAN%}/!SOURCEFILES!] [DONE: {!DONECOUNTC!}!DONECOUNT!{%_CYAN%}] [ERROR^(S^): {!ERRORCOUNTC!}!ERRORCOUNT!{%_CYAN%}] [SKIPPED: {!SKIPCOUNTC!}!SKIPCOUNT!{%_CYAN%}]{#}{\n}
+	"!Cecho!" {%_CYAN%}Status     = [!MSTATUS!{%_CYAN%}]{#}{\n}
+	"!Cecho!" {%_CYAN%}Folder     = [{%HC_WHITE%}!SOURCE_FOLDER!{%_CYAN%}]{#}{\n}
+	"!Cecho!" {%_CYAN%}Filename   = [{%HC_WHITE%}!INPUTFILENAME!!INPUTFILEEXT!{%_CYAN%}]{#}{\n}
+	"!Cecho!" {%_CYAN%}Info       = [FILE PROCESS/SUM: {!PFILECOUNTC!}!PFILECOUNT!{%_CYAN%}/!SOURCEFILES!] [DONE: {!DONECOUNTC!}!DONECOUNT!{%_CYAN%}] [ERROR^(S^): {!ERRORCOUNTC!}!ERRORCOUNT!{%_CYAN%}] [SKIPPED: {!SKIPCOUNTC!}!SKIPCOUNT!{%_CYAN%}]{#}{\n}
 	echo.
 	%WHITE%
 	echo  == ANALYSING ===========================================================================================================
@@ -487,9 +516,9 @@ echo.
 echo  == MASS CONVERTER ======================================================================================================
 echo.
 %CYAN%
-!Cecho! {%_CYAN%}Status     = [!MSTATUS!{%_CYAN%}]{#}{\n}
-!Cecho! {%_CYAN%}Folder     = [{%HC_WHITE%}!SOURCE_FOLDER!{%_CYAN%}]{#}{\n}
-!Cecho! {%_CYAN%}Info       = [FILES PROCESSED/SUM: {%_CYAN%}!PFILECOUNT!{%_CYAN%}/!SOURCEFILES!] [DONE: {!DONECOUNTC!}!DONECOUNT!{%_CYAN%}] [ERROR^(S^): {!ERRORCOUNTC!}!ERRORCOUNT!{%_CYAN%}] [SKIPPED: {!SKIPCOUNTC!}!SKIPCOUNT!{%_CYAN%}]{#}{\n}
+"!Cecho!" {%_CYAN%}Status     = [!MSTATUS!{%_CYAN%}]{#}{\n}
+"!Cecho!" {%_CYAN%}Folder     = [{%HC_WHITE%}!SOURCE_FOLDER!{%_CYAN%}]{#}{\n}
+"!Cecho!" {%_CYAN%}Info       = [FILES PROCESSED/SUM: {%_CYAN%}!PFILECOUNT!{%_CYAN%}/!SOURCEFILES!] [DONE: {!DONECOUNTC!}!DONECOUNT!{%_CYAN%}] [ERROR^(S^): {!ERRORCOUNTC!}!ERRORCOUNT!{%_CYAN%}] [SKIPPED: {!SKIPCOUNTC!}!SKIPCOUNT!{%_CYAN%}]{#}{\n}
 echo.
 %WHITE%
 echo  ========================================================================================================================
@@ -653,7 +682,7 @@ if exist "!TMP_FOLDER!" (
 	)
 )
 setlocal DisableDelayedExpansion
-ENDLOCAL
+endlocal
 %WHITE%
 echo.
 echo  == EXIT ================================================================================================================
@@ -673,7 +702,7 @@ if "%ERRORCOUNT%"=="0" (
 exit
 
 :LOGFILESTART
-echo  DDVT MKVtoMP4 [QfG] v%VERSION%>"!logfile!"
+echo  DDVT MKVtoMP4 v%VERSION%>"!logfile!"
 echo.>>"!logfile!"
 echo.>>"!logfile!"
 echo                                         ====================================>>"!logfile!"
@@ -724,16 +753,16 @@ set "NewLine=[System.Environment]::NewLine"
 set "Line1=""%MISSINGFILE%""""
 set "Line2=Copy the file to the directory or download and extract DDVT_tools.rar"
 setlocal DisableDelayedExpansion
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('NEEDED FILE NOT FOUND!' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT MKVtoMP4 [QfG] v%version%', 'Ok','Error')"
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('NEEDED FILE NOT FOUND!' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT MKVtoMP4 v%version%', 'Ok','Error')"
 exit
 
 :FALSEINPUT
 if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
 set "NewLine=[System.Environment]::NewLine"
 set "Line1=Unsupported Input File. Supported Files are:"
-set "Line2=*.mkv"
+set "Line2=*.mkv | Directories" 
 setlocal DisableDelayedExpansion
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT MKVtoMP4 [QfG] v%version%', 'Ok','Info')"
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT MKVtoMP4 v%version%', 'Ok','Info')"
 exit
 
 :ERROR
@@ -742,7 +771,7 @@ set "NewLine=[System.Environment]::NewLine"
 set "Line1=%ERRORCOUNT% Error(s) during processing^!
 set "Line2=Target file don''t exist or corrupt.
 setlocal DisableDelayedExpansion
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT MKVtoMP4 [QfG] v%VERSION%', 'Ok','Error')"
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT MKVtoMP4 v%VERSION%', 'Ok','Error')"
 exit
 
 :CreatePassword
@@ -750,8 +779,8 @@ set TempVar=%PasswordChars%
 set /a PWCharCount=0
 
 :CountLoop
-	set TempVar=%TempVar:~1%
-	set /a PWCharCount+=1
+set TempVar=%TempVar:~1%
+set /a PWCharCount+=1
 if not "%TempVar%"=="" goto CountLoop
 set TempVar=
 set Length=0
