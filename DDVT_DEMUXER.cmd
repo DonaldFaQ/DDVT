@@ -1308,6 +1308,7 @@ if "!BL!!EL!!REMHDR10P!"=="YESNONO" echo Please wait. Processing BL...
 if "!BL!!EL!!REMHDR10P!"=="YESYESNO" echo Please wait. Processing BL and EL...
 if "!BL!!EL!"=="NOYES" echo Please wait. Processing EL...
 
+::RAW FILE
 if "!RAW_FILE!"=="TRUE" (
 	PUSHD "!TMP_FOLDER!"
 	echo Command^: "!DO_VI_TOOLpath!"!REMHDR10PString! demux!EXTSTRING! "!INPUTFILE!">>"!logfile!"
@@ -1316,8 +1317,8 @@ if "!RAW_FILE!"=="TRUE" (
 
 PUSHD "!TARGET_FOLDER!"
 
+::TEMP FOLDER HEVC
 if exist "!TMP_FOLDER!\temp.hevc" (
-	echo Command^: "!DO_VI_TOOLpath!"!REMHDR10PString! demux!EXTSTRING! "!TMP_FOLDER!\temp.hevc">>"!logfile!"
 	if exist "!TMP_FOLDER!\BL.hevc" del "!TMP_FOLDER!\BL.hevc"
 	if exist "!TMP_FOLDER!\EL.hevc" del "!TMP_FOLDER!\EL.hevc"
 	echo Command^: "!DO_VI_TOOLpath!"!REMHDR10PString! demux!EXTSTRING! "!TMP_FOLDER!\temp.hevc">>"!logfile!"
@@ -1325,18 +1326,21 @@ if exist "!TMP_FOLDER!\temp.hevc" (
 	if "!BL!"=="NO" (
 		if exist "!TARGET_FOLDER!\BL.hevc" del "!TARGET_FOLDER!\BL.hevc"
 	) else (
-		ren /y "!TARGET_FOLDER!\BL.hevc" "!INPUTFILENAME!_[!NAMESTRING!].hevc"
+		if exist "!INPUTFILENAME!_[!NAMESTRING!].hevc" del "!INPUTFILENAME!_[!NAMESTRING!].hevc"
+		ren "!TARGET_FOLDER!\BL.hevc" "!INPUTFILENAME!_[!NAMESTRING!].hevc"
 	)
 	if "!EL!"=="NO" (
 		if exist "!TARGET_FOLDER!\EL.hevc" del "!TARGET_FOLDER!\EL.hevc"
 	) else (
+		if exist "!INPUTFILENAME!_[EL].hevc" del "!INPUTFILENAME!_[EL].hevc"
 		ren "!TARGET_FOLDER!\EL.hevc" "!INPUTFILENAME!_[EL].hevc"
 	)
 )
 
+::TEMP FOLDER BL
 if exist "!TMP_FOLDER!\BL.hevc" (
 	if "!BL!"=="YES" (
-		if "!VIDEO_COUNT!" NEQ "1" (
+		if "!VIDEO_COUNT!!REMHDR10P!" NEQ "1NO" (
 			echo Command^: "!HDR10P_TOOLpath!" remove "!TMP_FOLDER!\BL.hevc" -o "!TARGET_FOLDER!\!INPUTFILENAME!_[!NAMESTRING!].hevc">>"!logfile!"
 			"!HDR10P_TOOLpath!" remove "!TMP_FOLDER!\BL.hevc" -o "!TARGET_FOLDER!\!INPUTFILENAME!_[!NAMESTRING!].hevc"
 		) else (
@@ -1345,11 +1349,14 @@ if exist "!TMP_FOLDER!\BL.hevc" (
 		)
 	)
 )
+
+::TEMP FOLDER EL
 if exist "!TMP_FOLDER!\EL.hevc" (
 	if "!EL!"=="YES" echo Command^: copy /y "!TMP_FOLDER!\EL.hevc" "!TARGET_FOLDER!\!INPUTFILENAME!_[EL].hevc">>"!logfile!"
 	if "!EL!"=="YES" copy /y "!TMP_FOLDER!\EL.hevc" "!TARGET_FOLDER!\!INPUTFILENAME!_[EL].hevc">nul
 )
 
+::CHECK FUNCTION
 if "!BL!"=="YES" (
 	if exist "!TARGET_FOLDER!\!INPUTFILENAME!_[!NAMESTRING!].hevc" (
 		for %%f in ("!TARGET_FOLDER!\!INPUTFILENAME!_[!NAMESTRING!].hevc") do set "CHECKSIZE=%%~zf" >nul 2>&1
