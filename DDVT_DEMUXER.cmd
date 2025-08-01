@@ -1313,6 +1313,7 @@ if "!RAW_FILE!"=="TRUE" (
 	PUSHD "!TMP_FOLDER!"
 	echo Command^: "!DO_VI_TOOLpath!"!REMHDR10PString! demux!EXTSTRING! "!INPUTFILE!">>"!logfile!"
 	"!DO_VI_TOOLpath!"!REMHDR10PString! demux!EXTSTRING! "!INPUTFILE!"
+	POPD
 )
 
 PUSHD "!TARGET_FOLDER!"
