@@ -627,7 +627,7 @@ if defined L5_FOUND (
 		set "L5_STRING=N/A"
 	)
 )
-echo  %HEADER1%>"!TMP_FOLDER!\logfile.txt"
+echo  DDVT MediaInfo v%VERSION%%>"!TMP_FOLDER!\logfile.txt"
 echo.>>"!TMP_FOLDER!\logfile.txt"
 echo                                         ====================================>>"!TMP_FOLDER!\logfile.txt"
 echo                                              Dolby Vision Tool MEDIAINFO>>"!TMP_FOLDER!\logfile.txt"
@@ -806,7 +806,7 @@ echo }
 powershell.exe -ExecutionPolicy Bypass -File "!TMP_FOLDER!\mount.ps1"
 if exist "!MountDrive!:\BDMV\STREAM\*.m2ts" (
 	"!Cecho!" {%_CYAN%}[{%HC_GREEN%}Blu-ray structure found^^!{%_CYAN%}]{#}{\n}
-	for /f "tokens=1" %%A in ('dir /B /O:S /A:-D "!MountDrive!:\BDMV\STREAM\*.m2ts"') do set "FILE=!MountDrive!:\BDMV\STREAM\%%A"
+	for /f "tokens=*" %%A in ('dir /B /O:S /A:-D "!MountDrive!:\BDMV\STREAM\*.m2ts"') do set "FILE=!MountDrive!:\BDMV\STREAM\%%A"
 ) else (
 	"!Cecho!" {%_CYAN%}[{%HC_RED%}Blu-ray structure not found^^!{%_CYAN%}]{#}{\n}
 	powershell.exe -ExecutionPolicy Bypass -File "!TMP_FOLDER!\dismount.ps1"

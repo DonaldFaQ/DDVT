@@ -644,7 +644,7 @@ call :SWITCHES
 
 if "%RAW_FILE%"=="FALSE" call :DEMUX
 if "%BL%"=="YES" call :DEMUX_BLEL
-if "%SAVHDR10P%"=="YES" call :CHG_HDR10P
+if "%SAVHDR10P%"=="YES" call :SAVE_HDR10P
 if "%CHGHDR10P%"=="YES" call :CHG_HDR10P
 
 goto :EXIT
@@ -821,7 +821,7 @@ echo.>>"!logfile!"
 call :SWITCHES
 
 if "%RAW_FILE%"=="FALSE" call :DEMUX
-if "%SAVHDR10P%"=="YES" call :CHG_HDR10P
+if "%SAVHDR10P%"=="YES" call :SAVE_HDR10P
 if "%CHGHDR10P%"=="YES" call :CHG_HDR10P
 if "%RPU%"=="YES" call :RPU_DEMUX
 if "%BL%"=="YES" call :DEMUX_BLEL
@@ -1027,7 +1027,7 @@ call :SWITCHES
 
 if "%RAW_FILE%"=="FALSE" call :DEMUX
 if "%RAW_FILE%!VIDEO_COUNT!"=="TRUE2" call :DEMUX
-if "%SAVHDR10P%"=="YES" call :CHG_HDR10P
+if "%SAVHDR10P%"=="YES" call :SAVE_HDR10P
 if "%CHGHDR10P%"=="YES" call :CHG_HDR10P
 if "%BL%%EL%" NEQ "NONO" call :DEMUX_BLEL
 if "%RPU%"=="YES" call :RPU_DEMUX
@@ -1131,7 +1131,6 @@ if "!CROP!"=="YES" set "CROPSTRING= -c"
 %WHITE%
 echo  == DEMUXING ============================================================================================================
 echo.
-
 goto :eof
 
 :DEMUX
@@ -1495,8 +1494,8 @@ if exist "!TARGET_FOLDER!\!INPUTFILENAME!!HEADERNAME!.json" (
 echo.
 goto :eof
 
-:CHG_HDR10P
-if "!CHG_HDR10P_OPERATION_DONE!"=="YES" goto :eof
+:SAVE_HDR10P
+if "!SAVE_HDR10P_OPERATION_DONE!"=="YES" goto :eof
 if "!RAW_FILE!"=="TRUE" set "BLSTREAM=!INPUTFILE!"
 %CYAN%
 echo [Demuxing HDR10+ SEI]>>"!logfile!"
@@ -1532,8 +1531,12 @@ if exist "!TMP_FOLDER!\HDR10Plus.json" (
 	echo Error.>>"!logfile!"
 	echo.>>"!logfile!"
 )
-if "%CHG_HDR10P%"=="NO" goto :eof
+set "SAVE_HDR10P_OPERATION_DONE=YES"
 echo.
+goto :eof
+	
+:CHG_HDR10P
+CALL :SAVE_HDR10P
 %CYAN%
 echo Please wait. Prefetching HDR10+ SEI...
 echo [Prefetching HDR10+ SEI]>>"!logfile!"
@@ -1597,7 +1600,6 @@ if exist "!TARGET_FOLDER!\!INPUTFILENAME!_[HDR10+ RPU].bin" (
 	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	echo.>>"!logfile!"
 )
-set "CHG_HDR10P_OPERATION_DONE=YES"
 echo.
 goto :eof
 
@@ -1606,8 +1608,10 @@ FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=General;%%VideoCount%% "!I
 if "!VIDEO_COUNT!" NEQ "1" set "LAYERTYPE= DL"
 "!FFPROBEpath!" "!INPUTFILE!" -show_streams -v 0 -of compact=p=0:nk=1 >"!TMP_FOLDER!\STREAMS.txt"
 FOR /F "delims=" %%A IN ('findstr /C:"hevc|H.265" "!TMP_FOLDER!\STREAMS.txt"') DO echo %%A>>"!TMP_FOLDER!\VSTREAMS.txt"
-FOR /F "delims=" %%A IN ('findstr /C:"3840|2160" "!TMP_FOLDER!\VSTREAMS.txt"') DO set "BL_STREAMINFO=%%A"
-FOR /F "delims=" %%A IN ('findstr /C:"1920|1080" "!TMP_FOLDER!\VSTREAMS.txt"') DO set "EL_STREAMINFO=%%A"
+if exist "!TMP_FOLDER!\VSTREAMS.txt" (
+	FOR /F "delims=" %%A IN ('findstr /C:"3840|2160" "!TMP_FOLDER!\VSTREAMS.txt"') DO set "BL_STREAMINFO=%%A"
+	FOR /F "delims=" %%A IN ('findstr /C:"1920|1080" "!TMP_FOLDER!\VSTREAMS.txt"') DO set "EL_STREAMINFO=%%A"
+)
 if defined BL_STREAMINFO (
 	for /F "tokens=1 delims=|" %%A in ("!BL_STREAMINFO!") do set "BL_INDEX=%%A"
 ) else (
