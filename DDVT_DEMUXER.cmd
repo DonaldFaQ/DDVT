@@ -619,13 +619,14 @@ echo                                              Dolby Vision Tool DEMUXER
 echo                                         ====================================
 echo.
 echo.
+if "!HDR10P!"=="TRUE" (set "HDR10PInfo_string=YES") else (set "HDR10PInfo_string=NO")
+if "!DV!"=="TRUE" (set "DVInfo_string=YES - Profile !DV_Profile!") else (set "DVInfo_string=NO")
+
 call :LOGFILESTART
 echo  == INFORMATIONS ========================================================================================================>>"!logfile!"
 echo.>>"!logfile!"
 echo Filename : !INPUTFILENAME!>>"!logfile!"
 echo Index    : Video Count [!VIDEO_COUNT!] ^| BL [!BL_INDEX!] ^| EL [!EL_INDEX!]>>"!logfile!"
-if "!HDR10P!"=="TRUE" (set "HDR10PInfo_string=YES") else (set "HDR10PInfo_string=NO")
-if "!DV!"=="TRUE" (set "DVInfo_string=YES - Profile !DV_Profile!") else (set "DVInfo_string=NO")
 echo HDR Info : HDR10+ [!HDR10PInfo_string!] ^| Dolby Vision [!DVInfo_string!]>>"!logfile!"
 echo.>>"!logfile!"
 echo  == SETTINGS ============================================================================================================>>"!logfile!"
@@ -786,13 +787,14 @@ echo                                              Dolby Vision Tool DEMUXER
 echo                                         ====================================
 echo.
 echo.
+if "!HDR10P!"=="TRUE" (set "HDR10PInfo_string=YES") else (set "HDR10PInfo_string=NO")
+if "!DV!"=="TRUE" (set "DVInfo_string=YES - Profile !DV_Profile!") else (set "DVInfo_string=NO")
+
 call :LOGFILESTART
 echo  == INFORMATIONS ========================================================================================================>>"!logfile!"
 echo.>>"!logfile!"
 echo Filename : !INPUTFILENAME!>>"!logfile!"
 echo Index    : Video Count [!VIDEO_COUNT!] ^| BL [!BL_INDEX!] ^| EL [!EL_INDEX!]>>"!logfile!"
-if "!HDR10P!"=="TRUE" (set "HDR10PInfo_string=YES") else (set "HDR10PInfo_string=NO")
-if "!DV!"=="TRUE" (set "DVInfo_string=YES - Profile !DV_Profile!") else (set "DVInfo_string=NO")
 echo HDR Info : HDR10+ [!HDR10PInfo_string!] ^| Dolby Vision [!DVInfo_string!]>>"!logfile!"
 echo.>>"!logfile!"
 if "%HDR10P%"=="TRUE" (
@@ -989,13 +991,14 @@ echo                                              Dolby Vision Tool DEMUXER
 echo                                         ====================================
 echo.
 echo.
+if "!HDR10P!"=="TRUE" (set "HDR10PInfo_string=YES") else (set "HDR10PInfo_string=NO")
+if "!DV!"=="TRUE" (set "DVInfo_string=YES - Profile !DV_Profile!") else (set "DVInfo_string=NO")
+
 call :LOGFILESTART
 echo  == INFORMATIONS ========================================================================================================>>"!logfile!"
 echo.>>"!logfile!"
 echo Filename : !INPUTFILENAME!>>"!logfile!"
 echo Index    : Video Count [!VIDEO_COUNT!] ^| BL [!BL_INDEX!] ^| EL [!EL_INDEX!]>>"!logfile!"
-if "!HDR10P!"=="TRUE" (set "HDR10PInfo_string=YES") else (set "HDR10PInfo_string=NO")
-if "!DV!"=="TRUE" (set "DVInfo_string=YES - Profile !DV_Profile!") else (set "DVInfo_string=NO")
 echo HDR Info : HDR10+ [!HDR10PInfo_string!] ^| Dolby Vision [!DVInfo_string!]>>"!logfile!"
 echo.>>"!logfile!"
 if "%HDR10P%"=="TRUE" (
@@ -1078,13 +1081,14 @@ echo                                              Dolby Vision Tool DEMUXER
 echo                                         ====================================
 echo.
 echo.
+if "!HDR10P!"=="TRUE" (set "HDR10PInfo_string=YES") else (set "HDR10PInfo_string=NO")
+if "!DV!"=="TRUE" (set "DVInfo_string=YES - Profile !DV_Profile!") else (set "DVInfo_string=NO")
+
 call :LOGFILESTART
 echo  == INFORMATIONS ========================================================================================================>>"!logfile!"
 echo.>>"!logfile!"
 echo Filename : !INPUTFILENAME!>>"!logfile!"
 echo Index    : Video Count [!VIDEO_COUNT!] ^| BL [!BL_INDEX!] ^| EL [!EL_INDEX!]>>"!logfile!"
-if "!HDR10P!"=="TRUE" (set "HDR10PInfo_string=YES") else (set "HDR10PInfo_string=NO")
-if "!DV!"=="TRUE" (set "DVInfo_string=YES - Profile !DV_Profile!") else (set "DVInfo_string=NO")
 echo HDR Info : HDR10+ [!HDR10PInfo_string!] ^| Dolby Vision [!DVInfo_string!]>>"!logfile!"
 echo.>>"!logfile!"
 echo  == SETTINGS ============================================================================================================>>"!logfile!"
@@ -1162,12 +1166,12 @@ if "!VIDEO_COUNT!"=="1" (
 	%CYAN%
 	echo.
 	%WHITE%
-	if "!FORCE_FFMPEG_DEMUXING!!MKVExtract!"=="NOTRUE" echo Command^: "!MKVEXTRACTpath!" "!INPUTFILE!" tracks --ui-language en !BL_INDEX!:"!TMP_FOLDER!\temp.hevc">>"!logfile!"
-	if "!FORCE_FFMPEG_DEMUXING!!MP4Extract!"=="NOTRUE" echo Command^: "!MP4BOXpath!" -raw 1 "!INPUTFILE!" -out "!TMP_FOLDER!\temp.hevc">>"!logfile!"
-	if not exist "!TMP_FOLDER!\temp.hevc" echo Command^: "!FFMPEGpath!" -loglevel panic -stats -y -i "!INPUTFILE!" -map 0:!BL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!" demux ->>"!logfile!"
 	if "!FORCE_FFMPEG_DEMUXING!!MKVExtract!"=="NOTRUE" "!MKVEXTRACTpath!" "!INPUTFILE!" tracks --ui-language en !BL_INDEX!:"!TMP_FOLDER!\temp.hevc"
 	if "!FORCE_FFMPEG_DEMUXING!!MP4Extract!"=="NOTRUE" "!MP4BOXpath!" -raw 1 "!INPUTFILE!" -out "!TMP_FOLDER!\temp.hevc"
-	if not exist "!TMP_FOLDER!\temp.hevc" "!FFMPEGpath!" -loglevel panic -stats -y -i "!INPUTFILE!" -map 0:!BL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!" demux -	
+	if "!FORCE_FFMPEG_DEMUXING!!MKVExtract!"=="NOTRUE" echo Command^: "!MKVEXTRACTpath!" "!INPUTFILE!" tracks --ui-language en !BL_INDEX!:"!TMP_FOLDER!\temp.hevc">>"!logfile!"
+	if "!FORCE_FFMPEG_DEMUXING!!MP4Extract!"=="NOTRUE" echo Command^: "!MP4BOXpath!" -raw 1 "!INPUTFILE!" -out "!TMP_FOLDER!\temp.hevc">>"!logfile!"	
+	if not exist "!TMP_FOLDER!\temp.hevc" "!FFMPEGpath!" -loglevel panic -stats -y -i "!INPUTFILE!" -map 0:!BL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!" demux -
+	if not exist "!TMP_FOLDER!\temp.hevc" echo Command^: "!FFMPEGpath!" -loglevel panic -stats -y -i "!INPUTFILE!" -map 0:!BL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc - ^| "!DO_VI_TOOLpath!" demux ->>"!logfile!"
 	if exist "!TMP_FOLDER!\temp.hevc" (
 		for %%f in ("!TMP_FOLDER!\temp.hevc") do set "CHECKSIZE=%%~zf" >nul 2>&1
 		if "!CHECKSIZE!" NEQ "0" (
@@ -1419,10 +1423,10 @@ echo Please wait. Demuxing DV Reference Processing Unit...
 %WHITE%
 if exist "!ELSTREAM!" (
 	echo Command^: "!DO_VI_TOOLpath!"%CROPSTRING%%CONVERTSTRING% extract-rpu "!ELSTREAM!" -o "!TARGET_FOLDER!\!INPUTFILENAME!_[RPU!CSTRING!].bin">>"!logfile!"
-	"!DO_VI_TOOLpath!"%CROPSTRING%%CONVERTSTRING% extract-rpu "!ELSTREAM!" -o "!TARGET_FOLDER!\!INPUTFILENAME!_[RPU!CSTRING!].bin"
+	"!DO_VI_TOOLpath!"%CROPSTRING%%CONVERTSTRING% extract-rpu "!ELSTREAM!" -o "!TARGET_FOLDER!\!INPUTFILENAME!_[RPU!CSTRING!].bin">>"!logfile!"
 ) else (
-	echo Command^: "!FFMPEGpath!" -loglevel panic -i "!INPUTFILE!" -map 0:!EL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc - ^| "!DO_VI_TOOLpath!"%CROPSTRING%%CONVERTSTRING% extract-rpu -o "!TARGET_FOLDER!\!INPUTFILENAME!_[RPU!CSTRING!].bin" ->>"!logfile!"
-	"!FFMPEGpath!" -loglevel panic -i "!INPUTFILE!" -map 0:!EL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!"%CROPSTRING%%CONVERTSTRING% extract-rpu -o "!TARGET_FOLDER!\!INPUTFILENAME!_[RPU!CSTRING!].bin" -
+	echo Command^: "!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -map 0:!EL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc - ^| "!DO_VI_TOOLpath!"%CROPSTRING%%CONVERTSTRING% extract-rpu -o "!TARGET_FOLDER!\!INPUTFILENAME!_[RPU!CSTRING!].bin" ->>"!logfile!"
+	"!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -map 0:!EL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!"%CROPSTRING%%CONVERTSTRING% extract-rpu -o "!TARGET_FOLDER!\!INPUTFILENAME!_[RPU!CSTRING!].bin" ->>"!logfile!"
 )
 if exist "!TARGET_FOLDER!\!INPUTFILENAME!_[RPU!CSTRING!].bin" (
 	for %%f in ("!TARGET_FOLDER!\!INPUTFILENAME!_[RPU!CSTRING!].bin") do set "CHECKSIZE=%%~zf" >nul 2>&1
@@ -1482,7 +1486,7 @@ if exist "!TARGET_FOLDER!\!INPUTFILENAME!!HEADERNAME!.xml" (
 echo.
 %WHITE%
 echo Command^: "!DO_VI_TOOLpath!" export -i "!RPU!" -d all="!TMP_FOLDER!\info.json">>"!logfile!"
-"!DO_VI_TOOLpath!" export -i "!RPU!" -d all="!TMP_FOLDER!\info.json"
+"!DO_VI_TOOLpath!" export -i "!RPU!" -d all="!TMP_FOLDER!\info.json">>"!logfile!"
 echo Command^: "!jqpath!" . "!TMP_FOLDER!\info.json"^>"!TARGET_FOLDER!\!INPUTFILENAME!!HEADERNAME!.json">>"!logfile!"
 "!jqpath!" . "!TMP_FOLDER!\info.json">"!TARGET_FOLDER!\!INPUTFILENAME!!HEADERNAME!.json"
 if exist "!TARGET_FOLDER!\!INPUTFILENAME!!HEADERNAME!.json" (
@@ -1516,12 +1520,12 @@ if "!RAW_FILE!"=="TRUE" set "BLSTREAM=!INPUTFILE!"
 echo [Demuxing HDR10+ SEI]>>"!logfile!"
 echo Please wait. Demuxing HDR10+ SEI...
 %WHITE%
-if "%BL%%REMHDR10P%"=="NONO" (
-	echo Command^: "!FFMPEGpath!" -loglevel panic -i "!INPUTFILE!" -map 0:!BL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc - ^| "!HDR10P_TOOLpath!" extract -o "!TMP_FOLDER!\HDR10Plus.json" ->>"!logfile!"
-	"!FFMPEGpath!" -loglevel panic -i "!INPUTFILE!" -map 0:!BL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!HDR10P_TOOLpath!" extract -o "!TMP_FOLDER!\HDR10Plus.json" -
-) else (
+if exist "!BLSTREAM!" (
 	echo Command^: "!HDR10P_TOOLpath!"%SKIPHDR10PString% extract "!BLSTREAM!" -o "!TMP_FOLDER!\HDR10Plus.json">>"!logfile!"
-	"!HDR10P_TOOLpath!"%SKIPHDR10PString% extract "!BLSTREAM!" -o "!TMP_FOLDER!\HDR10Plus.json"
+	"!HDR10P_TOOLpath!"%SKIPHDR10PString% extract "!BLSTREAM!" -o "!TMP_FOLDER!\HDR10Plus.json">>"!logfile!"
+) else (
+	echo Command^: "!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -map 0:!BL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc - ^| "!HDR10P_TOOLpath!" extract -o "!TMP_FOLDER!\HDR10Plus.json" ->>"!logfile!"
+	"!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -map 0:!BL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!HDR10P_TOOLpath!" extract -o "!TMP_FOLDER!\HDR10Plus.json" ->>"!logfile!"
 )
 if exist "!TMP_FOLDER!\HDR10Plus.json" (
 	for %%f in ("!TMP_FOLDER!\HDR10Plus.json") do set "CHECKSIZE=%%~zf" >nul 2>&1

@@ -1,3 +1,8 @@
+-v0.72 "Hope for the best, but prepare for the worst"
+*Major Bugfixes.
+*UPDATED mkvtoolnix to v94.0.0.0.
+(Do not forget to Download the new 3rd Party Apps!).
+
 -v0.71.1 "The Emperor protects"
 *UPDATED hdr10plus_tool to v1.7.1.
 *UPDATED - All scripts support Drag & Drop now. (Start without Input).
@@ -20,7 +25,7 @@
 *ADDED Theme support.
 *REWORKED all scripts.
 *Major Bugfixes.
-*UPDATED mkvtoolnix to v 93.0.0.0.
+*UPDATED mkvtoolnix to v93.0.0.0.
 (Do not forget to Download the new 3rd Party Apps!).
 
 -v0.65.5
@@ -36,7 +41,7 @@
 *ADDED L2, L8 Plotting with FileInfo script.
 *ADDED Mass Converting with -Remover- (Folder Support).
 *UPDATED dovi_tool to v2.3.0.
-*UPDATED mkvtoolnix to v 92.0.0.0.
+*UPDATED mkvtoolnix to v92.0.0.0.
 *Minor Bugfixes.
 (Do not forget to Download the new 3rd Party Apps).
 (If you using Shell Extensions, please reinstall via Options script).
@@ -68,7 +73,7 @@
 *FIXED -Options- Errors with Shell Extensions and W11.
 *FIXED -Options- Wrong TAB entry in DDVT_Options.ini [Line JSON_PROCESS] (if you have the TAB bug, please delete the complete line in ini file and save options again).
 *FIXED -MediaInfo- Removed HDR Metadata Tab for non HDR files.
-*UPDATED mkvtoolnix to v 89.0.0.0.
+*UPDATED mkvtoolnix to v89.0.0.0.
 *Minor Bugfixes.
 
 -v0.64.4
@@ -118,14 +123,14 @@
 *ADDED -SYNCCHECK- (check frames and cropping borders between video and rpu).
 *UPDATED dovi_tool to v2.1.3.
 *UPDATED hdr10plus_tool to v1.6.1.
-*UPDATED mkvtoolnix to v 88.0.0.0.
+*UPDATED mkvtoolnix to v88.0.0.0.
 *UPDATED FFMPEG to 7.1
 
 -v0.63.2
 *ADDED Shot List Support in Generator. (Generator script not official)
 *UPDATED Dolby Vision Pro Tools.
 *UPDATED dovi_tool to v2.1.1.
-*UPDATED mkvtoolnix to v 83.0.0.0.
+*UPDATED mkvtoolnix to v83.0.0.0.
 
 -v0.63.1
 *FIXED Border check fails if temp folder includes spaces (THX @ sirbod).
@@ -140,12 +145,12 @@
 -v0.62
 *UPDATED Complete overhaul of the INJECTOR script.
 *ADDED Feature for settings custom mkvtoolnix path in Options.
-*UPDATED mkvtoolnix to v 82.0.0.0.
+*UPDATED mkvtoolnix to v82.0.0.0.
 *FIXED minor bugfixes.
 
 -v0.61.5
 *FIXED missing HDR Info String in mkvtomp4 script with DV P5 files.
-*UPDATED mkvtoolnix to v 81.0.0.0.
+*UPDATED mkvtoolnix to v81.0.0.0.
 
 -v0.61.4
 *FIXED wrong error message during RPU.bin creating in DEMUXER Script.
@@ -173,11 +178,11 @@
 *RENAMED Script Frameinfo.cmd to Fileinfo.cmd.
  Support for plotting DV / HDR10+ metadata graphs to png picture file.
  If u use shell extensions start Options.cmd and reset Shell Extensions!
-*UPDATED mkvtoolnix to v 79.0.0.0.
+*UPDATED mkvtoolnix to v79.0.0.0.
 
 -v0.60
 *Minor Bugfixes.
-*UPDATED mkvtoolnix to v 78.0.0.0.
+*UPDATED mkvtoolnix to v78.0.0.0.
 
 -v0.59
 *Hybrid Scripts supports now HDR10+ files without DV for secondary input.
@@ -207,12 +212,12 @@
 -v0.54
 *NEW New Script included (DDVT_Hybrid) for fast creating DV Profile 8.1 Hybrid Releases.
 *INJECTOR-Function to change correctly the video framerate. Also included in HYBRID Script.
-*UPDATED mkvtoolnix to v 76.0.0.0.
+*UPDATED mkvtoolnix to v76.0.0.0.
 
 -v0.53
 *UPDATED FFMPEG to N-110509-g722ff74055-20230506
 *UPDATED MP4Box to 2.2-rev0-gab012bbfb
-*UPDATED mkvtoolnix to v 75.0.0.0.
+*UPDATED mkvtoolnix to v75.0.0.0.
 
 -v0.52
 *UPDATED dovi_tool to v2.0.3.
@@ -221,12 +226,12 @@
 -v0.51
 *UPDATED dovi_tool to v2.0.1.
 *UPDATED hdr10plus_tool to v1.5.2.
-*UPDATED mkvtoolnix to v 73.0.0.0.
+*UPDATED mkvtoolnix to v73.0.0.0.
 *Bugfix in Injector script for HDR10+ injecting (thx "von Suppé" for finding and "GodzilaAvenger" for fixing).
 
 -v0.50
 *Works now correct with all symbols in filenames.
-*UPDATED mkvtoolnix to v 71.1.1.0.
+*UPDATED mkvtoolnix to v71.1.1.0.
 
 -v0.49
 *INJECTOR-Support for HDR10+ JSON Data delaying.
@@ -239,7 +244,7 @@
 *UPDATED dovi_tool to v1.5.6.
 
 -v0.48b
-*UPDATED mkvtoolnix to v 70.0.0.0.
+*UPDATED mkvtoolnix to v70.0.0.0.
 *Fixed bugs with spaced names.
 *Fixed FRAMEINFO function.
 
@@ -274,7 +279,7 @@
 -v0.45
 *Added DoVi Profile 8.4 HLG Conversion in DEMUXER.
 *Fixed bad Frame choice in FRAMEINFO.
-*UPDATED mkvtoolnix to v 68.0.0.0.
+*UPDATED mkvtoolnix to v68.0.0.0.
 
 -v0.44
 *Fixed wrong Min Luminance Bug in DEMUXER by HDR10+ to DV Conversion.
@@ -305,7 +310,7 @@
 
 -v0.41
 *Add MKVtoMP4 Script.
-*UPDATED mkvtoolnix to v 67.0.0.0.
+*UPDATED mkvtoolnix to v67.0.0.0.
 ** Scripts renamed, use DDVT_Options Script for creating new Shell Extensions.
 
 -v0.40e
@@ -313,7 +318,7 @@
 
 -v0.40d
 *UPDATED MediaInfo to v22.02.
-*UPDATED mkvtoolnix to v 66.0.0.0.
+*UPDATED mkvtoolnix to v66.0.0.0.
 *UPDATED dovi_tool to v1.4.7.
 *Fixed Minor Bugs.
 
@@ -350,7 +355,7 @@
 
 -v0.37b
 *Minor Bugfixes.
-*UPDATED mkvtoolnix to v 65.0.0.0.
+*UPDATED mkvtoolnix to v65.0.0.0.
 
 -v0.37a - FIXED
 *Fixed troubleshooting with profile switch in Profile 7 options.

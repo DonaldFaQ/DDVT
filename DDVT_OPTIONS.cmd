@@ -1,6 +1,6 @@
 @echo off & setlocal
 mode con cols=125 lines=57
-set VERSION=0.71.1 "The Emperor protects"
+set VERSION=0.72 "Hope for the best, but prepare for the worst"
 set HEADER1=powered by quietvoids tools                                                                  GNU License (GPL) 2021-2025
 TITLE DDVT OPTIONS v%VERSION%
 set DESIGN=STANDARD

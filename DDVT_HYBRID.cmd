@@ -958,7 +958,7 @@ goto START
 :OPERATION
 if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 call :LOGFILESTART
-mode con cols=125 lines=65
+mode con cols=125 lines=60
 cls
 %GREEN%
 echo  !HEADER1!
@@ -1008,7 +1008,10 @@ echo [Extracting Video Layer]>>"!logfile!"
 %WHITE%
 if "!FORCE_FFMPEG_DEMUXING!!MKVExtract_HDR!"=="NOTRUE" "!MKVEXTRACTpath!" "!HDR_File!" tracks --ui-language en  0:"!TMP_FOLDER!\HDR.hevc"
 if "!FORCE_FFMPEG_DEMUXING!!MP4Extract_HDR!"=="NOTRUE" "!MP4BOXpath!" -raw 1 "!HDR_File!" -out "!TMP_FOLDER!\HDR.hevc"
+if "!FORCE_FFMPEG_DEMUXING!!MKVExtract_HDR!"=="NOTRUE" echo Command^: "!MKVEXTRACTpath!" "!HDR_File!" tracks --ui-language en  0:"!TMP_FOLDER!\HDR.hevc">>"!logfile!"
+if "!FORCE_FFMPEG_DEMUXING!!MP4Extract_HDR!"=="NOTRUE" echo Command^: "!MP4BOXpath!" -raw 1 "!HDR_File!" -out "!TMP_FOLDER!\HDR.hevc">>"!logfile!"	
 if not exist "!TMP_FOLDER!\HDR.hevc" "!FFMPEGpath!" -loglevel panic -stats -i "!HDR_File!" -c:v copy -bsf:v hevc_mp4toannexb -f hevc "!TMP_FOLDER!\HDR.hevc"
+if not exist "!TMP_FOLDER!\HDR.hevc" echo Command^: "!FFMPEGpath!" -loglevel panic -stats -i "!HDR_File!" -c:v copy -bsf:v hevc_mp4toannexb -f hevc "!TMP_FOLDER!\HDR.hevc">>"!logfile!"
 if exist "!TMP_FOLDER!\HDR.hevc" (
 	for %%f in ("!TMP_FOLDER!\HDR.hevc") do set "CHECKSIZE=%%~zf" >nul 2>&1
 	if "!CHECKSIZE!" NEQ "0" (
@@ -1040,7 +1043,8 @@ if "!HDR_HDR10P!!HDR_DV!!DV_DV!!DV_HDR10P!"=="TRUEFALSEFALSEFALSE" (
 	echo Please wait. Extracting HDR10+ SEI...
 	echo [Extracting HDR10+ SEI]>>"!logfile!"
 	%WHITE%
-	"!HDR10P_TOOLpath!" extract "!HDR_VIDEOSTREAM!" -o "!TMP_FOLDER!\HDR_HDR10Plus.json"
+	echo Command^: "!HDR10P_TOOLpath!" extract "!HDR_VIDEOSTREAM!" -o "!TMP_FOLDER!\HDR_HDR10Plus.json">>"!logfile!"
+	"!HDR10P_TOOLpath!" extract "!HDR_VIDEOSTREAM!" -o "!TMP_FOLDER!\HDR_HDR10Plus.json">>"!logfile!"
 	if exist "!TMP_FOLDER!\HDR_HDR10Plus.json" (
 		for %%f in ("!TMP_FOLDER!\HDR_HDR10Plus.json") do set "CHECKSIZE=%%~zf" >nul 2>&1
 		if "!CHECKSIZE!" NEQ "0" (
@@ -1073,7 +1077,8 @@ if "!HDR_DV!!DV_DV!!DV_HDR10P!"=="TRUEFALSEFALSE" (
 	echo Please wait. Extracting HDR Stream DV RPU...
 	echo [Extracting HDR Stream DV RPU]>>"!logfile!"
 	%WHITE%
-	"!DO_VI_TOOLpath!" -m !CONVERTswitch! extract-rpu "!HDR_VIDEOSTREAM!" -o "!TMP_FOLDER!\RPU.bin"
+	echo Command^: "!DO_VI_TOOLpath!" -m !CONVERTswitch! extract-rpu "!HDR_VIDEOSTREAM!" -o "!TMP_FOLDER!\RPU.bin">>"!logfile!"
+	"!DO_VI_TOOLpath!" -m !CONVERTswitch! extract-rpu "!HDR_VIDEOSTREAM!" -o "!TMP_FOLDER!\RPU.bin">>"!logfile!"
 	if exist "!TMP_FOLDER!\RPU.bin" (
 		for %%f in ("!TMP_FOLDER!\RPU.bin") do set "CHECKSIZE=%%~zf" >nul 2>&1
 		if "!CHECKSIZE!" NEQ "0" (
@@ -1114,7 +1119,8 @@ if "!DV_DV!"=="TRUE" (
 	echo Please wait. Extracting Dolby Vision Metadata...
 	echo [Extracting Dolby Vision Metadata]>>"!logfile!"
 	%WHITE%
-	"!FFMPEGpath!" -loglevel panic -stats -i "!INFOSTREAM!" -c:v copy -bsf:v hevc_metadata -f hevc - | "!DO_VI_TOOLpath!" -m !CONVERTswitch! extract-rpu -o "!TMP_FOLDER!\RPU.bin" -
+	echo Command^: "!FFMPEGpath!" -loglevel panic -stats -i "!INFOSTREAM!" -c:v copy -bsf:v hevc_mp4toannexb -f hevc - ^| "!DO_VI_TOOLpath!" -m !CONVERTswitch! extract-rpu -o "!TMP_FOLDER!\RPU.bin" ->>"!logfile!"
+	"!FFMPEGpath!" -loglevel panic -stats -i "!INFOSTREAM!" -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!" -m !CONVERTswitch! extract-rpu -o "!TMP_FOLDER!\RPU.bin" ->>"!logfile!"
 	if exist "!TMP_FOLDER!\RPU.bin" (
 		for %%f in ("!TMP_FOLDER!\RPU.bin") do set "CHECKSIZE=%%~zf" >nul 2>&1
 		if "!CHECKSIZE!" NEQ "0" (
@@ -1148,7 +1154,8 @@ if "!DV_HDR10P!"=="TRUE" (
 		echo Please wait. Extracting HDR10+ SEI...
 		echo [Extracting HDR10+ SEI]>>"!logfile!"
 		%WHITE%
-		"!FFMPEGpath!" -loglevel panic -stats -i "!DV_File!" -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!HDR10P_TOOLpath!" extract -o "!TMP_FOLDER!\DV_HDR10Plus.json" -
+		echo Command^: "!FFMPEGpath!" -loglevel panic -stats -i "!DV_File!" -c:v copy -bsf:v hevc_mp4toannexb -f hevc - ^| "!HDR10P_TOOLpath!" extract -o "!TMP_FOLDER!\DV_HDR10Plus.json" ->>"!logfile!"
+		"!FFMPEGpath!" -loglevel panic -stats -i "!DV_File!" -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!HDR10P_TOOLpath!" extract -o "!TMP_FOLDER!\DV_HDR10Plus.json" ->>"!logfile!"
 		if exist "!TMP_FOLDER!\DV_HDR10Plus.json" (
 			for %%f in ("!TMP_FOLDER!\DV_HDR10Plus.json") do set "CHECKSIZE=%%~zf" >nul 2>&1
 			if "!CHECKSIZE!" NEQ "0" (
@@ -1186,11 +1193,13 @@ if "%ERRORLEVEL%"=="0" (
 	echo Please wait. Applying HDR10+ !DELAY! Frames negative Delay...
 	echo [Applying HDR10+ !DELAY! Frames negative Delay]>>"!logfile!"
 	%WHITE%
+	echo Command^: "!PYTHONpath!" "!HDR10PDELAYSCRIPTpath!" -i "!HDR10PFILE!" -d !DELAY! -o "!TMP_FOLDER!\HDR10PlusDELAYED.json">>"!logfile!"
 	"!PYTHONpath!" "!HDR10PDELAYSCRIPTpath!" -i "!HDR10PFILE!" -d !DELAY! -o "!TMP_FOLDER!\HDR10PlusDELAYED.json">>"!logfile!"
 ) else (
 	echo Please wait. Applying HDR10+ !DELAY! Frames positive Delay...
 	echo [Applying HDR10+ !DELAY! Frames positive Delay]>>"!logfile!"
 	%WHITE%
+	echo Command^: "!PYTHONpath!" "!HDR10PDELAYSCRIPTpath!" -i "!HDR10PFILE!" -d !DELAY! -o "!TMP_FOLDER!\HDR10PlusDELAYED.json">>"!logfile!"
 	"!PYTHONpath!" "!HDR10PDELAYSCRIPTpath!" -i "!HDR10PFILE!" -d !DELAY! -o "!TMP_FOLDER!\HDR10PlusDELAYED.json">>"!logfile!"
 )
 if exist "!TMP_FOLDER!\HDR10PlusDELAYED.json" (
@@ -1226,6 +1235,7 @@ if "!INJ_HDR10P!"=="NO" goto :eof
 echo Please wait. Injecting the HDR10+ SEI into stream...
 echo [Injecting the HDR10+ SEI into stream]>>"!logfile!"
 %WHITE%
+echo Command^: "!HDR10P_TOOLpath!" inject -i "!HDR_VIDEOSTREAM!" -j "!HDR10PFILE!" -o "!TMP_FOLDER!\HDR10P_INJ.hevc">>"!logfile!"
 "!HDR10P_TOOLpath!" inject -i "!HDR_VIDEOSTREAM!" -j "!HDR10PFILE!" -o "!TMP_FOLDER!\HDR10P_INJ.hevc">>"!logfile!"
 if exist "!TMP_FOLDER!\HDR10P_INJ.hevc" (
 	for %%f in ("!TMP_FOLDER!\HDR10P_INJ.hevc") do set "CHECKSIZE=%%~zf" >nul 2>&1
@@ -1271,6 +1281,22 @@ echo	 	"max_frame_average_light_level": !MaxFall!
 echo 	}
 echo }
 )>"!TMP_FOLDER!\Extra.json"
+echo.>>"!logfile!"
+echo Creating Extra.json>>"!logfile!"
+echo.>>"!logfile!"
+(
+echo {
+echo	"cm_version": "!CM_VERSION!",
+echo 	"length": !FRAMES_HDR!,
+echo 	"level6": {
+echo	 	"max_display_mastering_luminance": !MaxDML!,
+echo	 	"min_display_mastering_luminance": !MinDML!,
+echo	 	"max_content_light_level": !MaxCLL!,
+echo	 	"max_frame_average_light_level": !MaxFall!
+echo 	}
+echo }
+)>>"!logfile!"
+echo.>>"!logfile!"
 if exist "!TMP_FOLDER!\Extra.json" (
 	%HCGREEN%
 	echo Done.
@@ -1290,6 +1316,7 @@ if exist "!TMP_FOLDER!\Extra.json" (
 echo Please wait. Generating DV RPU from HDR10+ file...
 echo [Generating DV RPU from HDR10+ file]>>"!logfile!"
 %WHITE%
+echo Command^: "!DO_VI_TOOLpath!" generate -j "!TMP_FOLDER!\Extra.json" --hdr10plus-json "!HDR10PFILE!" -o "!TMP_FOLDER!\HDR10PCONVDV.bin">>"!logfile!"
 "!DO_VI_TOOLpath!" generate -j "!TMP_FOLDER!\Extra.json" --hdr10plus-json "!HDR10PFILE!" -o "!TMP_FOLDER!\HDR10PCONVDV.bin">>"!logfile!"
 if exist "!TMP_FOLDER!\HDR10PCONVDV.bin" (
 	for %%f in ("!TMP_FOLDER!\HDR10PCONVDV.bin") do set "CHECKSIZE=%%~zf" >nul 2>&1
@@ -1341,6 +1368,7 @@ echo     }
 echo   }
 echo }
 )>"!TMP_FOLDER!\EDIT.json"
+echo Command^: "!DO_VI_TOOLpath!" editor -i "!RPUFILE!" -j "!TMP_FOLDER!\EDIT.json" -o "!TMP_FOLDER!\RPU-CROPPED.bin">>"!logfile!"
 "!DO_VI_TOOLpath!" editor -i "!RPUFILE!" -j "!TMP_FOLDER!\EDIT.json" -o "!TMP_FOLDER!\RPU-CROPPED.bin">>"!logfile!"
 if exist "!TMP_FOLDER!\RPU-CROPPED.bin" (
 	for %%f in ("!TMP_FOLDER!\RPU-CROPPED.bin") do set "CHECKSIZE=%%~zf" >nul 2>&1
@@ -1389,9 +1417,9 @@ if "%ERRORLEVEL%"=="0" (
 ) else (
 	echo Please wait. Applying RPU !DELAY! Frames positive Delay...
 	echo [Applying RPU !DELAY! Frames positive Delay]>>"!logfile!"
+	%WHITE%	
 	set "DELAY_SC_FIX=TRUE"
 	(
-	%WHITE%
 	echo {
 	echo 	"duplicate": [
 	echo 		{
@@ -1403,6 +1431,7 @@ if "%ERRORLEVEL%"=="0" (
 	echo }
 	)>"!TMP_FOLDER!\Edit.json"
 )
+echo Command^: "!DO_VI_TOOLpath!" editor -i "!RPUFILE!" -j "!TMP_FOLDER!\EDIT.json" -o "!TMP_FOLDER!\RPU-DELAYED.bin">>"!logfile!"
 "!DO_VI_TOOLpath!" editor -i "!RPUFILE!" -j "!TMP_FOLDER!\EDIT.json" -o "!TMP_FOLDER!\RPU-DELAYED.bin">>"!logfile!"
 if exist "!TMP_FOLDER!\RPU-DELAYED.bin" (
 	for %%f in ("!TMP_FOLDER!\RPU-DELAYED.bin") do set "CHECKSIZE=%%~zf" >nul 2>&1
@@ -1445,6 +1474,7 @@ if exist "!RPUFILE!" (
 	echo	}
 	echo }
 	)>"!TMP_FOLDER!\Edit.json"
+	echo Command^: "!DO_VI_TOOLpath!" editor -i "!RPUFILE!" -j "!TMP_FOLDER!\EDIT.json" -o "!TMP_FOLDER!\RPU-SCFIXED.bin">>"!logfile!"
 	"!DO_VI_TOOLpath!" editor -i "!RPUFILE!" -j "!TMP_FOLDER!\EDIT.json" -o "!TMP_FOLDER!\RPU-SCFIXED.bin">>"!logfile!"
 	if exist "!TMP_FOLDER!\RPU-SCFIXED.bin" (
 		for %%f in ("!TMP_FOLDER!\RPU-SCFIXED.bin") do set "CHECKSIZE=%%~zf" >nul 2>&1
@@ -1485,6 +1515,7 @@ set "CODEC=hevc"
 echo Please wait. Changing HDR Stream FPS to !CHGFPS!...
 echo [Changing HDR Stream FPS to !CHGFPS!]>>"!logfile!"
 %WHITE%
+echo Command^: "!FFMPEGpath!" -y -i "!HDR_VIDEOSTREAM!" -loglevel panic -stats -an -sn -dn -c copy -bsf:v hevc_metadata=tick_rate=!FPS!:num_ticks_poc_diff_one=1 "!TMP_FOLDER!\HDR_FPSCHANGED.!CODEC!">>"!logfile!"
 "!FFMPEGpath!" -y -i "!HDR_VIDEOSTREAM!" -loglevel panic -stats -an -sn -dn -c copy -bsf:v hevc_metadata=tick_rate=!FPS!:num_ticks_poc_diff_one=1 "!TMP_FOLDER!\HDR_FPSCHANGED.!CODEC!"
 if exist "!TMP_FOLDER!\HDR_FPSCHANGED.!CODEC!" (
 	for %%f in ("!TMP_FOLDER!\HDR_FPSCHANGED.!CODEC!") do set "CHECKSIZE=%%~zf" >nul 2>&1
@@ -1520,6 +1551,7 @@ if "%REMHDR_HDR10P%"=="YES" set "REM_HDR10PString=--drop-hdr10plus "
 echo Please wait. Injecting DV RPU into stream...
 echo [Injecting DV RPU into stream]>>"!logfile!"
 %WHITE%
+echo Command^: "!DO_VI_TOOLpath!" !REM_HDR10PString!inject-rpu "!HDR_VIDEOSTREAM!" --rpu-in "!RPUFILE!" -o "!TMP_FOLDER!\HDR_DV_INJ.hevc">>"!logfile!"
 "!DO_VI_TOOLpath!" !REM_HDR10PString!inject-rpu "!HDR_VIDEOSTREAM!" --rpu-in "!RPUFILE!" -o "!TMP_FOLDER!\HDR_DV_INJ.hevc">>"!logfile!"
 if exist "!TMP_FOLDER!\HDR_DV_INJ.hevc" (
 	for %%f in ("!TMP_FOLDER!\HDR_DV_INJ.hevc") do set "CHECKSIZE=%%~zf" >nul 2>&1
@@ -1565,6 +1597,7 @@ if "!MKVExtract_HDR!!MUXINMKV!"=="TRUEYES" (
 	%HCYELLOW%
 	set "MUXEXT=.mkv"
 	echo Don't close "Muxing !HDR_Filename!_[!NAMESTRING!] into MKV" cmd window.
+	echo Command^: start /WAIT /MIN "Muxing !HDR_Filename! into MKV" "!MKVMERGEpath!" --ui-language en --priority higher --output ^"!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!].mkv^" --stop-after-video-ends --no-video ^"^(^" ^"!HDR_File!^" ^"^)^" --language 0:und --compression 0:none !duration! ^"^(^" ^"!HDR_VIDEOSTREAM!^" ^"^)^" --track-order 1:0>>"!logfile!"
 	start /WAIT /MIN "Muxing !HDR_Filename! into MKV" "!MKVMERGEpath!" --ui-language en --priority higher --output ^"!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!].mkv^" --stop-after-video-ends --no-video ^"^(^" ^"!HDR_File!^" ^"^)^" --language 0:und --compression 0:none !duration! ^"^(^" ^"!HDR_VIDEOSTREAM!^" ^"^)^" --track-order 1:0
 	if exist "!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!]!MUXEXT!" (
 		for %%f in ("!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!]!MUXEXT!") do set "CHECKSIZE=%%~zf" >nul 2>&1
@@ -1597,6 +1630,7 @@ if "!MP4Extract_HDR!!MUXINMP4!"=="TRUEYES" (
 	echo Please wait. Muxing !HDR_Filename! into MP4...
 	echo [Muxing !HDR_Filename! into MP4]>>"!logfile!"
 	%WHITE%
+	echo Command^: "!MP4BOXpath!" -rem 1 "!HDR_File!" -out "!TMP_FOLDER!\temp.mp4">>"!logfile!"
 	"!MP4BOXpath!" -rem 1 "!HDR_File!" -out "!TMP_FOLDER!\temp.mp4"
 	if exist "!TMP_FOLDER!\temp.mp4" (
 		%HCGREEN%
@@ -1613,6 +1647,7 @@ if "!MP4Extract_HDR!!MUXINMP4!"=="TRUEYES" (
 		echo.>>"!logfile!"
 	)
 	set "MUXEXT=.mp4"
+	echo Command^: "!MP4BOXpath!" -add "!TMP_FOLDER!\HDR_DV_INJ.hevc:ID=1:fps=!FRAMERATE_HDR!:name=" "!TMP_FOLDER!\temp.mp4" -out "!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!]!MUXEXT!">>"!logfile!"
 	"!MP4BOXpath!" -add "!TMP_FOLDER!\HDR_DV_INJ.hevc:ID=1:fps=!FRAMERATE_HDR!:name=" "!TMP_FOLDER!\temp.mp4" -out "!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!]!MUXEXT!"
 	echo [Finalising MP4 File]>>"!logfile!"
 	if exist "!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!]!MUXEXT!" (
@@ -1646,7 +1681,8 @@ if "!MUXINMKV!!MUXINMP4!"=="NONO" (
 	set "MUXEXT=.hevc"
 	echo Move Videostream into Target Folder...
 	echo [Move Videostream into Target Folder]>>"!logfile!"
-	move /Y "!HDR_VIDEOSTREAM!" "!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!]!MUXEXT!" >nul
+	echo Command^: move "!HDR_VIDEOSTREAM!" "!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!]!MUXEXT!">>"!logfile!"
+	move "!HDR_VIDEOSTREAM!" "!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!]!MUXEXT!" >nul
 	if exist "!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!]!MUXEXT!" (
 		for %%f in ("!TARGET_FOLDER!\!HDR_Filename!_[!NAMESTRING!]!MUXEXT!") do set "CHECKSIZE=%%~zf" >nul 2>&1
 		if "!CHECKSIZE!" NEQ "0" (
@@ -1868,6 +1904,13 @@ if exist "!TMP_FOLDER!" (
 	echo  == LOGFILE START =======================================================================================================>>"!logfile!"
 	echo.>>"!logfile!"
 	echo %date%  %time%>>"!logfile!"
+	echo.>>"!logfile!"
+	echo  == INFORMATIONS ========================================================================================================>>"!logfile!"
+	echo.>>"!logfile!"
+	echo HDR Filename : !HDR_Filename!!HDR_FileExt!>>"!logfile!"
+	echo DV Filename  : !DV_Filename!!DV_Fileext!>>"!logfile!"
+	echo.>>"!logfile!"
+	echo  == OPERATIONS ==========================================================================================================>>"!logfile!"
 	echo.>>"!logfile!"
 )
 goto :eof
