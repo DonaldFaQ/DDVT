@@ -535,7 +535,7 @@ if "!ISOFILE!"=="TRUE" "!Cecho!" {%HC_YELLOW%}                    of the main mo
 if "!DVprofile!"=="5" "!Cecho!" {%HC_YELLOW%}                    No HDR10 Fallback with Dolby Vision Profile 5.{#}{\n}
 ::BASE LAYER INFO
 if "!DVBIN!"=="NO" (
-	if "!DVinput!"=="YES" (
+	if "!HDRFormat!" NEQ "SDR" (
 		echo.
 		%YELLOW%
 		echo Base Layer
@@ -548,7 +548,6 @@ if "!DVBIN!"=="NO" (
 	)
 )
 ::RPU INFO
-
 if "!DVinput!!RPU_EXIST!"=="YESTRUE" (
 	echo.
 	%YELLOW%
@@ -668,7 +667,7 @@ if "!DVprofile!"=="5" echo                     ^No ^HDR10 ^Fallback ^with ^Dolby
 
 ::BASE LAYER INFO
 if "!DVBIN!"=="NO" (
-	if "!DVinput!"=="YES" (
+	if "!HDRFormat!" NEQ "SDR" (
 		echo.>>"!TMP_FOLDER!\logfile.txt"
 		echo Base Layer>>"!TMP_FOLDER!\logfile.txt"
 		echo Codec             : !CODEC_NAME!>>"!TMP_FOLDER!\logfile.txt"
