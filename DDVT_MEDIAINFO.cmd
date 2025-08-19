@@ -535,16 +535,18 @@ if "!ISOFILE!"=="TRUE" "!Cecho!" {%HC_YELLOW%}                    of the main mo
 if "!DVprofile!"=="5" "!Cecho!" {%HC_YELLOW%}                    No HDR10 Fallback with Dolby Vision Profile 5.{#}{\n}
 ::BASE LAYER INFO
 if "!DVBIN!"=="NO" (
-	if "!HDRFormat!" NEQ "SDR" (
-		echo.
-		%YELLOW%
-		echo Base Layer
-		%HCWHITE%
-		echo Codec             : !CODEC_NAME!
-		echo Mastering DCP     : !MDCP!
-		echo Mastering DL      : !Luminance!
-		echo MaxCLL            : !MaxCLL!
-		echo MaxFALL           : !MaxFALL!
+	if "!DVprofile!" NEQ "5" (
+		if "!HDRFormat!" NEQ "SDR" (
+			echo.
+			%YELLOW%
+			echo Base Layer
+			%HCWHITE%
+			echo Codec             : !CODEC_NAME!
+			echo Mastering DCP     : !MDCP!
+			echo Mastering DL      : !Luminance!
+			echo MaxCLL            : !MaxCLL!
+			echo MaxFALL           : !MaxFALL!
+		)
 	)
 )
 ::RPU INFO
@@ -667,14 +669,16 @@ if "!DVprofile!"=="5" echo                     ^No ^HDR10 ^Fallback ^with ^Dolby
 
 ::BASE LAYER INFO
 if "!DVBIN!"=="NO" (
-	if "!HDRFormat!" NEQ "SDR" (
-		echo.>>"!TMP_FOLDER!\logfile.txt"
-		echo Base Layer>>"!TMP_FOLDER!\logfile.txt"
-		echo Codec             : !CODEC_NAME!>>"!TMP_FOLDER!\logfile.txt"
-		echo Mastering DCP     : !MDCP!>>"!TMP_FOLDER!\logfile.txt"
-		echo Mastering DL      : !Luminance!>>"!TMP_FOLDER!\logfile.txt"
-		echo MaxCLL            : !MaxCLL!>>"!TMP_FOLDER!\logfile.txt"
-		echo MaxFALL           : !MaxFALL!>>"!TMP_FOLDER!\logfile.txt"
+	if "!DVprofile!" NEQ "5" (
+		if "!HDRFormat!" NEQ "SDR" (
+			echo.>>"!TMP_FOLDER!\logfile.txt"
+			echo Base Layer>>"!TMP_FOLDER!\logfile.txt"
+			echo Codec             : !CODEC_NAME!>>"!TMP_FOLDER!\logfile.txt"
+			echo Mastering DCP     : !MDCP!>>"!TMP_FOLDER!\logfile.txt"
+			echo Mastering DL      : !Luminance!>>"!TMP_FOLDER!\logfile.txt"
+			echo MaxCLL            : !MaxCLL!>>"!TMP_FOLDER!\logfile.txt"
+			echo MaxFALL           : !MaxFALL!>>"!TMP_FOLDER!\logfile.txt"
+		)
 	)
 )
 
