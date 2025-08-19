@@ -1414,7 +1414,7 @@ if "%AA_LC%%AA_TC%%AA_RC%%AA_BC%"=="UntouchedUntouchedUntouchedUntouched" set "R
 %CYAN%
 echo Please wait. Analysing RPU Binary...
 %WHITE%
-"!DO_VI_TOOLpath!" extract-rpu "!VIDEOSTREAM!" -o "!TMP_FOLDER!\RPU.bin">nul
+"!DO_VI_TOOLpath!" extract-rpu "!CONTAINERSTREAM!" -o "!TMP_FOLDER!\RPU.bin">nul
 set "RPUFILE=!TMP_FOLDER!\RPU.bin"
 if exist "!TMP_FOLDER!\RPU.bin" (
 	%HCGREEN%
