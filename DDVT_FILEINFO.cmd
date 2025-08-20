@@ -1326,14 +1326,14 @@ if exist "%~dp0DDVT_OPTIONS.ini" (
 )
 if "!TARGET_FOLDER!"=="SAME AS SOURCE" set "TARGET_FOLDER=!INPUTFILEPATH!"
 if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
-set AA_LC=Undefined
-set AA_TC=Undefined
-set AA_RC=Undefined
-set AA_BC=Undefined
-set RPU_AA_LC=Undefined
-set RPU_AA_TC=Undefined
-set RPU_AA_RC=Undefined
-set RPU_AA_BC=Undefined
+set "AA_LC="
+set "AA_TC="
+set "AA_RC="
+set "AA_BC="
+set "RPU_AA_LC="
+set "RPU_AA_TC="
+set "RPU_AA_RC="
+set "RPU_AA_BC="
 set "CONTAINERSTREAM=!INPUTFILE!"
 cls
 echo.
@@ -1355,7 +1355,6 @@ echo.
 %WHITE%
 if "%RAW_FILE%"=="FALSE" (
 	set "CONTAINERSTREAM=!INPUTFILE!"
-	call :DEMUX
 ) else (
 	%HCYELLOW%
 	echo ATTENTION^^! You need a lot of HDD Space for this operation.
@@ -1401,20 +1400,25 @@ if exist "!TMP_FOLDER!\Crop.txt" (
 ) else (
 	%HCYELLOW%
 	echo Analysing failed.
-	set AA_LC=Failed
-	set AA_TC=Failed
-	set AA_RC=Failed
-	set AA_BC=Failed
 	echo.
 )
 	
 set "AA_String=[LEFT=%AA_LC% px], [TOP=%AA_TC% px], [RIGHT=%AA_RC% px], [BOTTOM=%AA_BC% px]"
-if "%AA_LC%%AA_TC%%AA_RC%%AA_BC%"=="UntouchedUntouchedUntouchedUntouched" set "RPU_AA_String=[ANALYSING FAILED^^!]"
-
+if "%AA_LC%%AA_TC%%AA_RC%%AA_BC%"=="" (
+	set "RPU_AA_String=[ANALYSING FAILED^^!]"
+	set AA_LC=0
+	set AA_TC=0
+	set AA_RC=0
+	set AA_BC=0
+)
 %CYAN%
 echo Please wait. Analysing RPU Binary...
 %WHITE%
-"!DO_VI_TOOLpath!" extract-rpu "!CONTAINERSTREAM!" -o "!TMP_FOLDER!\RPU.bin">nul
+if "%RAW_FILE%"=="FALSE" (
+	"!FFMPEGpath!" -loglevel panic -i "!CONTAINERSTREAM!" -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" -
+) else (
+	"!DO_VI_TOOLpath!" extract-rpu "!VIDEOSTREAM!" -o "!TMP_FOLDER!\RPU.bin"
+)
 set "RPUFILE=!TMP_FOLDER!\RPU.bin"
 if exist "!TMP_FOLDER!\RPU.bin" (
 	%HCGREEN%
@@ -1447,20 +1451,19 @@ if exist "!RPUFILE!" (
 	)
 )
 
-set "RPU_AA_String=[LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px]"
-if "%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%"=="UndefinedUndefinedUndefinedUndefined" set "RPU_AA_String=[NOT SET IN RPU]"
-IF "%RAW_FILE%"=="TRUE" if exist !CONTAINERSTREAM! DEL !CONTAINERSTREAM!
+:: VIDEO-INPUT = RPU-INPUT
+if "!AA_LC!!AA_TC!!AA_RC!!AA_BC!"=="!RPU_AA_LC!!RPU_AA_TC!!RPU_AA_RC!!RPU_AA_BC!" (
+	set "RPU_AA_String="!Cecho!" {%_CYAN%}Borders = [LEFT=!RPU_AA_LC! px], [TOP=!RPU_AA_TC! px], [RIGHT=!RPU_AA_RC! px], [BOTTOM=!RPU_AA_BC! px] [{%HC_GREEN%}MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
+	set "AA_String="!Cecho!" {%_CYAN%}Borders = [LEFT=!AA_LC! px], [TOP=!AA_TC! px], [RIGHT=!AA_RC! px], [BOTTOM=!AA_BC! px] [{%HC_GREEN%}MATCH WITH RPU{%_CYAN%}]{#}{\n}"
+) else (
+	set "RPU_AA_String="!Cecho!" {%_CYAN%}Borders = [LEFT=!RPU_AA_LC! px], [TOP=!RPU_AA_TC! px], [RIGHT=!RPU_AA_RC! px], [BOTTOM=!RPU_AA_BC! px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
+	set "AA_String="!Cecho!" {%_CYAN%}Borders = [LEFT=!AA_LC! px], [TOP=!AA_TC! px], [RIGHT=!AA_RC! px], [BOTTOM=!AA_BC! px] [{%HC_RED%}NOT MATCH WITH RPU{%_CYAN%}]{#}{\n}"
+)
 
 :DV8CHKMENU
-:: VIDEO-INPUT = RPU-INPUT
-if "%AA_LC%%AA_TC%%AA_RC%%AA_BC%"=="%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%" (
-	set "RPU_AA_String="!Cecho!" {%_CYAN%}Borders = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_GREEN%}MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
-	set "AA_String="!Cecho!" {%_CYAN%}Borders = [LEFT=%AA_LC% px], [TOP=%AA_TC% px], [RIGHT=%AA_RC% px], [BOTTOM=%AA_BC% px] [{%HC_GREEN%}MATCH WITH RPU{%_CYAN%}]{#}{\n}"
-) else (
-	set "RPU_AA_String="!Cecho!" {%_CYAN%}Borders = [LEFT=%RPU_AA_LC% px], [TOP=%RPU_AA_TC% px], [RIGHT=%RPU_AA_RC% px], [BOTTOM=%RPU_AA_BC% px] [{%HC_RED%}NOT MATCH WITH VIDEO{%_CYAN%}]{#}{\n}"
-	set "AA_String="!Cecho!" {%_CYAN%}Borders = [LEFT=%AA_LC% px], [TOP=%AA_TC% px], [RIGHT=%AA_RC% px], [BOTTOM=%AA_BC% px] [{%HC_RED%}NOT MATCH WITH RPU{%_CYAN%}]{#}{\n}"
-)
-IF "%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%"=="UndefinedUndefinedUndefinedUndefined" set "RPU_AA_String="!Cecho!" {%_CYAN%}Borders    = [{%_GREY%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}"
+IF "%RAW_FILE%"=="TRUE" if exist "!CONTAINERSTREAM!" DEL "!CONTAINERSTREAM!"
+
+IF "!RPU_AA_LC!!RPU_AA_TC!!RPU_AA_RC!!RPU_AA_BC!"=="" set "RPU_AA_String="!Cecho!" {%_CYAN%}Borders    = [{%_GREY%}BORDERS NOT SET IN RPU{%_CYAN%}]{#}{\n}"
 
 IF "!V0_FRAMES!"=="!RPU_FRAMES!" (
 	set "FRAMEINFO_VIDEO="!Cecho!" {%_CYAN%}Frames  = [!V0_FRAMES!] [{%HC_GREEN%}MATCH WITH RPU{%_CYAN%}]{#}{\n}"
@@ -1517,10 +1520,10 @@ echo.
 echo  ========================================================================================================================
 echo.
 %HCWHITE%
-"!Cecho!" {%HC_WHITE%}L. Set [{%HC_YELLOW%}LEFT{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_LC! px{%HC_WHITE%}]{#}{\n}
-"!Cecho!" {%HC_WHITE%}T. Set [{%HC_YELLOW%}TOP{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_TC! px{%HC_WHITE%}]{#}{\n}
-"!Cecho!" {%HC_WHITE%}R. Set [{%HC_YELLOW%}RIGHT{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_RC! px{%HC_WHITE%}]{#}{\n}
-"!Cecho!" {%HC_WHITE%}B. Set [{%HC_YELLOW%}BOTTOM{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!RPU_AA_BC! px{%HC_WHITE%}]{#}{\n}
+"!Cecho!" {%HC_WHITE%}L. Set [{%HC_YELLOW%}LEFT{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!AA_LC! px{%HC_WHITE%}]{#}{\n}
+"!Cecho!" {%HC_WHITE%}T. Set [{%HC_YELLOW%}TOP{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!AA_TC! px{%HC_WHITE%}]{#}{\n}
+"!Cecho!" {%HC_WHITE%}R. Set [{%HC_YELLOW%}RIGHT{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!AA_RC! px{%HC_WHITE%}]{#}{\n}
+"!Cecho!" {%HC_WHITE%}B. Set [{%HC_YELLOW%}BOTTOM{%HC_WHITE%}] Crop value: [{%HC_YELLOW%}!AA_BC! px{%HC_WHITE%}]{#}{\n}
 echo.
 IF "%AA_LC%%AA_TC%%AA_RC%%AA_BC%"=="%RPU_AA_LC%%RPU_AA_TC%%RPU_AA_RC%%RPU_AA_BC%" (
 	%HCWHITE%
@@ -1594,8 +1597,14 @@ echo.
 echo.
 %WHITE%
 echo  == FIXING RELEASE ======================================================================================================
+if "%RAW_FILE%"=="FALSE" (
+	echo.
+	call :DEMUX
+	if exist "!TMP_FOLDER!\temp.hevc" set "VIDEOSTREAM=!TMP_FOLDER!\temp.hevc"
+) else (
+	echo.
+)
 %CYAN%
-echo.
 echo Please wait. Applying cropping values...
 %WHITE%
 (
@@ -1604,10 +1613,10 @@ echo   ^"active_area^"^: ^{
 echo     ^"presets^"^: ^[
 echo       ^{
 echo       	 ^"id^"^: 0,
-echo       	 ^"left^"^: %AA_LC%,
-echo       	 ^"right^"^: %AA_RC%,
-echo       	 ^"top^"^: %AA_TC%,
-echo      	 ^"bottom^"^: %AA_BC%
+echo       	 ^"left^"^: !AA_LC!,
+echo       	 ^"right^"^: !AA_RC!,
+echo       	 ^"top^"^: !AA_TC!,
+echo      	 ^"bottom^"^: !AA_BC!
 echo       ^}
 echo     ^],
 echo      ^"edits^"^: {
@@ -1695,12 +1704,10 @@ if "!MKVExtract!"=="TRUE" (
 	if exist "!TARGET_FOLDER!\!INPUTFILENAME!_[RPU BORDERS FIXED].mkv" (
 		%HCGREEN%
 		echo Done.
-		echo.
 	) else (
 		%HCRED%
 		echo Error.
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
-		echo.
 	)
 )	
 
@@ -1722,12 +1729,10 @@ if "!MP4Extract!"=="TRUE" (
 	if exist "!TARGET_FOLDER!\!INPUTFILENAME!_[RPU BORDERS FIXED].mp4" (
 		%HCGREEN%
 		echo Done.
-		echo.
 	) else (
 		%HCRED%
 		echo Error.
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
-		echo.
 	)	
 )
 	
