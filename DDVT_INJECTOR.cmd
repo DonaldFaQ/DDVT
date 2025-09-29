@@ -27,7 +27,7 @@ set "MUXINMKV=YES"
 set "MUXINMP4=YES"
 :: YES / NO - Muxing video stream into MP4 container if source was MP4 container.
 set "MUXP7SETTING=STANDARD"
-:: STANDARD / makeMKV / Disable AUD NALUs - Method for muxing EL into BL.
+:: STANDARD / Remove EOS/EOB NALUs / Disable AUD NALUs - Method for muxing EL into BL.
 set "CUSTOMEDIT=FIRST"
 :: FIRST / LAST - Position how the custom.json file will be processed. FIRST=Processing BEFORE tool operations, LAST=Processing AFTER tool operations.
 :: Also can be set via OPTIONS script.
@@ -1346,8 +1346,8 @@ if exist "!ELSTREAM!" (
 			if "%ERRORLEVEL%"=="8" goto :DV_BEGIN
 			if "%ERRORLEVEL%"=="7" call :AA_AREA
 			if "%ERRORLEVEL%"=="6" (
-				if "%MUXP7SETTING%"=="STANDARD" set "MUXP7SETTING=makeMKV"			
-				if "%MUXP7SETTING%"=="makeMKV" set "MUXP7SETTING=Disable AUD NALUs"
+				if "%MUXP7SETTING%"=="STANDARD" set "MUXP7SETTING=Remove EOS/EOB NALUs"			
+				if "%MUXP7SETTING%"=="Remove EOS/EOB NALUs" set "MUXP7SETTING=Disable AUD NALUs"
 				if "%MUXP7SETTING%"=="Disable AUD NALUs" set "MUXP7SETTING=STANDARD"
 			)
 			if "%ERRORLEVEL%"=="5" (
@@ -1392,8 +1392,8 @@ if exist "!ELSTREAM!" (
 			if "%ERRORLEVEL%"=="7" goto :DV_BEGIN
 			if "%ERRORLEVEL%"=="6" call :AA_AREA
 			if "%ERRORLEVEL%"=="5" (
-				if "%MUXP7SETTING%"=="STANDARD" set "MUXP7SETTING=makeMKV"			
-				if "%MUXP7SETTING%"=="makeMKV" set "MUXP7SETTING=Disable AUD NALUs"
+				if "%MUXP7SETTING%"=="STANDARD" set "MUXP7SETTING=Remove EOS/EOB NALUs"			
+				if "%MUXP7SETTING%"=="Remove EOS/EOB NALUs" set "MUXP7SETTING=Disable AUD NALUs"
 				if "%MUXP7SETTING%"=="Disable AUD NALUs" set "MUXP7SETTING=STANDARD"
 			)
 			if "%ERRORLEVEL%"=="4" (
@@ -1434,8 +1434,8 @@ if exist "!ELSTREAM!" (
 			if "%ERRORLEVEL%"=="7" goto :DV_BEGIN
 			if "%ERRORLEVEL%"=="6" call :AA_AREA
 			if "%ERRORLEVEL%"=="5" (
-				if "%MUXP7SETTING%"=="STANDARD" set "MUXP7SETTING=makeMKV"			
-				if "%MUXP7SETTING%"=="makeMKV" set "MUXP7SETTING=Disable AUD NALUs"
+				if "%MUXP7SETTING%"=="STANDARD" set "MUXP7SETTING=Remove EOS/EOB NALUs"			
+				if "%MUXP7SETTING%"=="Remove EOS/EOB NALUs" set "MUXP7SETTING=Disable AUD NALUs"
 				if "%MUXP7SETTING%"=="Disable AUD NALUs" set "MUXP7SETTING=STANDARD"
 			)
 			if "%ERRORLEVEL%"=="4" (
@@ -1472,8 +1472,8 @@ if exist "!ELSTREAM!" (
 			if "%ERRORLEVEL%"=="6" goto :DV_BEGIN
 			if "%ERRORLEVEL%"=="5" call :AA_AREA	
 			if "%ERRORLEVEL%"=="4" (
-				if "%MUXP7SETTING%"=="STANDARD" set "MUXP7SETTING=makeMKV"			
-				if "%MUXP7SETTING%"=="makeMKV" set "MUXP7SETTING=Disable AUD NALUs"
+				if "%MUXP7SETTING%"=="STANDARD" set "MUXP7SETTING=Remove EOS/EOB NALUs"			
+				if "%MUXP7SETTING%"=="Remove EOS/EOB NALUs" set "MUXP7SETTING=Disable AUD NALUs"
 				if "%MUXP7SETTING%"=="Disable AUD NALUs" set "MUXP7SETTING=STANDARD"
 			)
 			if "%ERRORLEVEL%"=="3" (
@@ -2432,7 +2432,7 @@ if "!RPU_FILE!"=="TRUE" (
 )
 
 if "%REMHDR10P%"=="YES" set "REMHDR10PString=--drop-hdr10plus "
-if "%MUXP7SETTING%"=="makeMKV" set "MUXP7String=--eos-before-el "
+if "%MUXP7SETTING%"=="Remove EOS/EOB NALUs" set "MUXP7String=--remove-eos "
 if "%MUXP7SETTING%"=="Disable AUD NALUs" set "MUXP7String=--no-add-aud "
 
 if "%EL_exist%"=="YES" (

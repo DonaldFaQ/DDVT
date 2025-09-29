@@ -1,3 +1,9 @@
+-v0.72.1 "Blessed is the mind too small for doubt"
+*UPDATED dovi_tool to v2.3.1.
+*UPDATED mkvtoolnix to v95.0.0.0.
+*Minor Bugfixes.
+(Do not forget to Download the new 3rd Party Apps!).
+
 -v0.72 "Hope for the best, but prepare for the worst"
 *Major Bugfixes.
 *UPDATED mkvtoolnix to v94.0.0.0.

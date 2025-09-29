@@ -1281,22 +1281,6 @@ echo	 	"max_frame_average_light_level": !MaxFall!
 echo 	}
 echo }
 )>"!TMP_FOLDER!\Extra.json"
-echo.>>"!logfile!"
-echo Creating Extra.json>>"!logfile!"
-echo.>>"!logfile!"
-(
-echo {
-echo	"cm_version": "!CM_VERSION!",
-echo 	"length": !FRAMES_HDR!,
-echo 	"level6": {
-echo	 	"max_display_mastering_luminance": !MaxDML!,
-echo	 	"min_display_mastering_luminance": !MinDML!,
-echo	 	"max_content_light_level": !MaxCLL!,
-echo	 	"max_frame_average_light_level": !MaxFall!
-echo 	}
-echo }
-)>>"!logfile!"
-echo.>>"!logfile!"
 if exist "!TMP_FOLDER!\Extra.json" (
 	%HCGREEN%
 	echo Done.
