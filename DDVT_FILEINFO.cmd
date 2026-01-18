@@ -223,9 +223,9 @@ echo  == CHECK INPUT FILE ======================================================
 if not exist "!TMP_FOLDER!" md "!TMP_FOLDER!"
 echo.
 %CYAN%
+echo Analysing File. Please wait...
+echo.
 if "!RPU_FILE!!HDR10P_FILE!"=="FALSEFALSE" (
-	echo Analysing File. Please wait...
-	echo.
 	::SET BL EL STREAMINDEX
 	call :ANALYSESTREAMS
 	set "INFOSTREAM=!INPUTFILE!"
@@ -257,7 +257,7 @@ if "!RPU_FILE!!HDR10P_FILE!"=="FALSEFALSE" (
 	)
 	if not defined HDRFormat set "HDRFormat=SDR"
 	set "PHDR=!HDRFormat!"
-	if "!HDRFormat!"=="HDR10+" set "PHDR=HDR"
+	if "!HDRFormat!"=="HDR10+" set "PHDR=HDR10"
 
 	::SET DV FORMAT
 	if exist "!TMP_FOLDER!\Info.mkv" (
@@ -470,18 +470,24 @@ if "!RPU_FILE!!HDR10P_FILE!"=="FALSEFALSE" (
 ) else (
 	if "!RPU_FILE!"=="TRUE" (
 		%CYAN%
-		echo Analysing DV RPU. Please wait...
-		echo.
 		"!DO_VI_TOOLpath!" info -i "!RPUFILE!" -s>"!TMP_FOLDER!\RPUINFO.txt"
 		if exist "!TMP_FOLDER!\RPUINFO.txt" (
 			%HCGREEN%
 			set "DV=TRUE"
 			FOR /F "delims=" %%A IN ('findstr /C:"Profile:" "!TMP_FOLDER!\RPUINFO.txt"') DO set "RPU_PROFILE=%%A"
 			if defined RPU_PROFILE (
+				for /F "tokens=2 delims=:/" %%A in ("!RPU_PROFILE!") do set "DV_PROFILE=%%A"
+				if defined DV_PROFILE set "DV_PROFILE=!DV_PROFILE:~1!"
 				for /F "tokens=2 delims=:/ " %%A in ("!RPU_PROFILE!") do set "RPU_DVP=%%A"
 				if "!RPU_DVP!"=="7" for /F "tokens=3 delims=:/ " %%A in ("!RPU_PROFILE!") do set "RPU_DVSP= %%A"
+				%HCGREEN%
+				echo Dolby Vision Profile !DV_PROFILE! found.
+				echo.
 			) else (
 				set "RPU_DVP=N/A"
+				%HCRED%
+				echo No Dolby Vision compatible ^*.bin file.
+				echo.
 			)
 			FOR /F "delims=" %%A IN ('findstr /C:"DM version" "!TMP_FOLDER!\RPUINFO.txt"') DO set "RPU_CMV=%%A"
 			if defined RPU_CMV (
@@ -513,6 +519,7 @@ if "!RPU_FILE!!HDR10P_FILE!"=="FALSEFALSE" (
 			) else (
 				set "L2_TRIMS=No L2 entries in RPU."
 			)
+			%HCGREEN%
 			echo Done.
 		) else (
 			%HCRED%
@@ -521,8 +528,6 @@ if "!RPU_FILE!!HDR10P_FILE!"=="FALSEFALSE" (
 		)
 	)
 	if "!HDR10P_FILE!"=="TRUE" (
-		%CYAN%
-		echo Analysing HDR10+ SEI. Please wait...
 		%HCGREEN%
 		echo Done.
 		echo.
@@ -952,7 +957,7 @@ if "!HDRRPU_EXIST!"=="TRUE" (
 set "MDL=-annotate +120+130 "Mastering display luminance^: !RPULuminance! ^(!L9MDP!^)""
 if "!HDR10P!"=="TRUE" set "HDR10PINFO= | HDR10+"
 if "!DVinput!"=="YES" set "DVINFO= | Dolby Vision Profile^: !DV_Profile!"
-set "HDRINFO=-annotate +120+5 "Video: !PHDR!!HDR10PINFO!!DVINFO! ^(!RESOLUTION!^)""
+set "HDRINFO=-annotate +120+5 "Video: !PHDR!!HDR10PINFO!!DVINFO!""
 
 if "!PLOTTYPE!"=="MAX" (
 	set "titlepos=-135"
@@ -961,7 +966,7 @@ if "!PLOTTYPE!"=="MAX" (
 	set "titlepos=-0"
 )
 
-"!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,150" -gravity NorthWest -pointsize 20 -fill black -font Arial-Bold !HDRINFO! -font Arial -annotate +120+30 "Frames: !RPU_FRAMES!, Scenecuts: !RPU_SHOTCOUNT!" -font Arial-Bold -pointsize 25 -gravity Center -annotate !titlepos!-552 "!INPUTFILENAME!!INPUTFILEEXT!" -font Arial -pointsize 25 -annotate !titlepos!-518 "(!PHDR! Plot)" -pointsize 20 -gravity NorthWest !A1! !A2! !A3! !A4! !A5! !P1! !P2! !P3! !P4! !P5! !MDL! -font Arial-Bold !AM! !AA! "!INPUTFILEPATH!!INPUTFILENAME!_[!PHDR! Plot].png"
+"!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,150" -gravity NorthWest -pointsize 20 -fill black -font Arial-Bold !HDRINFO! -font Arial -annotate +120+30 "Resolution: !RESOLUTION!, Frames: !RPU_FRAMES!, Scenecuts: !RPU_SHOTCOUNT!" -font Arial-Bold -pointsize 25 -gravity Center -annotate !titlepos!-552 "!INPUTFILENAME!!INPUTFILEEXT!" -font Arial -pointsize 25 -annotate !titlepos!-518 "(!PHDR! Plot)" -pointsize 20 -gravity NorthWest !A1! !A2! !A3! !A4! !A5! !P1! !P2! !P3! !P4! !P5! !MDL! -font Arial-Bold !AM! !AA! "!INPUTFILEPATH!!INPUTFILENAME!_[!PHDR! Plot].png"
 if exist "!INPUTFILEPATH!!INPUTFILENAME!_[!PHDR! Plot].png" (
 	%HCGREEN%
 	echo Done.
@@ -1035,8 +1040,16 @@ if "!PLOTTYPE!" NEQ "ORIGINAL" (
 			set "L5_STRING_TXT=No border entries in RPU."
 		)
 	)
-	set "RPUINFO=-annotate +120+5 "RPU: Dolby Vision Profile: !DV_Profile!, DM Version: !DM!""
-	set "FRAMEINFO=-annotate +120+30 "Frames: !RPU_FRAMES!, Scenecuts: !RPU_SHOTCOUNT!""
+		
+	if "!HDR10P!"=="TRUE" set "HDR10PINFO= | HDR10+"
+	set "DVINFO= | Dolby Vision Profile: !DV_Profile!, DM Version: !DM!"
+		
+	if "!RPU_FILE!"=="FALSE" (
+		set "RPUINFO=-annotate +120+5 "Video: !PHDR!!HDR10PINFO!!DVINFO!""
+	) else (
+		set "RPUINFO=-annotate +120+5 "RPU Binary: Dolby Vision Profile: !DV_Profile!, DM Version: !DM!""
+	)
+	set "FRAMEINFO=-annotate +120+30 "Resolution: !RESOLUTION!, Frames: !RPU_FRAMES!, Scenecuts: !RPU_SHOTCOUNT!""
 	if defined RPUMD set L1=-annotate +120+55 "L1 !RPUMD!"
 	if defined L2_TRIMS set "L2=-annotate +120+80 "L2 trims: !L2_TRIMS!""
 	set "L5=-annotate +120+105 "L5 Active area: !L5_STRING_TXT!""
@@ -1096,13 +1109,31 @@ pushd "!INPUTFILEPATH!"
 if exist "!BLSTREAM!" (
 	"!HDR10P_TOOLpath!" extract "!BLSTREAM!" -o "!TMP_FOLDER!\HDR10Plus.json"
 ) else (
-	"!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -map 0:!BL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!HDR10P_TOOLpath!" extract "!BLSTREAM!" -o "!TMP_FOLDER!\HDR10Plus.json" -
+	if "!HDR10P_FILE!"=="FALSE" (
+		"!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -map 0:!BL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!HDR10P_TOOLpath!" extract "!BLSTREAM!" -o "!TMP_FOLDER!\HDR10Plus.json" -
+	)
 )
-if exist "!TMP_FOLDER!\HDR10Plus.json" (
+if exist "!TMP_FOLDER!\HDR10Plus.json" set "HDR10PFILE=!TMP_FOLDER!\HDR10Plus.json"
+	
+FOR /F "delims=" %%A IN ('findstr /C:"HDR10plusProfile" "!HDR10PFILE!"') DO set "HDR10P_Profile=%%A"
+if defined HDR10P_Profile (
+	for /F "tokens=2 delims=:, " %%A in ("!HDR10P_Profile!") do set "HDR10P_Profile=%%A"
+	set "HDR10P_Profile=!HDR10P_Profile:~1,1!"
+) else (
+	set "HDR10P_Profile=N/A"
+)	
+	
+if "!HDR10P_FILE!"=="TRUE" (
+	set "MaxDML=1000"
+	set "MinDML=1"
+	set "MaxCLL=1000"
+	set "MaxFALL=400"
+)
+
+if exist "!HDR10PFILE!" (
 	(
 	echo {
 	echo	"cm_version": "V29",
-	echo 	"length": !FRAMES!,
 	echo 	"level6": {
 	echo	 	"max_display_mastering_luminance": !MaxDML!,
 	echo	 	"min_display_mastering_luminance": !MinDML!,
@@ -1111,7 +1142,7 @@ if exist "!TMP_FOLDER!\HDR10Plus.json" (
 	echo 	}
 	echo }
 	)>"!TMP_FOLDER!\Extra.json"
-	"!DO_VI_TOOLpath!" generate -j "!TMP_FOLDER!\Extra.json" --hdr10plus-json "!TMP_FOLDER!\HDR10Plus.json" -o "!TMP_FOLDER!\HDR10Plus.bin">nul
+	"!DO_VI_TOOLpath!" generate -j "!TMP_FOLDER!\Extra.json" --hdr10plus-json "!HDR10PFILE!" -o "!TMP_FOLDER!\HDR10Plus.bin">nul
 	if exist "!TMP_FOLDER!\HDR10Plus.bin" (
 		if "!TESTMODE!"=="OFF" if exist "!WORKFILE!.measurements" del "!WORKFILE!.measurements">nul
 		set "HDRRPU=!TMP_FOLDER!\HDR10Plus.bin"
@@ -1135,21 +1166,25 @@ if exist "!TMP_FOLDER!\HDR10Plus.json" (
 	)
 )
 
-set "MDL=-annotate +120+130 "Mastering display luminance: !RPULuminance!!L9MDP!""
-if "!HDR10P!"=="TRUE" set "HDR10PINFO= | HDR10+"
+if "!HDR10P_FILE!"=="FALSE" set "MDL=-annotate +120+130 "Mastering display luminance: !RPULuminance!!L9MDP!""
+set "HDR10PINFO= | HDR10+ Profile: !HDR10P_Profile!"
 if "!DVinput!"=="YES" set "DVINFO= | Dolby Vision Profile: !DV_Profile!"
-set "HDRINFO=-annotate +120+5 "Video: !PHDR!!HDR10PINFO!!DVINFO! ^(!RESOLUTION!^)""
-
+if "!HDR10P_FILE!"=="FALSE" (
+	set "HDRINFO=-annotate +120+5 "Video: !PHDR!!HDR10PINFO!!DVINFO!""
+) else (
+	set "HDRINFO=-annotate +120+5 "HDR10+ SEI: Profile !HDR10P_Profile!""
+)
 if "!PLOTTYPE!"=="MAX" (
 	set "titlepos=-135"
 	call :ENHPLOTS
 ) else (
 	set "titlepos=-0"
 )
-
 "!HDR10P_TOOLpath!" plot "!HDR10PFILE!" -t "" -o "!TMP_FOLDER!\!INPUTFILENAME!.png"
 popd
-if exist "!TMP_FOLDER!\!INPUTFILENAME!.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,150" -gravity NorthWest -pointsize 20 -fill black -font Arial-Bold !HDRINFO! -font Arial -annotate +120+30 "Frames: !RPU_FRAMES!, Scenecuts: !RPU_SHOTCOUNT!" -font Arial-Bold -pointsize 25 -gravity Center -annotate !titlepos!-552 "!INPUTFILENAME!!INPUTFILEEXT!" -font Arial -pointsize 25 -annotate !titlepos!-518 "(HDR10+ Plot)" -pointsize 20 -gravity NorthWest !A1! !A2! !A3! !A4! !A5! !P1! !P2! !P3! !P4! !P5! !MDL! -font Arial-Bold !AM! !AA! "!INPUTFILEPATH!!INPUTFILENAME!_[HDR10+ Plot].png"
+
+if exist "!TMP_FOLDER!\!INPUTFILENAME!.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,150" -gravity NorthWest -pointsize 20 -fill black -font Arial-Bold !HDRINFO! -font Arial -annotate +120+30 "Resolution: !RESOLUTION!, Frames: !RPU_FRAMES!, Scenecuts: !RPU_SHOTCOUNT!" -font Arial-Bold -pointsize 25 -gravity Center -annotate !titlepos!-552 "!INPUTFILENAME!!INPUTFILEEXT!" -font Arial -pointsize 25 -annotate !titlepos!-518 "(HDR10+ Plot)" -pointsize 20 -gravity NorthWest !A1! !A2! !A3! !A4! !A5! !P1! !P2! !P3! !P4! !P5! !MDL! -font Arial-Bold !AM! !AA! "!INPUTFILEPATH!!INPUTFILENAME!_[HDR10+ Plot].png"
+
 if exist "!INPUTFILEPATH!!INPUTFILENAME!_[HDR10+ Plot].png" (
 	%HCGREEN%
 	echo Done.

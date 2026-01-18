@@ -1,7 +1,7 @@
 @echo off & setlocal
 mode con cols=125 lines=57
-set VERSION=0.72.1 "Blessed is the mind too small for doubt"
-set HEADER1=powered by quietvoids tools                                                                  GNU License (GPL) 2021-2025
+set VERSION=0.73 "Understanding is overrated"
+set HEADER1=powered by quietvoids tools                                                                  GNU License (GPL) 2021-2026
 TITLE DDVT OPTIONS v%VERSION%
 set DESIGN=STANDARD
 

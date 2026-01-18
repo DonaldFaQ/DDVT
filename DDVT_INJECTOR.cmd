@@ -2167,11 +2167,11 @@ if "!V_EDITING!"=="FALSE" (
 	goto :eof
 )
 copy "%~dp0tools\HDRMetadataEditor.exe" "!VS_DIR!" >nul
-attrib +h "!VS_DIR!\HDRMetadataEditor.exe" >nul
+attrib +h "!VS_DIR!HDRMetadataEditor.exe" >nul
 copy "%~dp0tools\nvcuda.dll" "!VS_DIR!" >nul
-attrib +h "!VS_DIR!\nvcuda.dll" >nul
+attrib +h "!VS_DIR!nvcuda.dll" >nul
 copy "%~dp0tools\nvcuvid.dll" "!VS_DIR!" >nul
-attrib +h "!VS_DIR!\nvcuvid.dll" >nul
+attrib +h "!VS_DIR!nvcuvid.dll" >nul
 if "!L9MDP!"=="Display P3" (
 	set "HDR_MDCP=displayp3"
 ) else (
@@ -2181,13 +2181,13 @@ if "!L9MDP!"=="" set "HDR_MDCP=bt2020"
 %CYAN%
 echo Please wait. Editing Video HDR Metadata...
 %WHITE%
-echo Command^: "!VS_DIR!\HDRMetadataEditor.exe" !HDR_MDCP! !RPUMinDML_L6!,!RPUMaxDML_L6! !RPUCLL_L6!,!RPUFALL_L6! "!VS_DIR!\!VS_NAME!!VS_EXT!">>"!logfile!"
-"!VS_DIR!\HDRMetadataEditor.exe" !HDR_MDCP! !RPUMinDML_L6!,!RPUMaxDML_L6! !RPUCLL_L6!,!RPUFALL_L6! "!VS_DIR!\!VS_NAME!!VS_EXT!">>"!logfile!"
-if exist "!VS_DIR!\!VS_NAME! ^(HDR10-Edited^)!VS_EXT!"  (
-	for %%f in ("!VS_DIR!\!VS_NAME! ^(HDR10-Edited^)!VS_EXT!") do set "CHECKSIZE=%%~zf" >nul 2>&1
+echo Command^: "!VS_DIR!HDRMetadataEditor.exe" !HDR_MDCP! !RPUMinDML_L6!,!RPUMaxDML_L6! !RPUCLL_L6!,!RPUFALL_L6! "!VS_DIR!!VS_NAME!!VS_EXT!">>"!logfile!"
+"!VS_DIR!HDRMetadataEditor.exe" !HDR_MDCP! !RPUMinDML_L6!,!RPUMaxDML_L6! !RPUCLL_L6!,!RPUFALL_L6! "!VS_DIR!!VS_NAME!!VS_EXT!">>"!logfile!"
+if exist "!VS_DIR!!VS_NAME! ^(HDR10-Edited^)!VS_EXT!"  (
+	for %%f in ("!VS_DIR!!VS_NAME! ^(HDR10-Edited^)!VS_EXT!") do set "CHECKSIZE=%%~zf" >nul 2>&1
 	if "!CHECKSIZE!" NEQ "0" (
 		%HCGREEN%
-		move "!VS_DIR!\!VS_NAME! ^(HDR10-Edited^)!VS_EXT!" "!TMP_FOLDER!\HDREDIT.hevc">nul
+		move "!VS_DIR!!VS_NAME! ^(HDR10-Edited^)!VS_EXT!" "!TMP_FOLDER!\HDREDIT.hevc">nul
 		set "VIDEOSTREAM=!TMP_FOLDER!\HDREDIT.hevc"
 		echo Done.
 		echo.
@@ -2209,17 +2209,17 @@ if exist "!VS_DIR!\!VS_NAME! ^(HDR10-Edited^)!VS_EXT!"  (
 	echo Error.>>"!logfile!"
 	echo.>>"!logfile!"
 )
-if exist "!VS_DIR!\HDRMetadataEditor.exe" (
-	attrib -h "!VS_DIR!\HDRMetadataEditor.exe" >nul
-	del "!VS_DIR!\HDRMetadataEditor.exe">nul
+if exist "!VS_DIR!HDRMetadataEditor.exe" (
+	attrib -h "!VS_DIR!HDRMetadataEditor.exe" >nul
+	del "!VS_DIR!HDRMetadataEditor.exe">nul
 )
-if exist "!VS_DIR!\nvcuda.dll" (
-	attrib -h "!VS_DIR!\nvcuda.dll" >nul
-	del "!VS_DIR!\nvcuda.dll">nul
+if exist "!VS_DIR!nvcuda.dll" (
+	attrib -h "!VS_DIR!nvcuda.dll" >nul
+	del "!VS_DIR!nvcuda.dll">nul
 )
-if exist "!VS_DIR!\nvcuvid.dll" (
-	attrib -h "!VS_DIR!\nvcuvid.dll" >nul
-	del "!VS_DIR!\nvcuvid.dll">nul
+if exist "!VS_DIR!nvcuvid.dll" (
+	attrib -h "!VS_DIR!nvcuvid.dll" >nul
+	del "!VS_DIR!nvcuvid.dll">nul
 )
 goto :eof
 
