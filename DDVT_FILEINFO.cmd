@@ -370,12 +370,16 @@ if "!RPU_FILE!!HDR10P_FILE!"=="FALSEFALSE" (
 		set "MaxDML=1000"
 		set "Luminance=N/A"
 	) else (
-		for /F "tokens=2" %%A in ("!Luminance!") do set "MinDML=%%A"
-		for /F "tokens=* delims=0." %%A in ("!MinDML!") do set "MinDML=%%A"
+		for /F "tokens=2" %%A in ("!Luminance!") do set "MinDMLRAW=%%A"
+		if "!MinDMLRAW!"=="0.0000" (
+			set "MinDML=0"
+		) else (
+			for /F "tokens=* delims=0." %%A in ("!MinDMLRAW!") do set "MinDML=%%A"
+		)
 		for /F "tokens=5" %%A in ("!Luminance!") do set "MaxDML=%%A"
 	)
 	FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%MasteringDisplay_ColorPrimaries%% "!INFOSTREAM!""') do set "MDCP=%%A"
-	if not defined MDCP (set "MDCP=") else (set "MDCP= ^(!MDCP!^)")
+	if not defined MDCP (set "MDCP=") else (set "MDCP=^(!MDCP!^)")
 	::CODEC NAME
 	FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%Format%%^-%%BitDepth%%Bit^-%%ColorSpace%%^-%%ChromaSubsampling%% "!INFOSTREAM!""') do set "CODEC_NAME=%%A"
 	if not defined CODEC_NAME set "CODEC_NAME=N/A"
@@ -943,20 +947,20 @@ if "!HDRRPU_EXIST!"=="TRUE" (
 	FOR /F "delims=" %%A IN ('findstr /C:"source_primary_index" "!TMP_FOLDER!\temp.hdrrpu.json"') DO set "L9_FOUND=%%A"
 	if defined L9_FOUND (
 		for /F "tokens=2 delims=:/ " %%A in ("!L9_FOUND!") do set "L9MDP=%%A"
-		if "!L9MDP!"=="0" set "L9MDP=Display P3"
-		if "!L9MDP!"=="2" set "L9MDP=BT.2020"
-	)	
-	FOR /F "delims=" %%A IN ('findstr /C:"RPU mastering display:" "!TMP_FOLDER!\HDRRPUINFO.txt"') DO set "RPUMDL=%%A"
-	if defined RPUMDL (
-		FOR /F "tokens=4 delims=:/ " %%A in ("!RPUMDL!") do set "RPUMinDML=%%A"
-		FOR /F "tokens=5 delims=:/ " %%A in ("!RPUMDL!") do set "RPUMaxDML=%%A"
-		set "RPULuminance=min: !RPUMinDML! cd/m2, max: !RPUMaxDML! cd/m2"
+		if "!L9MDP!"=="0" set "L9MDP=(Display P3)"
+		if "!L9MDP!"=="2" set "L9MDP=(BT.2020)"
 	)
 )
 
-set "MDL=-annotate +120+130 "Mastering display luminance^: !RPULuminance! ^(!L9MDP!^)""
+if "!Luminance!"=="N/A" (
+	set "Luminance="
+) else (
+	set "Luminance=min: !MinDMLRAW! cd/m2, max: !MaxDML! cd/m2 "
+)
+set "MDL=-annotate +120+130 "Mastering display luminance: !Luminance!!L9MDP!""
+
 if "!HDR10P!"=="TRUE" set "HDR10PINFO= | HDR10+"
-if "!DVinput!"=="YES" set "DVINFO= | Dolby Vision Profile^: !DV_Profile!"
+if "!DVinput!"=="YES" set "DVINFO= | Dolby Vision Profile: !DV_Profile!"
 set "HDRINFO=-annotate +120+5 "Video: !PHDR!!HDR10PINFO!!DVINFO!""
 
 if "!PLOTTYPE!"=="MAX" (
@@ -1124,13 +1128,11 @@ if defined HDR10P_Profile (
 ) else (
 	set "HDR10P_Profile=N/A"
 )	
-	
-if "!HDR10P_FILE!"=="TRUE" (
-	set "MaxDML=1000"
-	set "MinDML=1"
-	set "MaxCLL=1000"
-	set "MaxFALL=400"
-)
+
+if not defined MaxDML set "MaxDML=1000"
+if not defined MinDML set "MinDML=1"
+if not defined MaxCLL set "MaxCLL=1000"
+if not defined MaxFALL set "MaxFALL=400"
 
 if exist "!HDR10PFILE!" (
 	(
@@ -1159,16 +1161,16 @@ if exist "!HDR10PFILE!" (
 		"!DO_VI_TOOLpath!" info -s "!HDRRPU!" > "!TMP_FOLDER!\HDRRPUINFO.txt"
 		FOR /F "tokens=2 delims=: " %%A IN ('findstr /C:"Frames" "!TMP_FOLDER!\HDRRPUINFO.txt"') DO set "RPU_FRAMES=%%A"
 		FOR /F "tokens=3 delims=: " %%A IN ('findstr /C:"shot count" "!TMP_FOLDER!\HDRRPUINFO.txt"') DO set "RPU_SHOTCOUNT=%%A"
-		FOR /F "delims=" %%A IN ('findstr /C:"RPU mastering display:" "!TMP_FOLDER!\HDRRPUINFO.txt"') DO set "RPUMDL=%%A"
-		if defined RPUMDL (
-			FOR /F "tokens=4 delims=:/ " %%A in ("!RPUMDL!") do set "RPUMinDML=%%A"
-			FOR /F "tokens=5 delims=:/ " %%A in ("!RPUMDL!") do set "RPUMaxDML=%%A"
-			set "RPULuminance=min: !RPUMinDML! cd/m2, max: !RPUMaxDML! cd/m2"
-		)
 	)
 )
 
-if "!HDR10P_FILE!"=="FALSE" set "MDL=-annotate +120+130 "Mastering display luminance: !RPULuminance!!L9MDP!""
+if "!Luminance!"=="N/A" (
+	set "Luminance="
+) else (
+	set "Luminance=min: !MinDMLRAW! cd/m2, max: !MaxDML! cd/m2 "
+)
+if "!HDR10P_FILE!"=="FALSE" set "MDL=-annotate +120+130 "Mastering display luminance: !Luminance!!L9MDP!""
+
 set "HDR10PINFO= | HDR10+ Profile: !HDR10P_Profile!"
 if "!DVinput!"=="YES" set "DVINFO= | Dolby Vision Profile: !DV_Profile!"
 if "!HDR10P_FILE!"=="FALSE" (
