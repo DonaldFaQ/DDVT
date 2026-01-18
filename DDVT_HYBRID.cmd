@@ -1267,12 +1267,15 @@ goto :eof
 
 :CONVERT_HDR10P
 %CYAN%
+if not defined MaxDML set "MaxDML=1000"
+if not defined MinDML set "MinDML=1"
+if not defined MaxCLL set "MaxCLL=1000"
+if not defined MaxFALL set "MaxFALL=400"
 echo Please wait. Prefetching HDR10+ file for DV RPU convertion...
 echo [Prefetching HDR10+ file for DV RPU convertion]>>"!logfile!"
 (
 echo {
 echo	"cm_version": "!CM_VERSION!",
-echo 	"length": !FRAMES_HDR!,
 echo 	"level6": {
 echo	 	"max_display_mastering_luminance": !MaxDML!,
 echo	 	"min_display_mastering_luminance": !MinDML!,
