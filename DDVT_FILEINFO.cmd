@@ -1046,10 +1046,12 @@ if "!PLOTTYPE!" NEQ "ORIGINAL" (
 		
 	if "!RPU_FILE!"=="FALSE" (
 		set "RPUINFO=-annotate +120+5 "Video: !PHDR!!HDR10PINFO!!DVINFO!""
+		set "RESOLUTION_STR=Resolution: !RESOLUTION!, "
 	) else (
 		set "RPUINFO=-annotate +120+5 "RPU Binary: Dolby Vision Profile: !DV_Profile!, DM Version: !DM!""
+		set "RESOLUTION_STR="
 	)
-	set "FRAMEINFO=-annotate +120+30 "Resolution: !RESOLUTION!, Frames: !RPU_FRAMES!, Scenecuts: !RPU_SHOTCOUNT!""
+	set "FRAMEINFO=-annotate +120+30 "!RESOLUTION_STR!Frames: !RPU_FRAMES!, Scenecuts: !RPU_SHOTCOUNT!""
 	if defined RPUMD set L1=-annotate +120+55 "L1 !RPUMD!"
 	if defined L2_TRIMS set "L2=-annotate +120+80 "L2 trims: !L2_TRIMS!""
 	set "L5=-annotate +120+105 "L5 Active area: !L5_STRING_TXT!""
@@ -1171,8 +1173,10 @@ set "HDR10PINFO= | HDR10+ Profile: !HDR10P_Profile!"
 if "!DVinput!"=="YES" set "DVINFO= | Dolby Vision Profile: !DV_Profile!"
 if "!HDR10P_FILE!"=="FALSE" (
 	set "HDRINFO=-annotate +120+5 "Video: !PHDR!!HDR10PINFO!!DVINFO!""
+	set "RESOLUTION_STR=Resolution: !RESOLUTION!, "
 ) else (
 	set "HDRINFO=-annotate +120+5 "HDR10+ SEI: Profile !HDR10P_Profile!""
+	set "RESOLUTION_STR="
 )
 if "!PLOTTYPE!"=="MAX" (
 	set "titlepos=-135"
@@ -1183,7 +1187,7 @@ if "!PLOTTYPE!"=="MAX" (
 "!HDR10P_TOOLpath!" plot "!HDR10PFILE!" -t "" -o "!TMP_FOLDER!\!INPUTFILENAME!.png"
 popd
 
-if exist "!TMP_FOLDER!\!INPUTFILENAME!.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,150" -gravity NorthWest -pointsize 20 -fill black -font Arial-Bold !HDRINFO! -font Arial -annotate +120+30 "Resolution: !RESOLUTION!, Frames: !RPU_FRAMES!, Scenecuts: !RPU_SHOTCOUNT!" -font Arial-Bold -pointsize 25 -gravity Center -annotate !titlepos!-552 "!INPUTFILENAME!!INPUTFILEEXT!" -font Arial -pointsize 25 -annotate !titlepos!-518 "(HDR10+ Plot)" -pointsize 20 -gravity NorthWest !A1! !A2! !A3! !A4! !A5! !P1! !P2! !P3! !P4! !P5! !MDL! -font Arial-Bold !AM! !AA! "!INPUTFILEPATH!!INPUTFILENAME!_[HDR10+ Plot].png"
+if exist "!TMP_FOLDER!\!INPUTFILENAME!.png" "!IMAGEMAGICKpath!" convert "!TMP_FOLDER!\!INPUTFILENAME!.png" -quality 100 -fill white -stroke none -draw "rectangle 0,0 3000,150" -gravity NorthWest -pointsize 20 -fill black -font Arial-Bold !HDRINFO! -font Arial -annotate +120+30 "!RESOLUTION_STR!Frames: !RPU_FRAMES!, Scenecuts: !RPU_SHOTCOUNT!" -font Arial-Bold -pointsize 25 -gravity Center -annotate !titlepos!-552 "!INPUTFILENAME!!INPUTFILEEXT!" -font Arial -pointsize 25 -annotate !titlepos!-518 "(HDR10+ Plot)" -pointsize 20 -gravity NorthWest !A1! !A2! !A3! !A4! !A5! !P1! !P2! !P3! !P4! !P5! !MDL! -font Arial-Bold !AM! !AA! "!INPUTFILEPATH!!INPUTFILENAME!_[HDR10+ Plot].png"
 
 if exist "!INPUTFILEPATH!!INPUTFILENAME!_[HDR10+ Plot].png" (
 	%HCGREEN%
