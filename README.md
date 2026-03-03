@@ -3,7 +3,7 @@
 ![BeHappy number of downloads](https://img.shields.io/github/downloads/DonaldFaQ/DDVT/latest/total.svg)
 [![download latest release](https://img.shields.io/badge/DDVT-download-green?style=flat)](https://github.com/DonaldFaQ/DDVT/releases/latest)
 
-**DDVT** (_**D**onalds **D**olby **V**ision **C**onverter_) is a little toolbox that works with quietvoids dolby_vision and HDR10plus tool.
+**DDVT** (_**D**onalds **D**olby **V**ision **T**oolset_) is a little toolbox that works with quietvoids dolby_vision and HDR10plus tool.
 For every function exists an own script.
 
 ### Script list:
