@@ -105,8 +105,6 @@ if not exist "%DO_VI_TOOLpath%" set "MISSINGFILE=%DO_VI_TOOLpath%" & goto :CORRU
 if not exist "%MKVMERGEpath%" set "MISSINGFILE=%MKVMERGEpath%" & goto :CORRUPTFILE
 
 ::PREPARE FOR OPTIONS
-set "FILEEXT=%~x1"
-
 if /i "!INPUTFILEEXT!"=="" CALL :INSERT_INPUT
 
 set "LOGFILEpath=!INPUTFILEPATH!!INPUTFILENAME!!INPUTFILEEXT!_DDVT_MediaInfo.txt" rem Path where your logfile will be saved
@@ -125,6 +123,7 @@ if /i "!INPUTFILEEXT!"==".xml" set "RAWFILE=FALSE" & goto :PREPARE
 if /i "!INPUTFILEEXT!"==".h265" goto :PREPARE
 if /i "!INPUTFILEEXT!"==".hevc" goto :PREPARE
 if /i "!INPUTFILEEXT!"==".iso" set "ISOFILE=TRUE" & goto :PREPARE
+if /i "!INPUTFILEEXT!"==".img" set "ISOFILE=TRUE" & goto :PREPARE
 call :FALSEINPUT
 
 :INSERT_INPUT
@@ -809,7 +808,7 @@ echo }
 powershell.exe -ExecutionPolicy Bypass -File "!TMP_FOLDER!\mount.ps1"
 if exist "!MountDrive!:\BDMV\STREAM\*.m2ts" (
 	"!Cecho!" {%_CYAN%}[{%HC_GREEN%}Blu-ray structure found^^!{%_CYAN%}]{#}{\n}
-	for /f "tokens=*" %%A in ('dir /B /O:S /A:-D "!MountDrive!:\BDMV\STREAM\*.m2ts"') do set "FILE=!MountDrive!:\BDMV\STREAM\%%A"
+	for /f "tokens=*" %%A in ('dir /B /O:S /A:-D "!MountDrive!:\BDMV\STREAM\*.m2ts"') do set "INPUTFILE=!MountDrive!:\BDMV\STREAM\%%A"
 ) else (
 	"!Cecho!" {%_CYAN%}[{%HC_RED%}Blu-ray structure not found^^!{%_CYAN%}]{#}{\n}
 	powershell.exe -ExecutionPolicy Bypass -File "!TMP_FOLDER!\dismount.ps1"
