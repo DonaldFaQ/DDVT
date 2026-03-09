@@ -26,6 +26,10 @@ set "MEDIAINFOpath=%~dp0tools\mediainfo.exe" rem Path to mediainfo.exe
 set "DO_VI_TOOLpath=%~dp0tools\dovi_tool.exe" rem Path to dovi_tool.exe
 
 rem --- Hardcoded settings. Cannot be changed ---
+set "INPUTFILE=%~dpnx1"
+set "INPUTFILEPATH=%~dp1"
+set "INPUTFILENAME=%~n1"
+set "INPUTFILEEXT=%~x1"
 set "LOGFILE=YES"
 set "RAWFILE=TRUE"
 set "EL_INPUT=FALSE"
@@ -101,29 +105,26 @@ if not exist "%DO_VI_TOOLpath%" set "MISSINGFILE=%DO_VI_TOOLpath%" & goto :CORRU
 if not exist "%MKVMERGEpath%" set "MISSINGFILE=%MKVMERGEpath%" & goto :CORRUPTFILE
 
 ::PREPARE FOR OPTIONS
-set "FILE=%~dpnx1"
-set "FILEPATH=%~dp1"
-set "FILENAME=%~n1"
 set "FILEEXT=%~x1"
 
-if /i "!FILEEXT!"=="" CALL :INSERT_INPUT
+if /i "!INPUTFILEEXT!"=="" CALL :INSERT_INPUT
 
-set "LOGFILEpath=!FILEPATH!!FILENAME!!FILEEXT!_DDVT_MediaInfo.txt" rem Path where your logfile will be saved
+set "LOGFILEpath=!INPUTFILEPATH!!INPUTFILENAME!!INPUTFILEEXT!_DDVT_MediaInfo.txt" rem Path where your logfile will be saved
 if "%TMP_FOLDER%"=="SAME AS SOURCE" (
 	set "TMP_FOLDER=%tmp%\DDVT_%Password%_TMP"
 ) else (
 	set "TMP_FOLDER=!TMP_FOLDER!\DDVT_%Password%_TMP"
 )
 
-if /i "!FILEEXT!"==".mkv" set "RAWFILE=FALSE" & goto :PREPARE
-if /i "!FILEEXT!"==".ts"  goto :PREPARE
-if /i "!FILEEXT!"==".m2ts" goto :PREPARE
-if /i "!FILEEXT!"==".mp4" goto :PREPARE
-if /i "!FILEEXT!"==".bin" set "RAWFILE=FALSE" & goto :PREPARE
-if /i "!FILEEXT!"==".xml" set "RAWFILE=FALSE" & goto :PREPARE
-if /i "!FILEEXT!"==".h265" goto :PREPARE
-if /i "!FILEEXT!"==".hevc" goto :PREPARE
-if /i "!FILEEXT!"==".iso" set "ISOFILE=TRUE" & goto :PREPARE
+if /i "!INPUTFILEEXT!"==".mkv" set "RAWFILE=FALSE" & goto :PREPARE
+if /i "!INPUTFILEEXT!"==".ts"  goto :PREPARE
+if /i "!INPUTFILEEXT!"==".m2ts" goto :PREPARE
+if /i "!INPUTFILEEXT!"==".mp4" goto :PREPARE
+if /i "!INPUTFILEEXT!"==".bin" set "RAWFILE=FALSE" & goto :PREPARE
+if /i "!INPUTFILEEXT!"==".xml" set "RAWFILE=FALSE" & goto :PREPARE
+if /i "!INPUTFILEEXT!"==".h265" goto :PREPARE
+if /i "!INPUTFILEEXT!"==".hevc" goto :PREPARE
+if /i "!INPUTFILEEXT!"==".iso" set "ISOFILE=TRUE" & goto :PREPARE
 call :FALSEINPUT
 
 :INSERT_INPUT
@@ -148,12 +149,11 @@ echo.
 %WHITE%
 "!Cecho!" {%_WHITE%}Drag 'n' Drop {%_GREEN%}FILE {%_WHITE%}here and press ENTER:{#}{\n}
 %GREEN%
-set /p "FILE=%~1" || if "!FILE!"=="" goto :INSERT_INPUT
+set /p "INPUTFILE=%~1" || if "!INPUTFILE!"=="" goto :INSERT_INPUT
 
-for %%f in (!FILE!) do set "FILENAME=%%~nf"
-for %%f in (!FILE!) do set "FILEEXT=%%~xf"
-for %%f in (!FILE!) do set "FILEPATH=%%~dpf"
-for %%f in (!FILE!) do set "FILE=%%~dpnxf"
+for %%f in ("!INPUTFILE!") do set "INPUTFILENAME=%%~nf"
+for %%f in ("!INPUTFILE!") do set "INPUTFILEEXT=%%~xf"
+for %%f in ("!INPUTFILE!") do set "INPUTFILEPATH=%%~dpf"
 
 goto :eof
 
@@ -175,9 +175,9 @@ echo.
 %CYAN%
 if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 echo Processing. Please wait...
-if /i "!FILEEXT!"==".bin" set "DVBIN=YES"& set "RPU=!FILEPATH!!FILENAME!.bin"& set "DVinput=YES"& set "RPU_EXIST=TRUE"& goto :SKIP
-if /i "!FILEEXT!"==".xml" (
-     "!DO_VI_TOOLpath!" generate --xml "!FILE!" --canvas-width 3840 --canvas-height 2160 --rpu-out "!TMP_FOLDER!\RPU.bin">nul 2>&1
+if /i "!INPUTFILEEXT!"==".bin" set "DVBIN=YES"& set "RPU=!INPUTFILEPATH!!INPUTFILENAME!.bin" & set "DVinput=YES"& set "RPU_EXIST=TRUE"& goto :SKIP
+if /i "!INPUTFILEEXT!"==".xml" (
+     "!DO_VI_TOOLpath!" generate --xml "!INPUTFILE!" --canvas-width 3840 --canvas-height 2160 --rpu-out "!TMP_FOLDER!\RPU.bin">nul 2>&1
 	 if exist "!TMP_FOLDER!\RPU.bin" (
 		 set "RPU=!TMP_FOLDER!\RPU.bin"
 		 set "RPU_EXIST=TRUE"
@@ -203,13 +203,13 @@ if "!ISOFILE!"=="TRUE" (
 call :ANALYSESTREAMS
 
 ::WRITE MEDIAINFO
-set "MI_INFOVIDEO=!FILE!"
+set "MI_INFOVIDEO=!INPUTFILE!"
 if "!RAWFILE!"=="TRUE" (
-	"!MKVMERGEpath!" --ui-language en --priority higher --output ^"!TMP_FOLDER!\Info.mkv^" --language 0:und --compression 0:none ^"^(^" ^"!FILE!^" ^"^)^" --split parts:00:00:00-00:00:01 -q
+	"!MKVMERGEpath!" --ui-language en --priority higher --output ^"!TMP_FOLDER!\Info.mkv^" --language 0:und --compression 0:none ^"^(^" ^"!INPUTFILE!^" ^"^)^" --split parts:00:00:00-00:00:01 -q
 	if exist "!TMP_FOLDER!\Info.mkv" set "MI_INFOVIDEO=!TMP_FOLDER!\Info.mkv"
 )
 if "!VIDEO_COUNT!" NEQ "1" (
-	"!MKVMERGEpath!" --ui-language en --priority higher --output ^"!TMP_FOLDER!\Info.mkv^" --language 0:und --compression 0:none ^"^(^" ^"!FILE!^" ^"^)^" --split parts:00:00:00-00:00:01 -q
+	"!MKVMERGEpath!" --ui-language en --priority higher --output ^"!TMP_FOLDER!\Info.mkv^" --language 0:und --compression 0:none ^"^(^" ^"!INPUTFILE!^" ^"^)^" --split parts:00:00:00-00:00:01 -q
 	if exist "!TMP_FOLDER!\Info.mkv" set "MI_INFOVIDEO=!TMP_FOLDER!\Info.mkv"
 )
 
@@ -223,7 +223,7 @@ if exist "!TMP_FOLDER!\Info.mkv" (
 	FOR /F "delims=" %%A IN ('findstr /C:"HLG" "!TMP_FOLDER!\Info.txt"') DO set "HDRFormat=HLG"
 )
 if not defined HDRFormat (
-	"!MEDIAINFOpath!" --output=Video;%%HDR_Format_String%% "!FILE!">"!TMP_FOLDER!\Info.txt"
+	"!MEDIAINFOpath!" --output=Video;%%HDR_Format_String%% "!INPUTFILE!">"!TMP_FOLDER!\Info.txt"
 	FOR /F "delims=" %%A IN ('findstr /C:"Dolby Vision" "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES"
 	FOR /F "delims=" %%A IN ('findstr /C:"HDR10" "!TMP_FOLDER!\Info.txt"') DO set "HDRFormat=HDR10"
 	FOR /F "delims=" %%A IN ('findstr /C:"HDR10+" "!TMP_FOLDER!\Info.txt"') DO set "HDRFormat=HDR10+"
@@ -243,7 +243,7 @@ if exist "!TMP_FOLDER!\Info.mkv" (
 	FOR /F "delims=" %%A IN ('findstr /C:".03." "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=3"
 )
 if not defined DVprofile (
-	"!MEDIAINFOpath!" --output=Video;%%HDR_Format_Profile%% "!FILE!">"!TMP_FOLDER!\Info.txt">nul
+	"!MEDIAINFOpath!" --output=Video;%%HDR_Format_Profile%% "!INPUTFILE!">"!TMP_FOLDER!\Info.txt">nul
 	FOR /F "delims=" %%A IN ('findstr /C:".08." "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=8"
 	FOR /F "delims=" %%A IN ('findstr /C:".07." "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=7"
 	FOR /F "delims=" %%A IN ('findstr /C:".06." "!TMP_FOLDER!\Info.txt"') DO set "DVinput=YES" & set "DVprofile=6"
@@ -254,7 +254,7 @@ if not defined DVprofile (
 
 ::DEMUX RPU SAMPLE
 if "!DVinput!"=="YES" (
-	"!FFMPEGpath!" -loglevel panic -i "!FILE!" -map 0:!EL_INDEX! -c:v copy -to 1 -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" - >nul 2>&1
+	"!FFMPEGpath!" -loglevel panic -i "!INPUTFILE!" -map 0:!EL_INDEX! -c:v copy -to 1 -bsf:v hevc_mp4toannexb -f hevc - | "!DO_VI_TOOLpath!" extract-rpu -o "!TMP_FOLDER!\RPU.bin" - >nul 2>&1
 	if exist "!TMP_FOLDER!\RPU.bin" (
 		FOR /F "usebackq" %%A IN ('"!TMP_FOLDER!\RPU.bin"') DO set "RPUSIZE=%%~zA"
 		if "!RPUSIZE!" NEQ "0" (
@@ -286,15 +286,15 @@ if "!DVinput!"=="YES" (
 if "!DVprofile!!RESOLUTION!"=="71920 px x 1080 px" set "EL_INPUT=TRUE"
 
 ::GENERAL MEDIAINFO
-FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=General;%%Duration/String%% "!FILE!""') do set "DURATION=%%A"
-FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=General;%%FileSize_String4%% "!FILE!""') do set "FILESIZE=%%A"
+FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=General;%%Duration/String%% "!INPUTFILE!""') do set "DURATION=%%A"
+FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=General;%%FileSize_String4%% "!INPUTFILE!""') do set "FILESIZE=%%A"
 ::AUDIO COUNT
-FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=General;%%AudioCount%% "!FILE!""') do set "AUDIO_COUNT=%%A"
+FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=General;%%AudioCount%% "!INPUTFILE!""') do set "AUDIO_COUNT=%%A"
 if defined AUDIO_COUNT (
 	set "AUDIO_COUNT=!AUDIO_COUNT! Audio track(s)"
 )
 ::TEXT COUNT
-FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=General;%%TextCount%% "!FILE!""') do set "TEXT_COUNT=%%A"
+FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=General;%%TextCount%% "!INPUTFILE!""') do set "TEXT_COUNT=%%A"
 if defined TEXT_COUNT (
 	set "TEXT_COUNT=!TEXT_COUNT! Subtitle(s)"
 )
@@ -326,26 +326,26 @@ if not defined Luminance (
 ::VIDEO MEDIAINFO
 
 ::FRAMERATE
-FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%FrameRate/String%% "!FILE!""') do set "FRAMERATE=%%A"
+FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%FrameRate/String%% "!INPUTFILE!""') do set "FRAMERATE=%%A"
 for /F "tokens=1-2 delims=FPS" %%A in ("!FRAMERATE!") do (
 	set "FRAMERATE=%%AFPS"
 	if "%%B" NEQ "" set "FRAMERATE=BL = %%AFPS | EL = %%BFPS"
 )
 ::BITRATE
-FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%BitRate/String%% "!FILE!""') do set "BITRATE=%%A"
+FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%BitRate/String%% "!INPUTFILE!""') do set "BITRATE=%%A"
 for /F "tokens=1-2 delims=/s" %%A in ("!BITRATE!") do (
 	set "BITRATE=%%A/s"
 	if "%%B" NEQ "" set "BITRATE=BL = %%A/s | EL = %%B/s"
 )
 ::RESOLUTION
-FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;"%%Width%%x x %%Height%%x" "!FILE!""') do set "RESOLUTION=%%A"
+FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;"%%Width%%x x %%Height%%x" "!INPUTFILE!""') do set "RESOLUTION=%%A"
 for /F "tokens=1-4 delims=x " %%A in ("!RESOLUTION!") do (
 	if "!DVprofile!%%A%%B"=="719201080" set "EL_INPUT=TRUE"
 	set "RESOLUTION=%%A px x %%B px"
 	if "%%C" NEQ "" set "RESOLUTION=BL = %%A px x %%B px | EL = %%C px x %%D px"
 )
 ::STREAMSIZE
-FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%StreamSize_String4%% "!FILE!""') do set "STREAMSIZE=%%A"
+FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;%%StreamSize_String4%% "!INPUTFILE!""') do set "STREAMSIZE=%%A"
 for /F "tokens=1-10 delims=iB" %%A in ("!STREAMSIZE!") do (
 	set "STREAMSIZE=%%AiB"
 	if "%%B" NEQ "" set "STREAMSIZE=BL = %%AiB | EL = %%BiB"
@@ -500,7 +500,7 @@ echo.
 echo.
 echo  == SUMMARY =============================================================================================================
 echo.
-"!Cecho!" {%_YELLOW%}Filename          {%HC_WHITE%}: !FILENAME!!FILEEXT!{#}{\n}
+"!Cecho!" {%_YELLOW%}Filename          {%HC_WHITE%}: !INPUTFILENAME!!INPUTFILEEXT!{#}{\n}
 if defined FILESIZE (
 	echo.
 	"!Cecho!" {%_YELLOW%}Filesize          {%HC_WHITE%}: !FILESIZE!{#}{\n}
@@ -614,8 +614,8 @@ if "!DVBIN!!DVinput!"=="YESNO" call :CORRUPTRPU
 if "!DVinput!!DVBIN!"=="YESNO" set "Line2=DOLBY VISION=[ YES ]   |   HDR FALLBACK=[ YES ]"
 if "!DVinput!!DVprofile!!DVBIN!"=="YES5NO" set "Line2=DOLBY VISION [ YES ]   |   HDR FALLBACK=[ NO ]"
 if "!DVinput!!DVBIN!"=="NONO" set "Line2=DOLBY VISION=[ NO ]"
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('!INPUTFILENAME!!INPUTFILEEXT!' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT QuickInfo v!VERSION!', 'Ok','Info')"
 setlocal DisableDelayedExpansion
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%FILENAME%%FILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT QuickInfo v%VERSION%', 'Ok','Info')"
 exit
 
 :OUTPUT_LOGFILE
@@ -637,7 +637,7 @@ echo.>>"!TMP_FOLDER!\logfile.txt"
 echo.>>"!TMP_FOLDER!\logfile.txt"
 echo  == LOGFILE START =======================================================================================================>>"!TMP_FOLDER!\logfile.txt"
 echo.>>"!TMP_FOLDER!\logfile.txt"
-echo Filename          : !FILENAME!!FILEEXT!>>"!TMP_FOLDER!\logfile.txt"
+echo Filename          : !INPUTFILENAME!!INPUTFILEEXT!>>"!TMP_FOLDER!\logfile.txt"
 if defined FILESIZE (
 	echo.>>"!TMP_FOLDER!\logfile.txt"
 	echo Filesize          : !FILESIZE!>>"!TMP_FOLDER!\logfile.txt"
@@ -731,9 +731,9 @@ echo  == LOGFILE END ===========================================================
 goto :eof
 
 :ANALYSESTREAMS
-FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=General;%%VideoCount%% "!FILE!""') do set "VIDEO_COUNT=%%A"
+FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=General;%%VideoCount%% "!INPUTFILE!""') do set "VIDEO_COUNT=%%A"
 if "!VIDEO_COUNT!" NEQ "1" set "LAYERTYPE= DL"
-"!FFPROBEpath!" "!FILE!" -show_streams -v 0 -of compact=p=0:nk=1 >"!TMP_FOLDER!\STREAMS.txt"
+"!FFPROBEpath!" "!INPUTFILE!" -show_streams -v 0 -of compact=p=0:nk=1 >"!TMP_FOLDER!\STREAMS.txt"
 FOR /F "delims=" %%A IN ('findstr /C:"hevc|H.265" "!TMP_FOLDER!\STREAMS.txt"') DO echo %%A>>"!TMP_FOLDER!\VSTREAMS.txt"
 if exist "!TMP_FOLDER!\VSTREAMS.txt" (
 	FOR /F "delims=" %%A IN ('findstr /C:"3840|2160" "!TMP_FOLDER!\VSTREAMS.txt"') DO set "BL_STREAMINFO=%%A"
@@ -755,7 +755,7 @@ goto :eof
 
 :MOUNT
 (
-echo $isoImg = "!FILE!"
+echo $isoImg = "!INPUTFILE!"
 echo $driveLetter = "!MountDrive!:\"
 echo.
 echo #Check if elevated
@@ -785,7 +785,7 @@ echo     exit 1;
 echo }
 )>"!TMP_FOLDER!\mount.ps1"
 (
-echo $isoImg = "!FILE!"
+echo $isoImg = "!INPUTFILE!"
 echo $driveLetter = "!MountDrive!:\"
 echo.
 echo #Check if elevated
