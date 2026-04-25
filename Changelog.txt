@@ -1,6 +1,6 @@
 -v0.74 "Faith is purest when it is unquestioning"
 *Major Bugfixes.
-*UPDATED dovi_tool to v2.3.1.
+*UPDATED dovi_tool to v2.3.2.
 *UPDATED mkvtoolnix to v98.0.0.0.
 
 -v0.73 "Understanding is overrated"
