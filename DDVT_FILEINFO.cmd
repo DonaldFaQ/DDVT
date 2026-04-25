@@ -199,9 +199,9 @@ echo.
 %GREEN%
 set /p "INPUTFILE=%~1" || if "!INPUTFILE!"=="" goto :INSERT_INPUT
 
+for %%f in (!INPUTFILE!) do set "INPUTFILEPATH=%%~dpf"
 for %%f in (!INPUTFILE!) do set "INPUTFILENAME=%%~nf"
 for %%f in (!INPUTFILE!) do set "INPUTFILEEXT=%%~xf"
-for %%f in (!INPUTFILE!) do set "INPUTFILEPATH=%%~dpf"
 for %%f in (!INPUTFILE!) do set "INPUTFILE=%%~dpnxf"
 
 goto :eof
@@ -814,7 +814,7 @@ echo Please wait. Demuxing HDR10+ SEI...
 if exist "!BLSTREAM!" (
 	"!HDR10P_TOOLpath!" extract "!BLSTREAM!" -o "!TMP_FOLDER!\HDR10Plus.json"
 ) else (
-	"!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -map 0:!BL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!HDR10P_TOOLpath!" extract "!BLSTREAM!" -o "!TMP_FOLDER!\HDR10Plus.json" -
+	"!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -map 0:!BL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!HDR10P_TOOLpath!" extract -o "!TMP_FOLDER!\HDR10Plus.json" -
 )
 if exist "!TMP_FOLDER!\HDR10Plus.json" (
 	set "HDR10PFILE=!TMP_FOLDER!\HDR10Plus.json"
@@ -884,6 +884,7 @@ if "!VIDEO_COUNT!" NEQ "1" (
 		start /WAIT /MIN "Muxing !INPUTFILENAME! into MKV" "!MKVMERGEpath!" --ui-language en --priority higher --output ^"!TMP_FOLDER!\VIDEOSTREAM.mkv^" --language 0:und --compression 0:none ^"^(^" ^"!BLSTREAM!^" ^"^)^"
 		if exist "!TMP_FOLDER!\VIDEOSTREAM.mkv" (
 			set "WORKFILE=!TMP_FOLDER!\VIDEOSTREAM.mkv"
+			set "WORKFILE_MM=!TMP_FOLDER!\VIDEOSTREAM"
 			%HCGREEN%
 			echo Done.
 			echo.
@@ -903,13 +904,14 @@ if "!VIDEO_COUNT!" NEQ "1" (
 	)
 )
 %WHITE%
+
 if not exist "!WORKFILE!.measurements" "!MADVRpath!" "!WORKFILE!"
 if exist "!WORKFILE!.measurements" (
 	set "MFILE=!WORKFILE!.measurements"
 ) else (
 	echo.
 	%HCRED%
-	echo. Error.
+	echo Error.
 	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 )
 
@@ -925,10 +927,11 @@ echo        "max_content_light_level": 0,
 echo        "max_frame_average_light_level": 0
 echo    }
 echo }
-)>"%~dp0temp.json"
+)>"!TMP_FOLDER!\temp.json"
 
 %WHITE%
-"!DO_VI_TOOLNFpath!" generate -j "%~dp0temp.json" --madvr-file "!MFILE!" -o "!TMP_FOLDER!\HDRRPU.bin" >nul
+"!DO_VI_TOOLNFpath!" generate -j "!TMP_FOLDER!\temp.json" --madvr-file "!MFILE!" -o "!TMP_FOLDER!\HDRRPU.bin" >nul
+
 if exist "!TMP_FOLDER!\HDRRPU.bin" (
 	if "!TESTMODE!"=="OFF" if exist "!WORKFILE!.measurements" del "!WORKFILE!.measurements">nul
 	set "HDRRPU=!TMP_FOLDER!\HDRRPU.bin"
@@ -1112,13 +1115,7 @@ goto :eof
 echo Please wait. Plotting HDR10+ SEI...
 %WHITE%
 pushd "!INPUTFILEPATH!"
-if exist "!BLSTREAM!" (
-	"!HDR10P_TOOLpath!" extract "!BLSTREAM!" -o "!TMP_FOLDER!\HDR10Plus.json"
-) else (
-	if "!HDR10P_FILE!"=="FALSE" (
-		"!FFMPEGpath!" -loglevel panic -stats -i "!INPUTFILE!" -map 0:!BL_INDEX! -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!HDR10P_TOOLpath!" extract "!BLSTREAM!" -o "!TMP_FOLDER!\HDR10Plus.json" -
-	)
-)
+
 if exist "!TMP_FOLDER!\HDR10Plus.json" set "HDR10PFILE=!TMP_FOLDER!\HDR10Plus.json"
 	
 FOR /F "delims=" %%A IN ('findstr /C:"HDR10plusProfile" "!HDR10PFILE!"') DO set "HDR10P_Profile=%%A"

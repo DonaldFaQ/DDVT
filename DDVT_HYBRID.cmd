@@ -17,7 +17,7 @@ set "FFMPEGpath=%~dp0tools\ffmpeg.exe" rem Path to ffmpeg.exe
 set "MP4BOXpath=%~dp0tools\mp4box.exe" rem Path to mp4box.exe
 set "MEDIAINFOpath=%~dp0tools\mediainfo.exe" rem Path to mediainfo.exe
 set "DO_VI_TOOLpath=%~dp0tools\dovi_tool.exe" rem Path to dovi_tool.exe
-set "HDR10P_TOOLpath=%~dp0tools\HDR10Plus_tool.exe" rem Path to HDR_HDR10Plus_tool.exe
+set "HDR10Plus_TOOLpath=%~dp0tools\HDR10Plus_tool.exe" rem Path to HDR_HDR10Plus_tool.exe
 set "PYTHONpath=%~dp0tools\Python\Python.exe" rem Path to PYTHON exe
 set "HDR10PDELAYSCRIPTpath=%~dp0tools\Python\Scripts\HDR10Plus_delay.py" rem Path to SCRIPT
 
@@ -149,7 +149,7 @@ if not exist "%MKVEXTRACTpath%" set "MISSINGFILE=%MKVEXTRACTpath%" & goto :CORRU
 if not exist "%MP4BOXpath%" set "MISSINGFILE=%MP4BOXpath%" & goto :CORRUPTFILE
 if not exist "%MEDIAINFOpath%" set "MISSINGFILE=%MEDIAINFOpath%" & goto :CORRUPTFILE
 if not exist "%DO_VI_TOOLpath%" set "MISSINGFILE=%DO_VI_TOOLpath%" & goto :CORRUPTFILE
-if not exist "%HDR10P_TOOLpath%" set "MISSINGFILE=%HDR10P_TOOLpath%" & goto :CORRUPTFILE
+if not exist "%HDR10Plus_TOOLpath%" set "MISSINGFILE=%HDR10Plus_TOOLpath%" & goto :CORRUPTFILE
 if not exist "%PYTHONpath%" set "MISSINGFILE=%PYTHONpath%" & goto :CORRUPTFILE
 if not exist "%HDR10PDELAYSCRIPTpath%" set "MISSINGFILE=%HDR10PDELAYSCRIPTpath%" & goto :CORRUPTFILE
 
@@ -716,7 +716,7 @@ TIMEOUT 2 /NOBREAK>nul
 goto :eof
 
 :START
-mode con cols=125 lines=50
+mode con cols=125 lines=55
 if "!CHGFPS!"=="NO" (
 	set "FPS_string=ORIGINAL"
 ) else (
@@ -958,7 +958,7 @@ goto START
 :OPERATION
 if not exist "!TMP_FOLDER!" MD "!TMP_FOLDER!">nul
 call :LOGFILESTART
-mode con cols=125 lines=60
+mode con cols=125 lines=65
 cls
 %GREEN%
 echo  !HEADER1!
@@ -985,7 +985,7 @@ if "!INJ_HDR10P!"=="YES" (
 )
 if "!DELAY!" NEQ "0" call :DV_DELAY
 if "!RPU_AA_String!" NEQ "[LEAVE UNTOUCHED]" call :CROPRPU
-if "!FIX_SCENECUTS!"=="YES" call :FIX_SHOTS
+if "!FIX_SCENECUTS!"=="YES" call :DV_FIX_SHOTS
 call :DV_INJECT
 call :MUXINCONT
 call :LOGFILEEND
@@ -1043,8 +1043,8 @@ if "!HDR_HDR10P!!HDR_DV!!DV_DV!!DV_HDR10P!"=="TRUEFALSEFALSEFALSE" (
 	echo Please wait. Extracting HDR10+ SEI...
 	echo [Extracting HDR10+ SEI]>>"!logfile!"
 	%WHITE%
-	echo Command^: "!HDR10P_TOOLpath!" extract "!HDR_VIDEOSTREAM!" -o "!TMP_FOLDER!\HDR_HDR10Plus.json">>"!logfile!"
-	"!HDR10P_TOOLpath!" extract "!HDR_VIDEOSTREAM!" -o "!TMP_FOLDER!\HDR_HDR10Plus.json">>"!logfile!"
+	echo Command^: "!HDR10Plus_TOOLpath!" extract "!HDR_VIDEOSTREAM!" -o "!TMP_FOLDER!\HDR_HDR10Plus.json">>"!logfile!"
+	"!HDR10Plus_TOOLpath!" extract "!HDR_VIDEOSTREAM!" -o "!TMP_FOLDER!\HDR_HDR10Plus.json">>"!logfile!"
 	if exist "!TMP_FOLDER!\HDR_HDR10Plus.json" (
 		for %%f in ("!TMP_FOLDER!\HDR_HDR10Plus.json") do set "CHECKSIZE=%%~zf" >nul 2>&1
 		if "!CHECKSIZE!" NEQ "0" (
@@ -1154,8 +1154,8 @@ if "!DV_HDR10P!"=="TRUE" (
 		echo Please wait. Extracting HDR10+ SEI...
 		echo [Extracting HDR10+ SEI]>>"!logfile!"
 		%WHITE%
-		echo Command^: "!FFMPEGpath!" -loglevel panic -stats -i "!DV_File!" -c:v copy -bsf:v hevc_mp4toannexb -f hevc - ^| "!HDR10P_TOOLpath!" extract -o "!TMP_FOLDER!\DV_HDR10Plus.json" ->>"!logfile!"
-		"!FFMPEGpath!" -loglevel panic -stats -i "!DV_File!" -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!HDR10P_TOOLpath!" extract -o "!TMP_FOLDER!\DV_HDR10Plus.json" ->>"!logfile!"
+		echo Command^: "!FFMPEGpath!" -loglevel panic -stats -i "!DV_File!" -c:v copy -bsf:v hevc_mp4toannexb -f hevc - ^| "!HDR10Plus_TOOLpath!" extract -o "!TMP_FOLDER!\DV_HDR10Plus.json" ->>"!logfile!"
+		"!FFMPEGpath!" -loglevel panic -stats -i "!DV_File!" -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | "!HDR10Plus_TOOLpath!" extract -o "!TMP_FOLDER!\DV_HDR10Plus.json" ->>"!logfile!"
 		if exist "!TMP_FOLDER!\DV_HDR10Plus.json" (
 			for %%f in ("!TMP_FOLDER!\DV_HDR10Plus.json") do set "CHECKSIZE=%%~zf" >nul 2>&1
 			if "!CHECKSIZE!" NEQ "0" (
@@ -1186,46 +1186,63 @@ if "!DV_HDR10P!"=="TRUE" (
 goto :eof
 
 :HDR10P_DELAY
-if "!DELAY!"=="0" goto :eof
 %CYAN%
 echo "!DELAY!" | find "-">nul 2>&1
 if "%ERRORLEVEL%"=="0" (
-	echo Please wait. Applying HDR10+ !DELAY! Frames negative Delay...
-	echo [Applying HDR10+ !DELAY! Frames negative Delay]>>"!logfile!"
-	%WHITE%
-	echo Command^: "!PYTHONpath!" "!HDR10PDELAYSCRIPTpath!" -i "!HDR10PFILE!" -d !DELAY! -o "!TMP_FOLDER!\HDR10PlusDELAYED.json">>"!logfile!"
-	"!PYTHONpath!" "!HDR10PDELAYSCRIPTpath!" -i "!HDR10PFILE!" -d !DELAY! -o "!TMP_FOLDER!\HDR10PlusDELAYED.json">>"!logfile!"
+	echo Please wait. Applying HDR10+ SEI !DELAY! Frames negative Delay...
+	echo [Applying HDR10+ SEI !DELAY! Frames negative Delay]>>"!logfile!"
+	set /A DELAY=!DELAY!+1
+	(
+	echo {
+	echo 	"remove": [
+	echo 		"0!DELAY!"
+	echo 	]
+	echo }
+	)>"!TMP_FOLDER!\EDIT.json"
 ) else (
-	echo Please wait. Applying HDR10+ !DELAY! Frames positive Delay...
-	echo [Applying HDR10+ !DELAY! Frames positive Delay]>>"!logfile!"
-	%WHITE%
-	echo Command^: "!PYTHONpath!" "!HDR10PDELAYSCRIPTpath!" -i "!HDR10PFILE!" -d !DELAY! -o "!TMP_FOLDER!\HDR10PlusDELAYED.json">>"!logfile!"
-	"!PYTHONpath!" "!HDR10PDELAYSCRIPTpath!" -i "!HDR10PFILE!" -d !DELAY! -o "!TMP_FOLDER!\HDR10PlusDELAYED.json">>"!logfile!"
+	echo Please wait. Applying HDR10+ SEI !DELAY! Frames positive Delay...
+	echo [Applying HDR10+ SEI !DELAY! Frames positive Delay]>>"!logfile!"
+	set "DELAY_SC_FIX=TRUE"
+	(
+	echo {
+	echo 	"duplicate": [
+	echo 		{
+	echo 			"source": 0,
+	echo 			"offset": 0,
+	echo 			"length": !DELAY!
+	echo 		}
+	echo 	]
+	echo }
+	)>"!TMP_FOLDER!\Edit.json"
 )
-if exist "!TMP_FOLDER!\HDR10PlusDELAYED.json" (
-	for %%f in ("!TMP_FOLDER!\HDR10PlusDELAYED.json") do set "CHECKSIZE=%%~zf" >nul 2>&1
+%WHITE%
+echo Command^: "!HDR10Plus_TOOLpath!" editor -i "!HDR10PFILE!" -j "!TMP_FOLDER!\EDIT.json" -o "!TMP_FOLDER!\HDR10P-DELAYED.json">>"!logfile!"
+"!HDR10Plus_TOOLpath!" editor -i "!HDR10PFILE!" -j "!TMP_FOLDER!\EDIT.json" -o "!TMP_FOLDER!\HDR10P-DELAYED.json">>"!logfile!"
+if exist "!TMP_FOLDER!\HDR10P-DELAYED.json" (
+	for %%f in ("!TMP_FOLDER!\HDR10P-DELAYED.json") do set "CHECKSIZE=%%~zf" >nul 2>&1
 	if "!CHECKSIZE!" NEQ "0" (
-		set "HDR10PFILE=!TMP_FOLDER!\HDR10PlusDELAYED.json"
 		%HCGREEN%
+		del "!TMP_FOLDER!\EDIT.json"
+		set "HDR10PFILE=!TMP_FOLDER!\HDR10P-DELAYED.json"
 		echo Done.
 		echo.
 		echo Done.>>"!logfile!"
 		echo.>>"!logfile!"
 	) else (
 		%HCRED%
-		echo Error.
 		set /a "ERRORCOUNT=!ERRORCOUNT!+1"
+		echo Error.
 		echo.
 		echo Error.>>"!logfile!"
 		echo.>>"!logfile!"
 	)
 ) else (
 	%HCRED%
-	set /a "ERRORCOUNT=!ERRORCOUNT!+1"	
+	set /a "ERRORCOUNT=!ERRORCOUNT!+1"
 	echo Error.
 	echo.
 	echo Error.>>"!logfile!"
-	echo.>>"!logfile!"
+	echo.>>"!logfile!"	
 )
 goto :eof
 
@@ -1235,8 +1252,8 @@ if "!INJ_HDR10P!"=="NO" goto :eof
 echo Please wait. Injecting the HDR10+ SEI into stream...
 echo [Injecting the HDR10+ SEI into stream]>>"!logfile!"
 %WHITE%
-echo Command^: "!HDR10P_TOOLpath!" inject -i "!HDR_VIDEOSTREAM!" -j "!HDR10PFILE!" -o "!TMP_FOLDER!\HDR10P_INJ.hevc">>"!logfile!"
-"!HDR10P_TOOLpath!" inject -i "!HDR_VIDEOSTREAM!" -j "!HDR10PFILE!" -o "!TMP_FOLDER!\HDR10P_INJ.hevc">>"!logfile!"
+echo Command^: "!HDR10Plus_TOOLpath!" inject -i "!HDR_VIDEOSTREAM!" -j "!HDR10PFILE!" -o "!TMP_FOLDER!\HDR10P_INJ.hevc">>"!logfile!"
+"!HDR10Plus_TOOLpath!" inject -i "!HDR_VIDEOSTREAM!" -j "!HDR10PFILE!" -o "!TMP_FOLDER!\HDR10P_INJ.hevc">>"!logfile!"
 if exist "!TMP_FOLDER!\HDR10P_INJ.hevc" (
 	for %%f in ("!TMP_FOLDER!\HDR10P_INJ.hevc") do set "CHECKSIZE=%%~zf" >nul 2>&1
 	if "!CHECKSIZE!" NEQ "0" (
@@ -1448,7 +1465,7 @@ if exist "!TMP_FOLDER!\RPU-DELAYED.bin" (
 )
 goto :eof
 
-:FIX_SHOTS
+:DV_FIX_SHOTS
 if exist "!RPUFILE!" (
 	%CYAN%
 	echo Fixing Scenecuts...

@@ -1,20 +1,22 @@
+-v0.74 "Faith is purest when it is unquestioning"
+*Major Bugfixes.
+*UPDATED dovi_tool to v2.3.1.
+*UPDATED mkvtoolnix to v98.0.0.0.
+
 -v0.73 "Understanding is overrated"
 *UPDATED hdr10plus_tool  to v1.7.2.
 *UPDATED mkvtoolnix to v97.0.0.0.
 *Reworked Plotting HDR10 / HDR10+ / DV
 *Minor Bugfixes.
-(Do not forget to Download the new 3rd Party Apps!).
 
 -v0.72.1 "Blessed is the mind too small for doubt"
 *UPDATED dovi_tool to v2.3.1.
 *UPDATED mkvtoolnix to v95.0.0.0.
 *Minor Bugfixes.
-(Do not forget to Download the new 3rd Party Apps!).
 
 -v0.72 "Hope for the best, but prepare for the worst"
 *Major Bugfixes.
 *UPDATED mkvtoolnix to v94.0.0.0.
-(Do not forget to Download the new 3rd Party Apps!).
 
 -v0.71.1 "The Emperor protects"
 *UPDATED hdr10plus_tool to v1.7.1.
@@ -23,7 +25,6 @@
 *UPDATED - Fileinfo script supports now Dual Layer files.
 *UPDATED - MediaInfo supports now Blu-ray ISO files (needed Admin rights! Set Powershell policy to remoteSigned).
 *Major Bugfixes.
-(Do not forget to Download the new 3rd Party Apps!).
 
 -v0.71 "Back to the roots"
 *FIXED - Problems with =/() symbols in tool dirname.
@@ -39,7 +40,6 @@
 *REWORKED all scripts.
 *Major Bugfixes.
 *UPDATED mkvtoolnix to v93.0.0.0.
-(Do not forget to Download the new 3rd Party Apps!).
 
 -v0.65.5
 *ADDED INJECTOR - No more Bordercheck if input file is only HDR10+ SEI.

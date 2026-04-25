@@ -605,16 +605,18 @@ if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
 set "NewLine=[System.Environment]::NewLine"
 if "!EL_INPUT!!DVinput!!DVP7!!DVBIN!"=="FALSEYESYESNO" set "Line1=BL ^(!HDRFormat!^) ^+ EL ^(Dolby Vision Profile 7!LAYERTYPE!^ !subprofile!^) ^+ RPU ^(!DM:~2!^)"
 if "!EL_INPUT!!DVinput!!DVP7!!DVBIN!"=="FALSEYESNONO" set "Line1=BL ^(!HDRFormat!^) ^+ RPU ^(Dolby Vision Profile !DVprofile!!DM!^)"
-if "!EL_INPUT!!DVinput!"=="TRUEYES" set "Line1=EL ^(Dolby Vision Profile 7 ^[!subprofile!^]^) ^+ RPU ^(!DM:~2!^)                              EL NEEDS MUXING INTO HDR10 BL TO WORK CORRECTLY"
+if "!EL_INPUT!!DVinput!"=="TRUEYES" set "Line1=EL ^(Dolby Vision Profile 7 ^[!subprofile!^]^) ^+ RPU ^(!DM:~2!^)"
+if "!EL_INPUT!!DVinput!"=="TRUEYES" set "Line2=EL NEEDS MUXING INTO HDR10 BL TO WORK CORRECTLY^!"
 if "!DVinput!!DVBIN!"=="YESYES" set "Line1=RPU ^(Dolby Vision Profile !DVprofile!!DM!^)"
 if "!DVinput!!DVBIN!"=="NONO" set "Line1=!CODEC_NAME! ^(!HDRFormat!^)"
-if "!DVinput!"=="YES" set "Line2=DOLBY VISION RPU^^!"
+if "!DVinput!!EL_INPUT!"=="YESFALSE" set "Line2=DOLBY VISION RPU^!"
 if "!DVBIN!!DVinput!"=="YESNO" call :CORRUPTRPU
-if "!DVinput!!DVBIN!"=="YESNO" set "Line2=DOLBY VISION=[ YES ]   |   HDR FALLBACK=[ YES ]"
-if "!DVinput!!DVprofile!!DVBIN!"=="YES5NO" set "Line2=DOLBY VISION [ YES ]   |   HDR FALLBACK=[ NO ]"
-if "!DVinput!!DVBIN!"=="NONO" set "Line2=DOLBY VISION=[ NO ]"
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('!INPUTFILENAME!!INPUTFILEEXT!' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT QuickInfo v!VERSION!', 'Ok','Info')"
+if "!EL_INPUT!!DVinput!!DVBIN!"=="FALSEYESNO" set "Line2=DOLBY VISION [ YES ]   |   HDR10 FALLBACK [ YES ]"
+if "!DVinput!!DVprofile!!DVBIN!"=="YES5NO" set "Line2=DOLBY VISION [ YES ]   |   HDR10 FALLBACK [ NO ]"
+if "!EL_INPUT!!DVinput!!DVBIN!"=="FALSENONO" set "Line2=DOLBY VISION [ NO ]"
 setlocal DisableDelayedExpansion
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT QuickInfo v%VERSION%', 'Ok','Info')"
+endlocal
 exit
 
 :OUTPUT_LOGFILE
@@ -647,9 +649,9 @@ if defined DURATION (
 )
 echo.>>"!TMP_FOLDER!\logfile.txt"
 ::DV P7 INFOLINE
-if "!DVinput!!DVP7!!DVBIN!"=="YESYESNO" echo Video             ^: Base Layer ^(!HDRFormat!^) ^+ Enhanced Layer ^(Dolby Vision Profile 7!LAYERTYPE! ^[!subprofile!^]^) ^+ RPU ^(!DM:~2!^)>>"!TMP_FOLDER!\logfile.txt"
+if "!EL_INPUT!!DVinput!!DVP7!!DVBIN!"=="FALSEYESYESNO" echo Video             ^: Base Layer ^(!HDRFormat!^) ^+ Enhanced Layer ^(Dolby Vision Profile 7!LAYERTYPE! ^[!subprofile!^]^) ^+ RPU ^(!DM:~2!^)>>"!TMP_FOLDER!\logfile.txt"
 ::DV P5/P8 INFOLINE
-if "!DVinput!!DVP7!!DVBIN!"=="YESNONO" echo Video             ^: Base Layer ^(!HDRFormat!^) ^+ RPU ^(Dolby Vision Profile !DVprofile!!DM!^)>>"!TMP_FOLDER!\logfile.txt"
+if "!EL_INPUT!!DVinput!!DVP7!!DVBIN!"=="FALSEYESNONO" echo Video             ^: Base Layer ^(!HDRFormat!^) ^+ RPU ^(Dolby Vision Profile !DVprofile!!DM!^)>>"!TMP_FOLDER!\logfile.txt"
 ::EL INFOLINE
 if "!EL_INPUT!!DVinput!"=="TRUEYES" echo Video             ^: Enhanced Layer ^(Dolby Vision Profile 7 ^[!subprofile!^]^) ^+ RPU ^(!DM:~2!^)>>"!TMP_FOLDER!\logfile.txt"
 ::DV P7 RPU/XML INFOLINE

@@ -1782,19 +1782,38 @@ echo "!DELAY!" | find "-">nul 2>&1
 if "%ERRORLEVEL%"=="0" (
 	echo Please wait. Applying HDR10+ SEI !DELAY! Frames negative Delay...
 	echo [Applying HDR10+ SEI !DELAY! Frames negative Delay]>>"!logfile!"
-	%WHITE%
-	"!PYTHONpath!" "!HDR10PDELAYSCRIPTpath!" -i "!HDR10PFILE!" -d !DELAY! -o "!TMP_FOLDER!\HDR10PlusDELAYED.json"
+	set /A DELAY=!DELAY!+1
+	(
+	echo {
+	echo 	"remove": [
+	echo 		"0!DELAY!"
+	echo 	]
+	echo }
+	)>"!TMP_FOLDER!\EDIT.json"
 ) else (
 	echo Please wait. Applying HDR10+ SEI !DELAY! Frames positive Delay...
 	echo [Applying HDR10+ SEI !DELAY! Frames positive Delay]>>"!logfile!"
-	%WHITE%
-	"!PYTHONpath!" "!HDR10PDELAYSCRIPTpath!" -i "!HDR10PFILE!" -d !DELAY! -o "!TMP_FOLDER!\HDR10PlusDELAYED.json">>"!logfile!"
+	set "DELAY_SC_FIX=TRUE"
+	(
+	echo {
+	echo 	"duplicate": [
+	echo 		{
+	echo 			"source": 0,
+	echo 			"offset": 0,
+	echo 			"length": !DELAY!
+	echo 		}
+	echo 	]
+	echo }
+	)>"!TMP_FOLDER!\Edit.json"
 )
-if exist "!TMP_FOLDER!\HDR10PlusDELAYED.json" (
-	for %%f in ("!TMP_FOLDER!\HDR10PlusDELAYED.json") do set "CHECKSIZE=%%~zf" >nul 2>&1
+%WHITE%
+"!HDR10Plus_TOOLpath!" editor -i "!HDR10PFILE!" -j "!TMP_FOLDER!\EDIT.json" -o "!TMP_FOLDER!\HDR10P-DELAYED.json">>"!logfile!"
+if exist "!TMP_FOLDER!\HDR10P-DELAYED.json" (
+	for %%f in ("!TMP_FOLDER!\HDR10P-DELAYED.json") do set "CHECKSIZE=%%~zf" >nul 2>&1
 	if "!CHECKSIZE!" NEQ "0" (
 		%HCGREEN%
-		set "HDR10PFILE=!TMP_FOLDER!\HDR10PlusDELAYED.json"
+		del "!TMP_FOLDER!\EDIT.json"
+		set "HDR10PFILE=!TMP_FOLDER!\HDR10P-DELAYED.json"
 		echo Done.
 		echo.
 		echo Done.>>"!logfile!"
@@ -1813,7 +1832,7 @@ if exist "!TMP_FOLDER!\HDR10PlusDELAYED.json" (
 	echo Error.
 	echo.
 	echo Error.>>"!logfile!"
-	echo.>>"!logfile!"
+	echo.>>"!logfile!"	
 )
 goto :eof
 
@@ -1856,7 +1875,7 @@ if "!RPU_AA_String!" NEQ "[LEAVE UNTOUCHED]" call :CROPRPU
 if "!L6EDITING!"=="YES" call :RPUL6EDITING
 if /i "!CUSTOMEDIT!!CJ_INJ!"=="LASTTRUE" call :CUSTOM
 if "!VEDITING!"=="YES" call :HDRMETADATAEDIT
-if "!FIX_SCENECUTS!"=="YES" call :FIX_SHOTS
+if "!FIX_SCENECUTS!"=="YES" call :DV_FIX_SHOTS
 call :DV_INJECT
 call :MUXINCONT
 goto :eof
@@ -2284,7 +2303,7 @@ if exist "!TMP_FOLDER!\RPU-DELAYED.bin" (
 )
 goto :eof
 
-:FIX_SHOTS
+:DV_FIX_SHOTS
 if exist "!RPUFILE!" (
 	%CYAN%
 	echo Fixing Scenecuts...

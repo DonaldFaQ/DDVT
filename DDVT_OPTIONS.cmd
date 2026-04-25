@@ -1,6 +1,6 @@
 @echo off & setlocal
 mode con cols=125 lines=57
-set VERSION=0.73 "Understanding is overrated"
+set VERSION=0.74 "Faith is purest when it is unquestioning."
 set HEADER1=powered by quietvoids tools                                                                  GNU License (GPL) 2021-2026
 TITLE DDVT OPTIONS v%VERSION%
 set DESIGN=STANDARD
