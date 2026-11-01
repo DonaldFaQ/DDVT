@@ -30,6 +30,7 @@ set "INPUTFILE=%~dpnx1"
 set "INPUTFILEPATH=%~dp1"
 set "INPUTFILENAME=%~n1"
 set "INPUTFILEEXT=%~x1"
+set "WRONG_CROP=FALSE"
 set "LOGFILE=YES"
 set "RAWFILE=TRUE"
 set "EL_INPUT=FALSE"
@@ -340,6 +341,8 @@ for /F "tokens=1-2 delims=/s" %%A in ("!BITRATE!") do (
 FOR /F "delims=" %%A in ('""!MEDIAINFOpath!" --output=Video;"%%Width%%x x %%Height%%x" "!INPUTFILE!""') do set "RESOLUTION=%%A"
 for /F "tokens=1-4 delims=x " %%A in ("!RESOLUTION!") do (
 	if "!DVprofile!%%A%%B"=="719201080" set "EL_INPUT=TRUE"
+	set "HEIGHT=%%B"
+	set "WIDTH=%%A"
 	set "RESOLUTION=%%A px x %%B px"
 	if "%%C" NEQ "" set "RESOLUTION=BL = %%A px x %%B px | EL = %%C px x %%D px"
 )
@@ -460,8 +463,8 @@ if "!TOOLTYPE!"=="MSGBOX" (
 	if exist "!TMP_FOLDER!" rmdir /Q /S "!TMP_FOLDER!">nul
 	CALL :OUTPUT_msgBOX
 )
-if "!LOGFILE!"=="YES" CALL :OUTPUT_LOGFILE
 if "!TOOLTYPE!"=="TEXT" CALL :OUTPUT_TEXT
+if "!LOGFILE!"=="YES" CALL :OUTPUT_LOGFILE
 if "!LOGFILE!"=="YES" (
 	if exist "!TMP_FOLDER!\logfile.txt" copy "!TMP_FOLDER!\logfile.txt" "!LOGFILEpath!">nul
 )
@@ -476,15 +479,32 @@ exit
 mode con cols=125 lines=57
 if "!subprofile!"=="FEL" set "subprofile={%HC_GREEN%}FEL"
 if "!subprofile!"=="MEL" set "subprofile={%HC_YELLOW%}MEL"
+
+::L5 ERROR DETECT
 if defined L5_FOUND (
-set "L5_STRING=Left: !RPU_INPUT_AA_LC! px, Top: !RPU_INPUT_AA_TC! px, Right: !RPU_INPUT_AA_RC! px, Bottom: !RPU_INPUT_AA_BC! px"
+	set "TC_Color=!HC_WHITE!"
+	set "BC_Color=!HC_WHITE!"
+	set "LC_Color=!HC_WHITE!"
+	set "RC_Color=!HC_WHITE!"
+	if defined RESOLUTION (
+		if  "!HEIGHT!" NEQ "2160" (
+			if "!RPU_INPUT_AA_TC!" NEQ "0" set "TC_Color=!HC_YELLOW!" & set "WRONG_CROP=TRUE"
+			if "!RPU_INPUT_AA_BC!" NEQ "0" set "BC_Color=!HC_YELLOW!" & set "WRONG_CROP=TRUE"
+		)
+		if  "!WIDTH!" NEQ "3840" (
+			if "!RPU_INPUT_AA_LC!" NEQ "0" set "TC_Color=!LC_YELLOW!" & set "WRONG_CROP=TRUE"
+			if "!RPU_INPUT_AA_RC!" NEQ "0" set "BC_Color=!RC_YELLOW!" & set "WRONG_CROP=TRUE"
+		)
+	)
+	set "L5_STRING={!HC_WHITE!}Left: {!LC_Color!}!RPU_INPUT_AA_LC! {!HC_WHITE!}px, Top: {!TC_Color!}!RPU_INPUT_AA_TC! {!HC_WHITE!}px, Right: {!RC_Color!}!RPU_INPUT_AA_RC! {!HC_WHITE!}px, Bottom: {!BC_Color!}!RPU_INPUT_AA_BC! {!HC_WHITE!}px"
 ) else (
 	if "!DVprofile!"=="8" (
-	set "L5_STRING={%HC_YELLOW%}No L5 Metadata in RPU. L5 Fix recommended [DDVT SyncCheck]."
+	set "L5_STRING={!HC_YELLOW!}No L5 Metadata in RPU. L5 Fix recommended [DDVT SyncCheck]."
 	) else (
 		set "L5_STRING=N/A"
 	)
 )
+
 cls
 %GREEN%
 echo  %HEADER1%
@@ -560,6 +580,9 @@ if "!DVinput!!RPU_EXIST!"=="YESTRUE" (
     echo L1-MaxFALL        : !RPUFALL_L1!
     echo L2-Trims          : !L2_TRIMS!
 	"!Cecho!" {%HC_WHITE%}L5-Active Area    : !L5_STRING!{#}{\n}
+	if "!WRONG_CROP!"=="TRUE" (
+		"!Cecho!"                     {!HC_YELLOW!}Active Area mismatch^^! L5 Fix recommended [DDVT SyncCheck].{#}{\n}
+	)
     echo L6-Mastering DL   : !RPULuminanceL6!
     echo L6-MaxCLL         : !RPUCLL_L6!
 	echo L6-MaxFALL        : !RPUFALL_L6!
@@ -602,6 +625,19 @@ goto :eof
 
 :OUTPUT_msgBOX
 if exist "!TMP_FOLDER!" RD /S /Q "!TMP_FOLDER!">nul
+::L5 ERROR DETECT
+if defined L5_FOUND (
+	if defined RESOLUTION (
+		if  "!HEIGHT!" NEQ "2160" (
+			if "!RPU_INPUT_AA_TC!" NEQ "0" set "WRONG_CROP=TRUE"
+			if "!RPU_INPUT_AA_BC!" NEQ "0" set "WRONG_CROP=TRUE"
+		)
+		if  "!WIDTH!" NEQ "3840" (
+			if "!RPU_INPUT_AA_LC!" NEQ "0" set "WRONG_CROP=TRUE"
+			if "!RPU_INPUT_AA_RC!" NEQ "0" set "WRONG_CROP=TRUE"
+		)
+	)
+)
 set "NewLine=[System.Environment]::NewLine"
 if "!EL_INPUT!!DVinput!!DVP7!!DVBIN!"=="FALSEYESYESNO" set "Line1=BL ^(!HDRFormat!^) ^+ EL ^(Dolby Vision Profile 7!LAYERTYPE!^ !subprofile!^) ^+ RPU ^(!DM:~2!^)"
 if "!EL_INPUT!!DVinput!!DVP7!!DVBIN!"=="FALSEYESNONO" set "Line1=BL ^(!HDRFormat!^) ^+ RPU ^(Dolby Vision Profile !DVprofile!!DM!^)"
@@ -614,10 +650,23 @@ if "!DVBIN!!DVinput!"=="YESNO" call :CORRUPTRPU
 if "!EL_INPUT!!DVinput!!DVBIN!"=="FALSEYESNO" set "Line2=DOLBY VISION [ YES ]   |   HDR10 FALLBACK [ YES ]"
 if "!DVinput!!DVprofile!!DVBIN!"=="YES5NO" set "Line2=DOLBY VISION [ YES ]   |   HDR10 FALLBACK [ NO ]"
 if "!EL_INPUT!!DVinput!!DVBIN!"=="FALSENONO" set "Line2=DOLBY VISION [ NO ]"
+set "Line3=Active Area mismatch^! L5 Fix recommended [DDVT SyncCheck]."
 setlocal DisableDelayedExpansion
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT QuickInfo v%VERSION%', 'Ok','Info')"
+if "%WRONG_CROP%"=="TRUE" (
+	call :OUTPUT_msgBOX_NOTOK
+) else (
+	call :OUTPUT_msgBOX_OK
+)
 endlocal
 exit
+
+:OUTPUT_msgBOX_OK
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT QuickInfo v%VERSION%', 'Ok','Info')"
+goto :eof
+
+:OUTPUT_msgBOX_NOTOK
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%' + %NewLine% + %NewLine% + '%Line3%', 'DDVT QuickInfo v%VERSION%', 'Ok','Warning')"
+goto :eof
 
 :OUTPUT_LOGFILE
 if defined L5_FOUND (
@@ -693,6 +742,7 @@ if "!DVinput!!RPU_EXIST!"=="YESTRUE" (
     echo L1-MaxFALL        : !RPUFALL_L1!>>"!TMP_FOLDER!\logfile.txt"
     echo L2-Trims          : !L2_TRIMS!>>"!TMP_FOLDER!\logfile.txt"
 	echo L5-Active Area    : !L5_STRING!>>"!TMP_FOLDER!\logfile.txt"
+	if "!WRONG_CROP!"=="TRUE" echo                     Active Area mismatch^^! L5 Fix recommended [DDVT SyncCheck].>>"!TMP_FOLDER!\logfile.txt"
     echo L6-Mastering DL   : !RPULuminanceL6!>>"!TMP_FOLDER!\logfile.txt"
     echo L6-MaxCLL         : !RPUCLL_L6!>>"!TMP_FOLDER!\logfile.txt"
 	echo L6-MaxFALL        : !RPUFALL_L6!>>"!TMP_FOLDER!\logfile.txt"
@@ -824,7 +874,7 @@ set "NewLine=[System.Environment]::NewLine"
 set "Line1=NO VIDEO INFORMATIONS FOUND OR CORRUPT INPUT FILE^!"
 rmdir /Q /S "!TMP_FOLDER!">nul
 setlocal DisableDelayedExpansion
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%FILENAME%%FILEEXT%' + %NewLine% + %NewLine% + '%Line1%', 'DDVT MediaInfo v%VERSION%', 'Ok','Warning')"
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%', 'DDVT MediaInfo v%VERSION%', 'Ok','Warning')"
 exit
 
 :CORRUPTRPU
@@ -833,7 +883,7 @@ set "NewLine=[System.Environment]::NewLine"
 set "Line1=CORRUPT DOLBY VISION XML / RPU BINARY FILE^!"
 rmdir /Q /S "!TMP_FOLDER!">nul
 setlocal DisableDelayedExpansion
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%FILENAME%%FILEEXT%' + %NewLine% + %NewLine% + '%Line1%', 'DDVT MediaInfo v%VERSION%', 'Ok','Warning')"
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show''%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%', 'DDVT MediaInfo v%VERSION%', 'Ok','Warning')"
 exit
 
 :NOMOUNTDRIVE
@@ -842,7 +892,7 @@ set "NewLine=[System.Environment]::NewLine"
 set "Line1=NO FREE DRIVE LETTER FOR MOUNTING^!"
 rmdir /Q /S "!TMP_FOLDER!">nul
 setlocal DisableDelayedExpansion
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%FILENAME%%FILEEXT%' + %NewLine% + %NewLine% + '%Line1%', 'DDVT MediaInfo v%VERSION%', 'Ok','Warning')"
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%', 'DDVT MediaInfo v%VERSION%', 'Ok','Warning')"
 exit
 
 :FALSEINPUT
@@ -851,7 +901,7 @@ set "NewLine=[System.Environment]::NewLine"
 set "Line1=Unsupported Input File. Supported Files are:"
 set "Line2=*.iso (Blu-ray) | *.mkv | *.ts | *.m2ts | *.mp4 | *.bin | *.xml | *.h265 | *.hevc"
 setlocal DisableDelayedExpansion
-START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%FILENAME%%FILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT MediaInfo v%VERSION%', 'Ok','Info')"
+START /B PowerShell -WindowStyle Hidden -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('%INPUTFILENAME%%INPUTFILEEXT%' + %NewLine% + %NewLine% + '%Line1%' + %NewLine% + %NewLine% + '%Line2%', 'DDVT MediaInfo v%VERSION%', 'Ok','Info')"
 exit
 
 :CORRUPTFILE
